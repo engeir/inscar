@@ -4,6 +4,7 @@
 import numpy as np
 import scipy.integrate as spint
 import scipy
+import quadpy
 
 import config as cf
 
@@ -13,9 +14,9 @@ def dne(w=None, k0=None, w_c=None, ne=None, Te=None, ny_e=None, Mi=None, Ti=None
     Fi = isspec_Fi(w, k0, w_c, ny_i, Ti, theta, Mi)
 
     w_c = w_e_gyro(np.linalg.norm([B], 2))
-    W_c = w_ion_gyro(np.linalg.norm([B], 2), np.dot(Mi, cf.M_P))
+    # W_c = w_ion_gyro(np.linalg.norm([B], 2), np.dot(Mi, cf.M_P))
     w_p = w_plasma(ne)
-    l_D = L_Debye(ne, Te)
+    # l_D = L_Debye(ne, Te)
     Xp = np.sqrt(cf.M_E * w_p**2 / (2 * cf.K_B * Te * k0**2))
     # Xp = sqrt(1 / (2 * l_D**2 * k0**2))
 
@@ -41,6 +42,7 @@ def isspec_Fi(w=None, k=None, w_c=None, ny_i=None, Ti=None, theta=None, Mi=None)
             return np.exp(- 1j * X / Xi * y - Lambda_i * y - (1 / (2 * Xi**2)) * (np.sin(theta)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(theta)**2 * y**2))
 
         Fi = spint.quad(Fi_integrand, 0, np.inf, epsabs=1e-16)
+        # Fi = quadpy.line_segment.gauss_kronrod(5).integrate(Fi_integrand, 0, np.inf)  # , epsabs=1e-16)
         Fi = np.diff(Fi)[0]
     else:
         # Analytical solution to the integral
