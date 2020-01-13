@@ -2,30 +2,30 @@
 from libsmop import *
 # isspec_Fe.m
 
-    
+
 @function
 def isspec_Fe(w=None,k=None,w_c=None,ny_e=None,Te=None,theta=None,*args,**kwargs):
     varargin = isspec_Fe.varargin
     nargin = isspec_Fe.nargin
 
     # ISSPEC_FE -
-    
+
     kB=1.380662e-23
 # isspec_Fe.m:5
-    
+
     m_e=9.10938291e-31
 # isspec_Fe.m:6
-    
+
     m_p=1.672621778e-27
 # isspec_Fe.m:7
-    
+
     m_n=1.674927352e-27
 # isspec_Fe.m:8
-    
+
     # my_0    = 4*pi*1e-7;                # Permeability [Vs/Am]
 # Ep_0    = 1/(my_0*c0^2);            # Permittivity [As/Vm]
 # q_e     = 1.602176565e-19;        # elementary charge [C]
-    
+
     X=sqrt(dot(m_e,w ** 2) / (dot(dot(dot(2,kB),Te),k ** 2)))
 # isspec_Fe.m:15
     Xe=sqrt(dot(m_e,w_c ** 2) / (dot(dot(dot(2,kB),Te),k ** 2)))
@@ -61,7 +61,7 @@ def isspec_Fe(w=None,k=None,w_c=None,ny_e=None,Te=None,theta=None,*args,**kwargs
 # isspec_Fe.m:45
         Fe=multiply(dot(sqrt(dot(2,pi)),exp(- a ** 2 / (dot(2,c)) + dot(dot(1j,a),b) / c + b ** 2 / (dot(2,c)))),(dot(Faddeeva_erf((- a + dot(1j,b)) / (dot(2,(- c / 2) ** (1 / 2)))),1j) + 1j)) / (dot(2,sqrt(- c / 2)))
 # isspec_Fe.m:46
-    
+
     Fe=1 - multiply((dot(1j,X) / Xe + Lambda_e),Fe)
 # isspec_Fe.m:52
     # $$$ y = (1:1000)/10;
