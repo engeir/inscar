@@ -1,4 +1,6 @@
 """All functions / methods to calculate the IS spectra.
+
+Generated using SMOP  0.41.
 """
 
 import numpy as np
@@ -87,6 +89,46 @@ def isspec_Fi(w, k, w_c, ny_i, Ti, theta, Mi):
     return Fi
 
 
+def isspec_Fe(w=None, k=None, w_c=None, ny_e=None, Te=None, theta=None):
+    X = np.sqrt(cf.M_E * w**2 /
+                (2 * cf.K_B * Te * k**2))
+    Xe = np.sqrt(cf.M_E * w_c**2 /
+                 (2 * cf.K_B * Te * k**2))
+    Lambda_e = ny_e / w_c
+
+    if theta != 0:
+        def Fe_integrand(y):
+            return np.exp(- 1j * (X / Xe) * y - Lambda_e * y - (1 / (2 * Xe**2))
+                          * (np.sin(theta)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(theta)**2 * y**2))
+        Fe = complex_quadrature(Fe_integrand, 0, np.inf, epsabs=1e-16)
+    else:
+        # Analytical solution to the integral
+        #             /     2             2 \
+        #             |    a    a b i    b  |  /   /    a - b i    \       \
+        # sqrt(pi) exp| - --- + ----- + --- | | erf| ------------- | i + i |
+        #             \   2 c     c     2 c / |    |       /   c \ |       |
+        #                                     |    | 2 sqrt| - - | |       |
+        #                                     \    \       \   2 / /      /
+        # ------------------------------------------------------------------
+        #                                  /   c \
+        #                            2 sqrt| - - |
+        #                                  \   2 /
+        # Where
+        # a = w/w_c
+        # b = ny_e/w_c (Really? looks odd to me??? BG 20161229)
+        # c = cf.K_B*T*k^2/(m*w_c)
+        a = w / w_c
+        b = ny_e / w_c
+        c = np.dot(np.dot(cf.K_B, Te), k**2) / (np.dot(cf.M_E, w_c))
+        Fe = np.sqrt(2 * np.pi) * np.exp(- a**2 / (2 * c) + 1j * a * b / c + b**2 / (2 * c)) * \
+            ((scipy.special.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
+              * 1j) + 1j) / (2 * np.sqrt(- c / 2))
+
+    Fe = 1 - (1j * X / Xe + Lambda_e) * Fe
+
+    return Fe
+
+
 def isspec_ne(f=None, f0=None, Ne=None, Te=None, Nu_e=None, mi=None, Ti=None, Nu_i=None, B=None, theta=None):
     w = f * 2 * np.pi
     w0 = f0 * 2 * np.pi
@@ -129,46 +171,6 @@ def isspec_ro(f=None, f0=None, Ne=None, Te=None, Nu_e=None, mi=None, Ti=None, Nu
                                                        np.imag(- Fi)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
 
     return Is
-
-
-def isspec_Fe(w=None, k=None, w_c=None, ny_e=None, Te=None, theta=None):
-    X = np.sqrt(cf.M_E * w**2 /
-                (2 * cf.K_B * Te * k**2))
-    Xe = np.sqrt(cf.M_E * w_c**2 /
-                 (2 * cf.K_B * Te * k**2))
-    Lambda_e = ny_e / w_c
-
-    if theta != 0:
-        def Fe_integrand(y):
-            return np.exp(- 1j * (X / Xe) * y - Lambda_e * y - (1 / (2 * Xe**2))
-                          * (np.sin(theta)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(theta)**2 * y**2))
-        Fe = complex_quadrature(Fe_integrand, 0, np.inf, epsabs=1e-16)
-    else:
-        # Analytical solution to the integral
-        #             /     2             2 \
-        #             |    a    a b i    b  |  /   /    a - b i    \       \
-        # sqrt(pi) exp| - --- + ----- + --- | | erf| ------------- | i + i |
-        #             \   2 c     c     2 c / |    |       /   c \ |       |
-        #                                     |    | 2 sqrt| - - | |       |
-        #                                     \    \       \   2 / /      /
-        # ------------------------------------------------------------------
-        #                                  /   c \
-        #                            2 sqrt| - - |
-        #                                  \   2 /
-        # Where
-        # a = w/w_c
-        # b = ny_e/w_c (Really? looks odd to me??? BG 20161229)
-        # c = cf.K_B*T*k^2/(m*w_c)
-        a = w / w_c
-        b = ny_e / w_c
-        c = np.dot(np.dot(cf.K_B, Te), k**2) / (np.dot(cf.M_E, w_c))
-        Fe = np.sqrt(2 * np.pi) * np.exp(- a**2 / (2 * c) + 1j * a * b / c + b**2 / (2 * c)) * \
-            ((scipy.special.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
-              * 1j) + 1j) / (2 * np.sqrt(- c / 2))
-
-    Fe = 1 - (1j * X / Xe + Lambda_e) * Fe
-
-    return Fe
 
 
 def L_Debye(*args):
