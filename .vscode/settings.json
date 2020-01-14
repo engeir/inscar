@@ -11,6 +11,7 @@
         "linalg",
         "neials",
         "pylint",
+        "pyplot",
         "scipy",
         "spint"
     ]
