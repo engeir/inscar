@@ -4,12 +4,24 @@
 import numpy as np
 import scipy.integrate as spint
 import scipy
-import quadpy
+# import quadpy
 
 import config as cf
 
 
-def dne(w=None, k0=None, w_c=None, ne=None, Te=None, ny_e=None, Mi=None, Ti=None, ny_i=None, B=None, theta=None):
+def complex_quadrature(func, a, b, **kwargs):
+    def real_func(x):
+        return scipy.real(func(x))
+
+    def imag_func(x):
+        return scipy.imag(func(x))
+    real_integral = spint.quad(real_func, a, b, **kwargs)
+    imag_integral = spint.quad(imag_func, a, b, **kwargs)
+    # , real_integral[1:], imag_integral[1:])
+    return real_integral[0] + 1j*imag_integral[0]
+
+
+def dne(w, k0, w_c, ne, Te, ny_e, Mi, Ti, ny_i, B, theta):
     Fe = isspec_Fe(w, k0, w_c, ny_e, Te, theta)
     Fi = isspec_Fi(w, k0, w_c, ny_i, Ti, theta, Mi)
 
@@ -26,7 +38,8 @@ def dne(w=None, k0=None, w_c=None, ne=None, Te=None, ny_e=None, Mi=None, Ti=None
     return dn_e
 
 
-def isspec_Fi(w=None, k=None, w_c=None, ny_i=None, Ti=None, theta=None, Mi=None):
+# disable=pylint:too-many-arguments
+def isspec_Fi(w, k, w_c, ny_i, Ti, theta, Mi):
     # For typical ionospheric ions
     # there is an equal number oh
     # protons and neutrons, sue me...
@@ -38,12 +51,12 @@ def isspec_Fi(w=None, k=None, w_c=None, ny_i=None, Ti=None, theta=None, Mi=None)
     Lambda_i = ny_i / w_c
 
     if theta != 0:
-        def Fi_integrand(y=None):
-            return np.exp(- 1j * X / Xi * y - Lambda_i * y - (1 / (2 * Xi**2)) * (np.sin(theta)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(theta)**2 * y**2))
-
-        Fi = spint.quad(Fi_integrand, 0, np.inf, epsabs=1e-16)
-        # Fi = quadpy.line_segment.gauss_kronrod(5).integrate(Fi_integrand, 0, np.inf)  # , epsabs=1e-16)
-        Fi = np.diff(Fi)[0]
+        def Fi_integrand(y):
+            return np.exp(- 1j * X / Xi * y -
+                          Lambda_i * y -
+                          (1 / (2 * Xi**2)) * (np.sin(theta)**2 * (1 - np.cos(y)) +
+                                               1 / 2 * np.cos(theta)**2 * y**2))
+        Fi = complex_quadrature(Fi_integrand, 0, np.inf, epsabs=1e-16)
     else:
         # Analytical solution to the integral
         #             /     2             2 \
@@ -129,8 +142,7 @@ def isspec_Fe(w=None, k=None, w_c=None, ny_e=None, Te=None, theta=None):
         def Fe_integrand(y):
             return np.exp(- 1j * (X / Xe) * y - Lambda_e * y - (1 / (2 * Xe**2))
                           * (np.sin(theta)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(theta)**2 * y**2))
-        Fe = spint.quad(Fe_integrand, 0, np.inf, epsabs=1e-16)
-        Fe = np.diff(Fe)[0]
+        Fe = complex_quadrature(Fe_integrand, 0, np.inf, epsabs=1e-16)
     else:
         # Analytical solution to the integral
         #             /     2             2 \
