@@ -11,6 +11,16 @@ import config as cf
 
 
 def complex_quadrature(func, a, b, **kwargs):
+    """Integrate a complex function using the scipy.integrate.quad() method.
+
+    Arguments:
+        func {method} -- the method/function that is integrated
+        a {float or np.inf} -- lower bound of the integral
+        b {float of np.inf} -- upper bound of the integral
+
+    Returns:
+        float -- the value of the integral
+    """
     def real_func(x):
         return sp.real(func(x))
 
@@ -23,6 +33,25 @@ def complex_quadrature(func, a, b, **kwargs):
 
 
 def dne(w, k0, w_c, ne, Te, ny_e, Mi, Ti, ny_i, B, theta):
+    """NOT USED!
+    Calculate the spectrum according to eq. (45) in Hagfors' paper.
+
+    Arguments:
+        w {float} -- frequency
+        k0 {float} -- wavenumber
+        w_c {float} -- another frequency
+        ne {float} -- electron number density
+        Te {float} -- electron temperature
+        ny_e {float} -- electron collision frequency
+        Mi {float} -- ion mass
+        Ti {float} -- ion temperature
+        ny_i {float} -- ion collision frequency
+        B {float} -- magnetic field strength
+        theta {float} -- pitch angle
+
+    Returns:
+        float -- electron spectrum
+    """
     Fe = isspec_Fe(w, k0, w_c, ny_e, Te, theta)
     Fi = isspec_Fi(w, k0, w_c, ny_i, Ti, theta, Mi)
 
@@ -41,6 +70,20 @@ def dne(w, k0, w_c, ne, Te, ny_e, Mi, Ti, ny_i, B, theta):
 
 # disable=pylint:too-many-arguments
 def isspec_Fi(w, k, w_c, ny_i, Ti, theta, Mi):
+    """Calculate the F_i function from Hagfors (page 1705).
+
+    Arguments:
+        w {float} -- frequency
+        k {float} -- wavenumber
+        w_c {float} -- another frequency
+        ny_i {float} -- ion collision frequency
+        Ti {float} -- ion temperature
+        theta {float} -- pitch angle
+        Mi {int} -- ion mass
+
+    Returns:
+        float -- the value of the function F_i
+    """
     # For typical ionospheric ions
     # there is an equal number oh
     # protons and neutrons, sue me...
@@ -53,6 +96,14 @@ def isspec_Fi(w, k, w_c, ny_i, Ti, theta, Mi):
 
     if theta != 0:
         def Fi_integrand(y):
+            """Calculate the integral in the expression for F_i in Hagfors.
+
+            Arguments:
+                y {float} -- integration variable
+
+            Returns:
+                float -- the value of the integral
+            """
             return np.exp(- 1j * X / Xi * y -
                           Lambda_i * y -
                           (1 / (2 * Xi**2)) * (np.sin(theta)**2 * (1 - np.cos(y)) +
@@ -87,6 +138,19 @@ def isspec_Fi(w, k, w_c, ny_i, Ti, theta, Mi):
 
 
 def isspec_Fe(w, k, w_c, ny_e, Te, theta):
+    """Calculate the F_e function from Hagfors (page 1705).
+
+    Arguments:
+        w {float} -- frequency
+        k {float} -- wavenumber
+        w_c {float} -- another frequency
+        ny_e {float} -- electron collision frequency
+        Te {float} -- electron temperature
+        theta {float} -- pitch angle
+
+    Returns:
+        float -- the value of the function F_e
+    """
     X = np.sqrt(cf.M_E * w**2 /
                 (2 * cf.K_B * Te * k**2))
     Xe = np.sqrt(cf.M_E * w_c**2 /
@@ -95,6 +159,14 @@ def isspec_Fe(w, k, w_c, ny_e, Te, theta):
 
     if theta != 0:
         def Fe_integrand(y):
+            """Calculate the integral in the expression for F_e in Hagfors.
+
+            Arguments:
+                y {float} -- integration variable
+
+            Returns:
+                float -- the value of the integral
+            """
             return np.exp(- 1j * (X / Xe) * y - Lambda_e * y - (1 / (2 * Xe**2))
                           * (np.sin(theta)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(theta)**2 * y**2))
         Fe = complex_quadrature(Fe_integrand, 0, np.inf, epsabs=1e-16)
@@ -127,6 +199,23 @@ def isspec_Fe(w, k, w_c, ny_e, Te, theta):
 
 
 def isspec_ne(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
+    """Solve eq. (45) for the incoherent scatter spectrum in the paper by Hagfors.
+
+    Arguments:
+        f {np.ndarray} -- linear frequency
+        f0 {float} -- radar frequency
+        Ne {float} -- electron number density
+        Te {float} -- electron temperature
+        Nu_e {float} -- electron collision frequency
+        mi {float} -- ion mass
+        Ti {float} -- ion temperature
+        Nu_i {float} -- ion collision frequency
+        B {float} -- magnetic field strength
+        theta {float} -- pitch angle
+
+    Returns:
+        np.ndarray -- full IS spectrum over the frequency domain
+    """
     w = f * 2 * np.pi
     w0 = f0 * 2 * np.pi
 
@@ -149,6 +238,23 @@ def isspec_ne(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
 
 
 def isspec_ro(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
+    """Calculate the charge density variations according to eq. (47) in Hagfors.
+
+    Arguments:
+        f {np.ndarray} -- linear frequency
+        f0 {float} -- radar frequency
+        Ne {float} -- electron number density
+        Te {float} -- electron temperature
+        Nu_e {float} -- electron collision frequency
+        mi {float} -- ion mass
+        Ti {float} -- ion temperature
+        Nu_i {float} -- ion collision frequency
+        B {float} -- magnetic field strength
+        theta {float} -- pitch angle
+
+    Returns:
+        np.ndarray -- the spectrum of the charge density variations
+    """
     w = f * 2 * np.pi
     w0 = f0 * 2 * np.pi
 
@@ -171,6 +277,16 @@ def isspec_ro(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
 
 
 def L_Debye(*args):
+    """Calculate the Debye length.
+
+    Input args may be
+        n_e -- electron number density
+        T_e -- electron temperature
+        T_i -- ion temperature
+
+    Returns:
+        float -- the Debye length
+    """
     nargin = len(args)
     if nargin == 1:
         n_e = args[0]
@@ -195,6 +311,23 @@ def L_Debye(*args):
 
 
 def y_integrand(y, w, k, w_g, ny_coll, kBT, m, theta):
+    """NOT USED.
+
+    Similar to integral in eq. (B3) in Hagfors, but not quite the same.
+
+    Arguments:
+        y {float} -- integration variable
+        w {float} -- frequency (parameter s) from Laplace transform
+        k {float} -- wavenumber
+        w_g {float} -- gyro frequency
+        ny_coll {float} -- collision frequency (combined with s in eq. (30))
+        kBT {float} -- k_B * T
+        m {float} -- ion mass
+        theta {float} -- pitch angle
+
+    Returns:
+        float -- function that is integrated in eq. (B3)
+    """
     f = np.exp((- 1j * w / w_g * y) - ny_coll / w_g * y - kBT * k / (m * w_g**2)
                * (np.sin(theta)**2 * (1 - np.cos(y)) + y**2 / 2 * np.cos(theta)))
 
@@ -202,18 +335,43 @@ def y_integrand(y, w, k, w_g, ny_coll, kBT, m, theta):
 
 
 def w_plasma(n_e):
+    """Plasma frequency as a function of electron number density.
+
+    Arguments:
+        n_e {float} -- electron number density
+
+    Returns:
+        float -- plasma frequency
+    """
     w_e = np.sqrt(max(0, n_e) * cf.Q_E**2 / cf.M_E)
 
     return w_e
 
 
 def w_ion_gyro(B, m_ion):
+    """Ion gyro frequency as a function of magnetic field strength and ion mass.
+
+    Arguments:
+        B {float} -- magnetic field strength
+        m_ion {float} -- ion mass
+
+    Returns:
+        float -- ion gyro frequency
+    """
     w_e = cf.Q_E * B / m_ion
 
     return w_e
 
 
 def w_e_gyro(B):
+    """Electron gyro frequency as a function of magnetic field strength.
+
+    Arguments:
+        B {float} -- magnetic field strength
+
+    Returns:
+        float -- electron gyro frequency
+    """
     w_e = cf.Q_E * B / cf.M_E
 
     return w_e
