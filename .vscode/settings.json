@@ -9,10 +9,12 @@
         "imag",
         "isspec",
         "linalg",
+        "nargin",
         "neials",
         "pylint",
         "pyplot",
         "scipy",
+        "smop",
         "spint"
     ]
 }
