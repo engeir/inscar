@@ -5,22 +5,21 @@ Generated using SMOP  0.41.
 
 import numpy as np
 import scipy.integrate as spint
-import scipy
-# import quadpy
+import scipy as sp
 
 import config as cf
 
 
 def complex_quadrature(func, a, b, **kwargs):
     def real_func(x):
-        return scipy.real(func(x))
+        return sp.real(func(x))
 
     def imag_func(x):
-        return scipy.imag(func(x))
+        return sp.imag(func(x))
     real_integral = spint.quad(real_func, a, b, **kwargs)
     imag_integral = spint.quad(imag_func, a, b, **kwargs)
     # , real_integral[1:], imag_integral[1:])
-    return real_integral[0] + 1j*imag_integral[0]
+    return real_integral[0] + 1j * imag_integral[0]
 
 
 def dne(w, k0, w_c, ne, Te, ny_e, Mi, Ti, ny_i, B, theta):
@@ -79,17 +78,15 @@ def isspec_Fi(w, k, w_c, ny_i, Ti, theta, Mi):
         b = ny_i / w_c
         c = cf.K_B * Ti * k**2 / (M_i * w_c)
         Fi = np.sqrt(2 * np.pi) * np.exp(- a**2 / (2 * c) + 1j * a * b / c + b**2 / (2 * c)) * \
-            ((scipy.special.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
+            ((sp.special.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
               * 1j) + 1j) / (2 * np.sqrt(- c / 2))
-        # Fi = np.sqrt(2 * np.pi) * np.exp(- a**2 / (2 * c) + 1j * a * b / c + b**2 / (2 * c)) *
-        #                  ((Faddeeva_erf((- a + 1j * b) / (2 * np.sqrt(- c / 2))) * 1j) + 1j) / (2 * np.sqrt(- c / 2))
 
     Fi = 1 - (1j * X / Xi + Lambda_i) * Fi
 
     return Fi
 
 
-def isspec_Fe(w=None, k=None, w_c=None, ny_e=None, Te=None, theta=None):
+def isspec_Fe(w, k, w_c, ny_e, Te, theta):
     X = np.sqrt(cf.M_E * w**2 /
                 (2 * cf.K_B * Te * k**2))
     Xe = np.sqrt(cf.M_E * w_c**2 /
@@ -121,7 +118,7 @@ def isspec_Fe(w=None, k=None, w_c=None, ny_e=None, Te=None, theta=None):
         b = ny_e / w_c
         c = np.dot(np.dot(cf.K_B, Te), k**2) / (np.dot(cf.M_E, w_c))
         Fe = np.sqrt(2 * np.pi) * np.exp(- a**2 / (2 * c) + 1j * a * b / c + b**2 / (2 * c)) * \
-            ((scipy.special.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
+            ((sp.special.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
               * 1j) + 1j) / (2 * np.sqrt(- c / 2))
 
     Fe = 1 - (1j * X / Xe + Lambda_e) * Fe
@@ -129,7 +126,7 @@ def isspec_Fe(w=None, k=None, w_c=None, ny_e=None, Te=None, theta=None):
     return Fe
 
 
-def isspec_ne(f=None, f0=None, Ne=None, Te=None, Nu_e=None, mi=None, Ti=None, Nu_i=None, B=None, theta=None):
+def isspec_ne(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
     w = f * 2 * np.pi
     w0 = f0 * 2 * np.pi
 
@@ -141,7 +138,7 @@ def isspec_ne(f=None, f0=None, Ne=None, Te=None, Nu_e=None, mi=None, Ti=None, Nu
     Xp = cf.M_E * w_p**2 / (2 * cf.K_B * Te * k0**2)
     Xp = np.sqrt(1 / (2 * l_D**2 * k0**2))
 
-    Is = np.copy(w)
+    Is = np.zeros(w.shape)
     for i_w in np.arange(1, len(w)).reshape(-1):
         Fe = isspec_Fe(w[i_w], k0, w_c, Nu_e, Te, theta)
         Fi = isspec_Fi(w[i_w], k0, W_c, Nu_i, Ti, theta, mi)
@@ -151,7 +148,7 @@ def isspec_ne(f=None, f0=None, Ne=None, Te=None, Nu_e=None, mi=None, Ti=None, Nu
     return Is
 
 
-def isspec_ro(f=None, f0=None, Ne=None, Te=None, Nu_e=None, mi=None, Ti=None, Nu_i=None, B=None, theta=None):
+def isspec_ro(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
     w = f * 2 * np.pi
     w0 = f0 * 2 * np.pi
 
@@ -163,7 +160,7 @@ def isspec_ro(f=None, f0=None, Ne=None, Te=None, Nu_e=None, mi=None, Ti=None, Nu
     Xp = cf.M_E * w_p**2 / (2 * cf.K_B * Te * k0**2)
     Xp = np.sqrt(1 / (2 * l_D**2 * k0**2))
 
-    Is = np.copy(w)
+    Is = np.zeros(w.shape)
     for i_w in np.arange(1, len(w)).reshape(-1):
         Fe = isspec_Fe(w(i_w), k0, w_c, Nu_e, Te, theta)
         Fi = isspec_Fi(w(i_w), k0, W_c, Nu_i, Ti, theta, mi)
@@ -197,26 +194,26 @@ def L_Debye(*args):
     return LD
 
 
-def y_integrand(y=None, w=None, k=None, w_g=None, ny_coll=None, kBT=None, m=None, theta=None):
+def y_integrand(y, w, k, w_g, ny_coll, kBT, m, theta):
     f = np.exp((- 1j * w / w_g * y) - ny_coll / w_g * y - kBT * k / (m * w_g**2)
                * (np.sin(theta)**2 * (1 - np.cos(y)) + y**2 / 2 * np.cos(theta)))
 
     return f
 
 
-def w_plasma(n_e=None):
+def w_plasma(n_e):
     w_e = np.sqrt(max(0, n_e) * cf.Q_E**2 / cf.M_E)
 
     return w_e
 
 
-def w_ion_gyro(B=None, m_ion=None):
+def w_ion_gyro(B, m_ion):
     w_e = cf.Q_E * B / m_ion
 
     return w_e
 
 
-def w_e_gyro(B=None):
+def w_e_gyro(B):
     w_e = cf.Q_E * B / cf.M_E
 
     return w_e
