@@ -4,7 +4,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import functions as func
 import config as cf
 import tool
 
@@ -32,14 +31,51 @@ def decide_on_params(default=True):
             print('You must type in either of "y/yes/n/no".')
 
 
-def plot_IS_spectrum():
-    args = decide_on_params()
-    Is, w = tool.isr_spectrum(*args)
-    # Is, w = func.isspec_ne(*args)
+def loglog(f, Is):
     plt.figure()
     plt.title('ISR spectrum')
-    plt.plot(w / (2 * np.pi * cf.N_POINTS), abs(Is), 'r')
-    plt.plot(- w / (2 * np.pi * cf.N_POINTS), abs(Is), 'r')
+    plt.xlabel('log10(Frequency [MHz])')
+    plt.ylabel('log10(Power)')
+    plt.loglog(f, Is, 'r')
+    plt.tight_layout()
+
+
+def semilog_y(f, Is):
+    plt.figure()
+    plt.title('ISR spectrum')
+    plt.xlabel('Frequency [MHz]')
+    plt.ylabel('log10(Power)')
+    plt.plot(f, np.log10(Is), 'r')
+    plt.tight_layout()
+
+
+def semilog_x(f, Is):
+    plt.figure()
+    plt.title('ISR spectrum')
+    plt.xlabel('log10(Frequency [MHz])')
+    plt.ylabel('Power')
+    plt.plot(np.log10(f[1:]), Is[1:], 'r')
+    plt.tight_layout()
+
+
+def two_side_lin_plot(f, Is):
+    plt.figure()
+    plt.title('ISR spectrum')
+    plt.xlabel('Frequency [MHz]')
+    plt.ylabel('Power')
+    plt.plot(f, Is, 'r')
+    plt.plot(- f, Is, 'r')
+    plt.tight_layout()
+
+
+def plot_IS_spectrum():
+    args = decide_on_params()
+    f, Is = tool.isr_spectrum(*args)
+    # Is, w = func.isspec_ne(*args)
+    two_side_lin_plot(f, Is)
+    loglog(f, Is)
+    semilog_x(f, Is)
+    semilog_y(f, Is)
     plt.show()
 
 
