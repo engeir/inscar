@@ -6,6 +6,7 @@ Generated using SMOP  0.41.
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy as sp
+import scipy.special as sps
 
 import config as cf
 
@@ -16,6 +17,12 @@ def chirpz(g, n, dt, dw, wo, w_c):
     dt and dw, sampling intervals of g(t) and G(w), and wo are
     prescribed externally in an independent manner
     --- see Li, Franke, Liu [1991]
+
+    Function written by Erhan Kudeki.
+
+    Eirik Enger 23_01_2020:
+    Edited to accept a value for p (Li, Franke, Liu [1991]).
+    Here, p = w_c.
 
     Arguments:
     g {1D array} -- ACF ⟨e^{jkΔr}⟩ (dim: (N,))
@@ -181,7 +188,7 @@ def isspec_Fi(w, k, w_c, ny_i, Ti, theta, Mi):
         b = ny_i / w_c
         c = cf.K_B * Ti * k**2 / (M_i * w_c)
         Fi = np.sqrt(2 * np.pi) * np.exp(- a**2 / (2 * c) + 1j * a * b / c + b**2 / (2 * c)) * \
-            ((sp.special.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
+            ((sps.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
               * 1j) + 1j) / (2 * np.sqrt(- c / 2))
 
     Fi = 1 - (1j * X / Xi + Lambda_i) * Fi
@@ -267,7 +274,7 @@ def isspec_Fe(w, k, w_c, ny_e, Te, theta):
         b = ny_e / w_c
         c = np.dot(np.dot(cf.K_B, Te), k**2) / (np.dot(cf.M_E, w_c))
         Fe = np.sqrt(2 * np.pi) * np.exp(- a**2 / (2 * c) + 1j * a * b / c + b**2 / (2 * c)) * \
-            ((sp.special.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
+            ((sps.erf((- a + 1j * b) / (2 * np.sqrt(- c / 2)))
               * 1j) + 1j) / (2 * np.sqrt(- c / 2))
 
     Fe = 1 - (1j * X / Xe + Lambda_e) * Fe
@@ -293,7 +300,7 @@ def isspec_ne(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
     Returns:
         np.ndarray -- full IS spectrum over the frequency domain
     """
-    w = f * 2 * np.pi
+    # w = f * 2 * np.pi
     w0 = f0 * 2 * np.pi
 
     k0 = w0 / cf.C_0
@@ -301,7 +308,7 @@ def isspec_ne(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
     W_c = w_ion_gyro(np.linalg.norm([B], 2), (mi * cf.M_P))
     w_p = w_plasma(Ne)
     l_D = L_Debye(Ne, Te)
-    Xp = cf.M_E * w_p**2 / (2 * cf.K_B * Te * k0**2)
+    # Xp = cf.M_E * w_p**2 / (2 * cf.K_B * Te * k0**2)
     Xp = np.sqrt(1 / (2 * l_D**2 * k0**2))
 
     # New version: working as of 23_01_2020

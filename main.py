@@ -1,12 +1,12 @@
 """Main script for calculating the IS spectrum based on realistic parameters.
 """
 
-import time
 import numpy as np
 import matplotlib.pyplot as plt
 
 import functions as func
 import config as cf
+import tool
 
 
 def decide_on_params(default=True):
@@ -34,9 +34,8 @@ def decide_on_params(default=True):
 
 def plot_IS_spectrum():
     args = decide_on_params()
-    t0 = time.perf_counter()
-    Is, w = func.isspec_ne(*args)
-    print(f'RunTime = {time.perf_counter() - t0}')
+    Is, w = tool.isr_spectrum(*args)
+    # Is, w = func.isspec_ne(*args)
     plt.figure()
     plt.title('ISR spectrum')
     plt.plot(w / (2 * np.pi * cf.N_POINTS), abs(Is), 'r')
