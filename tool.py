@@ -3,7 +3,7 @@ import numpy as np
 import config as cf
 
 
-def chirpz(g, n, dt, dw, wo, w_c):
+def chirpz(g, n, dt, wo, w_c):
     """transforms g(t) into G(w)
     g(t) is n-point array and output G(w) is (n/2)-points starting at wo
     dt and dw, sampling intervals of g(t) and G(w), and wo are
@@ -24,7 +24,7 @@ def chirpz(g, n, dt, dw, wo, w_c):
     wo {float} -- center frequency along axis (wo = 2 pi f0)
     """
     g[0] = 0.5 * g[0]  # first interval is over dt/2, and hence ...
-    W = np.exp(-1j * dw * dt * np.arange(n)**2 / (2. * w_c))
+    W = np.exp(-1j * cf.dW * dt * np.arange(n)**2 / (2. * w_c))
     S = np.exp(-1j * wo * dt * np.arange(n))  # frequency shift by wo
     x = g * W * S
     y = np.conj(W)
@@ -37,7 +37,7 @@ def chirpz(g, n, dt, dw, wo, w_c):
     return G[0: int(n / 2)]
 
 
-def F_s_integrand(y, X_s, Lambda_s, theta):
+def F_s_integrand(y, X_s, Lambda_s):
     """Calculate the integral in the expression for F_i in Hagfors.
 
     Arguments:
@@ -46,48 +46,44 @@ def F_s_integrand(y, X_s, Lambda_s, theta):
     Returns:
         float -- the value of the integral
     """
-    W = np.exp(- Lambda_s * y - (1 / (2 * X_s**2)) * (np.sin(theta)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(theta)**2 * y**2))
+    W = np.exp(- Lambda_s * y - (1 / (2 * X_s**2)) * (np.sin(cf.THETA)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(cf.THETA)**2 * y**2))
     return W
 
 
-def isr_spectrum(_, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
-    w0 = f0 * 2 * np.pi
-    k0 = w0 / cf.C_0
-    w_c = w_e_gyro(np.linalg.norm([B], 2))
-    W_c = w_ion_gyro(np.linalg.norm([B], 2), (mi * cf.M_P))
-    l_D = L_Debye(Ne, Te)
-    Xp = np.sqrt(1 / (2 * l_D**2 * k0**2))
-    df = (cf.F_ION_MAX - 0) / (cf.N_POINTS / 2)
-    dw = 2 * np.pi * df
-    f = np.arange(cf.N_POINTS / 2) * df
-    f_scaled = f / cf.N_POINTS
-    w = np.arange(cf.N_POINTS / 2) * dw
-    Lambda_e = Nu_e / w_c
-    Lambda_i = Nu_i / W_c
-    wo = 0.
-    t_max = cf.T_MAX
-    dt_e = t_max / cf.N_POINTS
-    dt_i = t_max / cf.N_POINTS * 1e-2
-    t_e = np.arange(cf.N_POINTS) * dt_e
-    t_i = np.arange(cf.N_POINTS) * dt_i
+def make_F(dt_s, w_c, Lambda_s, M, T):
+    X_s, X = make_X(w_c, M, T)
+    t = np.arange(cf.N_POINTS) * dt_s
+    F = F_s_integrand(t, X_s, Lambda_s)
+    F = chirpz(F, cf.N_POINTS, dt_s, 0, w_c)
+    F = 1 - (1j * X / X_s + Lambda_s) * F
 
-    M_i = mi * (cf.M_P + cf.M_N) / 2
-    X_e = np.sqrt(cf.M_E * w_c**2 / (2 * cf.K_B * Te * k0**2))
-    X_i = np.sqrt(M_i * W_c**2 / (2 * cf.K_B * Ti * k0**2))
-    Xe = np.sqrt(cf.M_E * w**2 / (2 * cf.K_B * Te * k0**2))
-    Xi = np.sqrt(M_i * w**2 / (2 * cf.K_B * Ti * k0**2))
+    return F
 
-    Fe = F_s_integrand(t_e, X_e, Lambda_e, theta)
-    Fi = F_s_integrand(t_i, X_i, Lambda_i, theta)
-    Fe = chirpz(Fe, cf.N_POINTS, dt_e, dw, wo, w_c)
-    Fi = chirpz(Fi, cf.N_POINTS, dt_i, dw, wo, W_c)
-    Fe = 1 - (1j * Xe / X_e + Lambda_e) * Fe
-    Fi = 1 - (1j * Xi / X_i + Lambda_i) * Fi
 
-    Is = Ne / np.pi / w * (np.imag(- Fe) * abs(1 + (2 * Xp**2 * Fi))**2 + (
+def isr_spectrum():
+    w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
+    W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), (cf.MI * cf.M_P))
+    Xp = np.sqrt(1 / (2 * L_Debye(cf.NE, cf.T_E)**2 * cf.K_RADAR**2))
+    M_i = cf.MI * (cf.M_P + cf.M_N) / 2
+    Lambda_e, Lambda_i = cf.NU_E / w_c, cf.NU_I / W_c
+    dt_e = cf.T_MAX / cf.N_POINTS
+    dt_i = dt_e * 1e-2
+
+    Fe = make_F(dt_e, w_c, Lambda_e, cf.M_E, cf.T_E)
+    Fi = make_F(dt_i, W_c, Lambda_i, M_i, cf.T_I)
+
+    f_scaled = cf.f / 1e6
+    Is = cf.NE / np.pi / cf.w * (np.imag(- Fe) * abs(1 + (2 * Xp**2 * Fi))**2 + (
         (4 * Xp**4 * np.imag(- Fi)) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
 
     return f_scaled, abs(Is)
+
+
+def make_X(w_c, M, T):
+    X_s = np.sqrt(M * w_c**2 / (2 * cf.K_B * T * cf.K_RADAR**2))
+    X = np.sqrt(M * cf.w**2 / (2 * cf.K_B * T * cf.K_RADAR**2))
+
+    return X_s, X
 
 
 def L_Debye(*args):
