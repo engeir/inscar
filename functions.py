@@ -150,7 +150,7 @@ def isspec_Fi(w, k, w_c, ny_i, Ti, theta, Mi):
         samples = cf.N_POINTS
         t_max = cf.T_MAX
         dt = t_max / samples * 1e-2
-        df = (cf.F_ION_MAX - 0) / (samples / 2)
+        df = (cf.F_MAX - 0) / (samples / 2)
         dw = 2 * np.pi * df
         fo = 0.
         wo = 2 * np.pi * fo
@@ -236,7 +236,7 @@ def isspec_Fe(w, k, w_c, ny_e, Te, theta):
         samples = cf.N_POINTS
         t_max = cf.T_MAX
         dt = t_max / samples
-        df = (cf.F_ION_MAX - 0) / (samples / 2)
+        df = (cf.F_MAX - 0) / (samples / 2)
         dw = 2 * np.pi * df
         fo = 0.
         wo = 2 * np.pi * fo
@@ -313,7 +313,7 @@ def isspec_ne(f, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
 
     # New version: working as of 23_01_2020
     samples = cf.N_POINTS
-    df = (cf.F_ION_MAX - 0) / (samples / 2)
+    df = (cf.F_MAX - 0) / (samples / 2)
     dw = 2 * np.pi * df
     w = np.arange(samples / 2) * dw
     Fe = isspec_Fe(w, k0, w_c, Nu_e, Te, theta)
