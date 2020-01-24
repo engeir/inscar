@@ -18,9 +18,7 @@ T_MAX = 1e3
 # === Input parameters ===
 B = 35000e-9  # Magnetic field strength [T]
 F0 = 430e6  # Radar frequency [Hz]
-F_ION_MAX = 3e6  # F0 / F_ION_MAX > 15 000
-# F_ION = np.linspace(0, F_ION_MAX, 1e6)  # Ion frequency [Hz]
-# F_ION += 1
+F_MAX = 6e6  # Range of frequency domain
 MI = 16  # Ion mass in atomic mass units [u]
 NE = 2e10  # 2e11  # Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
 NU_E = 0  # Electron collision frequency [Hz]
@@ -31,6 +29,6 @@ THETA = 45 * np.pi / 180  # Pitch angle
 
 # DO NOT EDIT
 K_RADAR = F0 * 2 * np.pi / C_0  # Radar wavenumber
-f = np.arange(N_POINTS / 2) * (F_ION_MAX - 0) / (N_POINTS / 2)  # Frequency
-dW = 2 * np.pi * (F_ION_MAX - 0) / (N_POINTS / 2)  # Step size angular frequency
+f = np.arange(N_POINTS / 2) * (F_MAX - 0) / (N_POINTS / 2)  # Frequency
+dW = 2 * np.pi * (F_MAX - 0) / (N_POINTS / 2)  # Step size angular frequency
 w = np.arange(N_POINTS / 2) * dW  # Angular frequency

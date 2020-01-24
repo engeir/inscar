@@ -20,8 +20,8 @@ def semilog_y(f, Is):
     plt.figure()
     plt.title('ISR spectrum')
     plt.xlabel('Frequency [MHz]')
-    plt.ylabel('log10(Power)')
-    plt.plot(f, np.log10(Is), 'r')
+    plt.ylabel('10*log10(Power)')
+    plt.plot(f, 10 * np.log10(Is), 'r')
     plt.tight_layout()
 
 
