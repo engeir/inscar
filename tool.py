@@ -59,6 +59,8 @@ def isr_spectrum(_, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
     Xp = np.sqrt(1 / (2 * l_D**2 * k0**2))
     df = (cf.F_ION_MAX - 0) / (cf.N_POINTS / 2)
     dw = 2 * np.pi * df
+    f = np.arange(cf.N_POINTS / 2) * df
+    f_scaled = f / cf.N_POINTS
     w = np.arange(cf.N_POINTS / 2) * dw
     Lambda_e = Nu_e / w_c
     Lambda_i = Nu_i / W_c
@@ -85,7 +87,7 @@ def isr_spectrum(_, f0, Ne, Te, Nu_e, mi, Ti, Nu_i, B, theta):
     Is = Ne / np.pi / w * (np.imag(- Fe) * abs(1 + (2 * Xp**2 * Fi))**2 + (
         (4 * Xp**4 * np.imag(- Fi)) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
 
-    return Is, w
+    return f_scaled, abs(Is)
 
 
 def L_Debye(*args):
