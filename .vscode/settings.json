@@ -29,9 +29,12 @@
         "pylint",
         "pyplot",
         "scipy",
+        "semilogx",
+        "semilogy",
         "smop",
         "spint",
         "xlabel",
-        "ylabel"
+        "ylabel",
+        "yscale"
     ]
 }

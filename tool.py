@@ -46,14 +46,29 @@ def F_s_integrand(y, X_s, Lambda_s):
     Returns:
         float -- the value of the integral
     """
-    W = np.exp(- Lambda_s * y - (1 / (2 * X_s**2)) * (np.sin(cf.THETA)**2 * (1 - np.cos(y)) + 1 / 2 * np.cos(cf.THETA)**2 * y**2))
+    W = np.exp(- Lambda_s * y - (1 / (2 * X_s**2)) * (np.sin(cf.THETA)
+                                                      ** 2 * (1 - np.cos(y)) + 1 / 2 * np.cos(cf.THETA)**2 * y**2))
     return W
 
 
-def make_F(dt_s, w_c, Lambda_s, M, T):
-    X_s, X = make_X(w_c, M, T)
+def make_F(dt_s, w_c, Lambda_s, MT, function=F_s_integrand):
+    """Calculate the F function according to Hagfors using the chirp-z transform.
+
+    Arguments:
+        dt_s {float} -- time step size
+        w_c {float} -- gyro frequency
+        Lambda_s {float} -- Debye length
+        MT {list} -- list of floats; first value is mass, second is temperature
+
+    Keyword Arguments:
+        function {function} -- reference to a function representing the integrand (default: {F_s_integrand})
+
+    Returns:
+        1D array -- the F function as a function of frequency
+    """
+    X_s, X = make_X(w_c, MT[0], MT[1])
     t = np.arange(cf.N_POINTS) * dt_s
-    F = F_s_integrand(t, X_s, Lambda_s)
+    F = function(t, X_s, Lambda_s)
     F = chirpz(F, cf.N_POINTS, dt_s, 0, w_c)
     F = 1 - (1j * X / X_s + Lambda_s) * F
 
@@ -61,6 +76,11 @@ def make_F(dt_s, w_c, Lambda_s, M, T):
 
 
 def isr_spectrum():
+    """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
+
+    Returns:
+        1D array -- two one dimensional numpy arrays for the frequency domain and the values of the spectrum
+    """
     w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
     W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), (cf.MI * cf.M_P))
     Xp = np.sqrt(1 / (2 * L_Debye(cf.NE, cf.T_E)**2 * cf.K_RADAR**2))
@@ -69,8 +89,8 @@ def isr_spectrum():
     dt_e = cf.T_MAX / cf.N_POINTS
     dt_i = dt_e * 1e-2
 
-    Fe = make_F(dt_e, w_c, Lambda_e, cf.M_E, cf.T_E)
-    Fi = make_F(dt_i, W_c, Lambda_i, M_i, cf.T_I)
+    Fe = make_F(dt_e, w_c, Lambda_e, [cf.M_E, cf.T_E])
+    Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.T_I])
 
     f_scaled = cf.f / 1e6
     Is = cf.NE / np.pi / cf.w * (np.imag(- Fe) * abs(1 + (2 * Xp**2 * Fi))**2 + (
@@ -80,6 +100,16 @@ def isr_spectrum():
 
 
 def make_X(w_c, M, T):
+    """Calculate the X_s and X functions.
+
+    Arguments:
+        w_c {float} -- gyro frequency
+        M {float} -- mass
+        T {float} -- temperature
+
+    Returns:
+        float, 1D array -- the value of X_s and the X function as a function of frequency
+    """
     X_s = np.sqrt(M * w_c**2 / (2 * cf.K_B * T * cf.K_RADAR**2))
     X = np.sqrt(M * cf.w**2 / (2 * cf.K_B * T * cf.K_RADAR**2))
 
