@@ -12,7 +12,7 @@ Q_E = 1.602176565e-19  # elementary charge [C]
 K_B = 1.380662e-23  # Boltzmann constant [J/K]
 MY_0 = 4 * np.pi * 1e-7  # Permeability [Vs/Am]
 
-# BETA = 1e-5
+BETA = 1e-3
 N_POINTS = 1e7  # 1e7
 T_MAX = 1e3  # 1e3
 

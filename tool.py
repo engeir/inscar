@@ -13,8 +13,8 @@ def chirpz(g, n, dt, wo, w_c):
     Function written by Erhan Kudeki.
 
     Eirik Enger 23_01_2020:
-    Edited to accept a value for p (Li, Franke, Liu [1991]).
-    Here, p = w_c.
+    Edited to accept a value for alpha (Li, Franke, Liu [1991]).
+    Here, alpha = 1 / w_c.
 
     Arguments:
     g {1D array} -- ACF ⟨e^{jkΔr}⟩ (dim: (N,))
@@ -25,7 +25,7 @@ def chirpz(g, n, dt, wo, w_c):
     """
     g[0] = 0.5 * g[0]  # first interval is over dt/2, and hence ...
     W = np.exp(-1j * cf.dW * dt * np.arange(n)**2 / (2. * w_c))
-    S = np.exp(-1j * wo * dt * np.arange(n))  # frequency shift by wo
+    S = np.exp(-1j * wo * dt * np.arange(n) / w_c)  # frequency shift by wo
     x = g * W * S
     y = np.conj(W)
     x[int(n / 2):] = 0.
@@ -88,6 +88,13 @@ def isr_spectrum():
     Lambda_e, Lambda_i = cf.NU_E / w_c, cf.NU_I / W_c
     dt_e = cf.T_MAX / cf.N_POINTS
     dt_i = dt_e * 1e-2
+
+    NN = cf.N_POINTS
+    for _ in range(3):
+        dW = 2 * np.pi * (6e6 - 0) / (NN / 2)
+        N_min = cf.T_MAX * (NN - 1) * dW / np.pi
+        print('%1.3e' % N_min)
+        NN = N_min
 
     Fe = make_F(dt_e, w_c, Lambda_e, [cf.M_E, cf.T_E])
     Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.T_I])
