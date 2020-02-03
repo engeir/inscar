@@ -173,11 +173,10 @@ def clip(array, mini, maxi, *args):
         np.ndarray and list of arrays -- both the clipped first axis and y axis
     """
     mask = (array >= mini) & (array <= maxi)
-    if args is not None:
+    if args:
         outs = []
         for func in args:
-            out = func[mask]
-            outs.append(out)
+            outs.append(func[mask])
         array = array[mask]
         return array, outs
 
