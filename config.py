@@ -12,11 +12,23 @@ Q_E = 1.602176565e-19  # elementary charge [C]
 K_B = 1.380662e-23  # Boltzmann constant [J/K]
 MY_0 = 4 * np.pi * 1e-7  # Permeability [Vs/Am]
 
-BETA = 1e-3
 N_POINTS = 1e7  # 1e7
 T_MAX = 1e3  # 1e3
 
 # === Input parameters ===
+# For seeing gyro lines
+# B = 35000e-9  # Magnetic field strength [T]
+# F0 = 430e6  # Radar frequency [Hz]
+# F_MAX = 6e6  # Range of frequency domain
+# MI = 16  # Ion mass in atomic mass units [u]
+# NE = 2e11  # Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
+# NU_E = 0  # Electron collision frequency [Hz]
+# NU_I = 0  # Ion collision frequency [Hz]
+# T_E = 200  # Electron temperature [K]
+# T_I = 200  # Ion temperature [K]
+# THETA = 45 * np.pi / 180  # Pitch angle
+
+# For same plots as Hagfors
 B = 35000e-9  # Magnetic field strength [T]
 F0 = 430e6  # Radar frequency [Hz]
 F_MAX = 6e6  # Range of frequency domain

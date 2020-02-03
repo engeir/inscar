@@ -1,6 +1,7 @@
 {
     "cSpell.ignoreWords": [
         "arange",
+        "argwhere",
         "chirpz",
         "conj",
         "dtype",

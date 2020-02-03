@@ -1,7 +1,7 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 import config as cf
-import matplotlib.pyplot as plt
 
 
 def chirpz(g, n, dt, wo, w_c):
@@ -108,6 +108,18 @@ def isr_spectrum():
 
 
 def H_func(X, kappa, X_p, F_e, F_i):
+    """Calculate H(x) from eq. (49) in Hagfors' paper.
+
+    Arguments:
+        X {np.ndarray} -- the variables along the first axis
+        kappa {int} -- square root of the ratio of ion to electron mass
+        X_p {float} -- plasma frequency times other constants
+        F_e {np.ndarray} -- F function for electrons
+        F_i {np.ndarray} -- F function for ions
+
+    Returns:
+        np.ndarray -- a function for H(x)
+    """
     num = np.exp(- X**2) * abs(1 + 2 * X_p**2 * F_i)**2 + 4 * \
         X_p**2 * kappa * np.exp(- kappa**2 * X**2) * abs(F_e)**2
     den = abs(1 + 2 * X_p**2 * (F_e + F_i))**2
@@ -115,20 +127,24 @@ def H_func(X, kappa, X_p, F_e, F_i):
 
 
 def H_spectrum():
+    """Make plots similar to fig. (2) in Hagfors' paper.
+    """
     w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
     W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), (cf.MI * cf.M_P))
     M_i = cf.MI * (cf.M_P + cf.M_N) / 2
-    Lambda_e, Lambda_i = 0, 0  # cf.NU_E / w_c, cf.NU_I / W_c
+    Lambda_e, Lambda_i = 0, 0
     dt_e = cf.T_MAX / cf.N_POINTS
     dt_i = dt_e * 1e-2
 
+    _, X = make_X(w_c, cf.M_E, cf.T_E)
     Fe = make_F(dt_e, w_c, Lambda_e, [cf.M_E, cf.T_E])
     Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.T_I])
-    _, X = make_X(w_c, cf.M_E, cf.T_E)
+    X, F = clip(X, 1e-4, 1e1, Fe, Fi)
+    Fe, Fi = F[0], F[1]
 
     kappa = [43, 172]
     leg = []
-    plt.figure()
+    plt.figure(figsize=(14, 8))
     for c, k in enumerate(kappa):
         plt.subplot(1, 2, c + 1)
         for X_p in [300, 3., 1., .5, .1, .03]:
@@ -136,7 +152,6 @@ def H_spectrum():
             plt.loglog(X, H)
             if k == 43:
                 leg.append(f'X_p = {X_p}')
-        plt.xlim([1e-4, 1e1])
         plt.ylim([1e-3, 1e2])
         plt.legend(leg, loc='lower left')
         plt.title(f'Kappa = {k}')
@@ -144,6 +159,30 @@ def H_spectrum():
         plt.ylabel('H(f)')
         plt.grid(True, which="both", ls="-", alpha=0.3)
     plt.show()
+
+
+def clip(array, mini, maxi, *args):
+    """Clip out only the interesting part of the frequency spectrum for the H(f) plots.
+
+    Arguments:
+        array {np.ndarray} -- the variables along the first axis
+        mini {float} -- minimum value that is kept
+        maxi {float} -- maximum value that is kept
+
+    Returns:
+        np.ndarray and list of arrays -- both the clipped first axis and y axis
+    """
+    mask = (array >= mini) & (array <= maxi)
+    if args is not None:
+        outs = []
+        for func in args:
+            out = func[mask]
+            outs.append(out)
+        array = array[mask]
+        return array, outs
+
+    array = array[mask]
+    return array
 
 
 def make_X(w_c, M, T):
