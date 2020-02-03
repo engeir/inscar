@@ -24,9 +24,9 @@ MI = 16  # Ion mass in atomic mass units [u]
 NE = 2e10  # 2e11  # Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
 NU_E = 0  # Electron collision frequency [Hz]
 NU_I = 0  # Ion collision frequency [Hz]
-T_E = 200  # Electron temperature [K]
-T_I = 200  # Ion temperature [K]
-THETA = 45 * np.pi / 180  # Pitch angle
+T_E = 1000  # 200  # Electron temperature [K]
+T_I = 1000  # 200  # Ion temperature [K]
+THETA = 0  # 45 * np.pi / 180  # Pitch angle
 
 # DO NOT EDIT
 K_RADAR = F0 * 2 * np.pi / C_0  # Radar wavenumber

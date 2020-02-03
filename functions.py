@@ -468,3 +468,40 @@ def w_e_gyro(B):
     w_e = cf.Q_E * B / cf.M_E
 
     return w_e
+
+
+def kappa_func(v, kappa, T, m):
+    if kappa < 3 / 2:
+        print('Kappa must be greater than 3 / 2.')
+        exit()
+    theta_2 = 2 * (kappa - 3 / 2) / kappa * T / m
+    A = (np.pi * kappa * theta_2)**(- 3 / 2) * sps.gamma(kappa + 1) / sps.gamma(kappa - 1 / 2)
+    return A * (1 + v**2 / (kappa * theta_2))**(- kappa - 1)
+
+
+def maxwell_func(v, T, m):
+    return (2 * np.pi * T / m)**(- 3 / 2) * np.exp(- v**2 * m / (2 * T))
+
+
+def H_func(X):
+    num = np.exp(- X**2) * abs(1 + 2 * X_p**2 * F_i)**2 + 4 * X_p**2 * kappa * np.exp(- kappa**2 * X**2) * abs(F_e)**2
+    den = abs(1 + 2 * X_p**2 * (F_e + F_i))**2
+    return num / den
+
+
+if __name__ == '__main__':
+    v_max = 2e5
+    v = np.linspace(- v_max, v_max, 1000)
+    T = cf.T_E * cf. K_B
+    m = cf.M_E
+    leg = []
+    plt.figure()
+    for k in range(4, 10):
+        f = kappa_func(v, k, T, m)
+        plt.plot(v, f)
+        leg.append(f'Kappa: {k}')
+    maxwell = maxwell_func(v, T, m)
+    plt.plot(v, maxwell)
+    leg.append('Maxwell')
+    plt.legend(leg)
+    plt.show()

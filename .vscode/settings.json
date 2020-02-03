@@ -34,7 +34,9 @@
         "smop",
         "spint",
         "xlabel",
+        "xlim",
         "ylabel",
+        "ylim",
         "yscale"
     ]
 }
