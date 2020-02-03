@@ -64,5 +64,5 @@ def plot_IS_spectrum():
 
 
 if __name__ == '__main__':
-    plot_IS_spectrum()
+    # plot_IS_spectrum()
     tool.H_spectrum()
