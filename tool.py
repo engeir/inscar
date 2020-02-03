@@ -1,6 +1,7 @@
 import numpy as np
 
 import config as cf
+import matplotlib.pyplot as plt
 
 
 def chirpz(g, n, dt, wo, w_c):
@@ -104,6 +105,45 @@ def isr_spectrum():
         (4 * Xp**4 * np.imag(- Fi)) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
 
     return f_scaled, abs(Is)
+
+
+def H_func(X, kappa, X_p, F_e, F_i):
+    num = np.exp(- X**2) * abs(1 + 2 * X_p**2 * F_i)**2 + 4 * \
+        X_p**2 * kappa * np.exp(- kappa**2 * X**2) * abs(F_e)**2
+    den = abs(1 + 2 * X_p**2 * (F_e + F_i))**2
+    return num / den
+
+
+def H_spectrum():
+    w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
+    W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), (cf.MI * cf.M_P))
+    M_i = cf.MI * (cf.M_P + cf.M_N) / 2
+    Lambda_e, Lambda_i = 0, 0  # cf.NU_E / w_c, cf.NU_I / W_c
+    dt_e = cf.T_MAX / cf.N_POINTS
+    dt_i = dt_e * 1e-2
+
+    Fe = make_F(dt_e, w_c, Lambda_e, [cf.M_E, cf.T_E])
+    Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.T_I])
+    _, X = make_X(w_c, cf.M_E, cf.T_E)
+
+    kappa = [43, 172]
+    leg = []
+    plt.figure()
+    for c, k in enumerate(kappa):
+        plt.subplot(1, 2, c + 1)
+        for X_p in [300, 3., 1., .5, .1, .03]:
+            H = H_func(X, k, X_p, Fe, Fi)
+            plt.loglog(X, H)
+            if k == 43:
+                leg.append(f'X_p = {X_p}')
+        plt.xlim([1e-4, 1e1])
+        plt.ylim([1e-3, 1e2])
+        plt.legend(leg, loc='lower left')
+        plt.title(f'Kappa = {k}')
+        plt.xlabel('f')
+        plt.ylabel('H(f)')
+        plt.grid(True, which="both", ls="-", alpha=0.3)
+    plt.show()
 
 
 def make_X(w_c, M, T):
