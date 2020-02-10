@@ -53,8 +53,8 @@ def two_side_lin_plot(f, Is):
     plt.tight_layout()
 
 
-def plot_IS_spectrum():
-    f, Is = tool.isr_spectrum()
+def plot_IS_spectrum(version):
+    f, Is = tool.isr_spectrum(version)
     # Is, w = func.isspec_ne(*args)
     two_side_lin_plot(f, Is)
     loglog(f, Is)
@@ -64,5 +64,5 @@ def plot_IS_spectrum():
 
 
 if __name__ == '__main__':
-    # plot_IS_spectrum()
-    tool.H_spectrum()
+    plot_IS_spectrum('hagfors')
+    # tool.H_spectrum('maxwell')
