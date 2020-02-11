@@ -1,1 +1,3 @@
-pip install multiprocessing
+numpy==1.16.*
+multiprocessing
+matplotlib==3.*
