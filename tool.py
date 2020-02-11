@@ -13,8 +13,7 @@ import parallelization as para
 
 
 def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX):
-    n = 3
-    t = np.linspace(0, T_MAX**(1 / n), cf.N_POINTS)**n
+    t = np.linspace(0, T_MAX**(1 / cf.ORDER), cf.N_POINTS)**cf.ORDER
     params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c}
     f = integrand(t, params)
     val = np.exp(- 1j * w * t) * f

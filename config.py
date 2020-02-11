@@ -8,6 +8,7 @@ F_N_POINTS = 1e4  # Number of sample points in frequency
 N_POINTS = 1e5  # Number of sample points in integral variable
 T_MAX_e = 1.5e-3  # Upper limit to integration (= infinity)
 T_MAX_i = 1.5e-3
+ORDER = 3
 
 # === Input parameters ===
 # For seeing gyro lines
