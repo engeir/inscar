@@ -1,7 +1,7 @@
 import sys
 import os
-import time
 
+import scipy.constants as spc
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.special as sps
@@ -11,7 +11,8 @@ import config as cf
 
 
 def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX):
-    t = np.linspace(0, np.sqrt(T_MAX), cf.N_POINTS)**2
+    n = 3
+    t = np.linspace(0, T_MAX**(1 / n), cf.N_POINTS)**n
     params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c}
     f = integrand(t, params)
     val = np.exp(- 1j * w * t) * f
@@ -81,10 +82,8 @@ def kappa_gordeyev(y, params):
 
 
 def maxwell_gordeyev(y, params):
-    G = np.exp(- cf.K_RADAR**2 * np.sin(cf.THETA)**2 * params['T'] * cf.K_B / (params['m'] * params['w_c']**2) *
+    G = np.exp(- y * params['nu'] - cf.K_RADAR**2 * np.sin(cf.THETA)**2 * params['T'] * cf.K_B / (params['m'] * params['w_c']**2) *
                (1 - np.cos(params['w_c'] * y)) - .5 * (cf.K_RADAR * np.cos(cf.THETA) * y)**2 * params['T'] * cf.K_B / params['m'])
-    # G = np.exp(- cf.K_RADAR**2 * np.sin(cf.THETA)**2 * T * cf.K_B / (m * w_c**2) *
-    #            (1 - np.cos(w_c * y)) - .5 * (cf.K_RADAR * np.cos(cf.THETA) * y)**2 * T * cf.K_B / m)
     return G
 
 
@@ -124,7 +123,6 @@ def make_F(dt_s, w_c, Lambda_s, MT, function=F_s_integrand):
         # X_s, X = make_X(w_c, MT[0], MT[1])
         params = {'nu': Lambda_s * w_c, 'm': MT[0], 'T': MT[1], 'w_c': w_c}
         F = function(t, params)
-        # F = function(t, X_s, Lambda_s)
         F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)  # w_c
         F = 1 - (1j * cf.w + Lambda_s * w_c) * F
         # F = 1 - (1j * X / X_s + Lambda_s) * F
@@ -135,8 +133,8 @@ def make_F(dt_s, w_c, Lambda_s, MT, function=F_s_integrand):
         F *= cf.w / (2**(cf.KAPPA - 1 / 2) * sps.gamma(cf.KAPPA + 1 / 2))
         F = 1 - (1j + Lambda_s * w_c) * F
     elif function == maxwell_gordeyev:
-        params = {'w_c': w_c, 'm': MT[0], 'T': MT[1]}
-        F = function(t, params={'w_c': w_c, 'm': MT[0], 'T': MT[1]})
+        params = {'w_c': w_c, 'm': MT[0], 'T': MT[1], 'nu': Lambda_s * w_c}
+        F = function(t, params)
         F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
         F = 1 - (1j * cf.w + Lambda_s * w_c) * F
     return F
@@ -170,10 +168,11 @@ def isr_spectrum(version):
         func = maxwell_gordeyev
     w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
     M_i = cf.MI * (cf.M_P + cf.M_N) / 2
-    W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), M_i)  # (cf.MI * cf.M_P))
+    W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), M_i)
     Xp = np.sqrt(1 / (2 * L_Debye(cf.NE, cf.T_E)**2 * cf.K_RADAR**2))
     Lambda_e, Lambda_i = cf.NU_E / w_c, cf.NU_I / W_c
-    # dt_e = cf.T_MAX_e / cf.N_POINTS
+    dt_e = cf.T_MAX_e / cf.N_POINTS
+    dt_i = cf.T_MAX_i / cf.N_POINTS
     # dt_i = dt_e * cf.SCALING
 
     # NN = cf.N_POINTS
@@ -189,8 +188,8 @@ def isr_spectrum(version):
     Fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
 
     f_scaled = cf.f / 1e6
-    Is = cf.NE / np.pi / cf.w * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
-        (4 * Xp**4 * np.imag(- Fi)) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
+    Is = cf.NE / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
+        4 * Xp**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
 
     return f_scaled, abs(Is)
 
@@ -250,10 +249,8 @@ def H_spectrum(version):
     _, X = make_X(w_c, cf.M_E, cf.T_E)
     # Fe = make_F(dt_e, w_c, Lambda_e, [cf.M_E, cf.T_E], function=func)
     # Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.T_I], function=func)
-    t0 = time.clock()
     Fe = integrate(w_c, cf.M_E, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
     Fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
-    print(time.clock() - t0)
     X, F = clip(X, 1e-4, 1e1, Fe, Fi)
     Fe, Fi = F[0], F[1]
 
