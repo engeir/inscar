@@ -5,6 +5,9 @@ As described in
 Rabiner, L.R., R.W. Schafer and C.M. Rader.
 The Chirp z-Transform Algorithm.
 IEEE Transactions on Audio and Electroacoustics, AU-17(2):86--92, 1969
+https://ieeexplore.ieee.org/abstract/document/1162034
+https://www.mail-archive.com/numpy-discussion@scipy.org/msg01812.html
+https://gist.github.com/endolith/2783807
 """
 
 import numpy as np

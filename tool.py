@@ -1,13 +1,15 @@
 import sys
 import os
+import time
 
-import scipy.constants as spc
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.special as sps
 import scipy.integrate as si
+import scipy.constants as const
 
 import config as cf
+import parallelization as para
 
 
 def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX):
@@ -64,7 +66,7 @@ def chirpz(g, n, dt, wo, w_c):
 
 
 def z_func(y, w_c, m, T):
-    theta_2 = 2 * ((cf.KAPPA - 3 / 2) / cf.KAPPA) * T * cf.K_B / m
+    theta_2 = 2 * ((cf.KAPPA - 3 / 2) / cf.KAPPA) * T * const.k / m
     Z = (2 * cf.KAPPA)**(1 / 2) * (cf.K_RADAR**2 * np.sin(cf.THETA)**2 * theta_2 / w_c**2 *
                                    (1 - np.cos(w_c * y)) + 1 / 2 * cf.K_RADAR**2 * np.cos(cf.THETA)**2 * theta_2 * y**2)**(1 / 2)
     return Z
@@ -82,8 +84,8 @@ def kappa_gordeyev(y, params):
 
 
 def maxwell_gordeyev(y, params):
-    G = np.exp(- y * params['nu'] - cf.K_RADAR**2 * np.sin(cf.THETA)**2 * params['T'] * cf.K_B / (params['m'] * params['w_c']**2) *
-               (1 - np.cos(params['w_c'] * y)) - .5 * (cf.K_RADAR * np.cos(cf.THETA) * y)**2 * params['T'] * cf.K_B / params['m'])
+    G = np.exp(- y * params['nu'] - cf.K_RADAR**2 * np.sin(cf.THETA)**2 * params['T'] * const.k / (params['m'] * params['w_c']**2) *
+               (1 - np.cos(params['w_c'] * y)) - .5 * (cf.K_RADAR * np.cos(cf.THETA) * y)**2 * params['T'] * const.k / params['m'])
     return G
 
 
@@ -96,7 +98,7 @@ def F_s_integrand(y, params):  # X_s, Lambda_s):
     Returns:
         float -- the value of the integral
     """
-    W = np.exp(- params['nu'] * y - (params['T'] * cf.K_B * cf.K_RADAR**2 / (params['m'] * params['w_c']**2)) * (np.sin(cf.THETA)**2 *
+    W = np.exp(- params['nu'] * y - (params['T'] * const.k * cf.K_RADAR**2 / (params['m'] * params['w_c']**2)) * (np.sin(cf.THETA)**2 *
                                                                                                                  (1 - np.cos(params['w_c'] * y)) + 1 / 2 * params['w_c']**2 * np.cos(cf.THETA)**2 * y**2))
     # W = np.exp(- Lambda_s * y - (1 / (2 * X_s**2)) * (np.sin(cf.THETA)**2 *
     #                                                   (1 - np.cos(y)) + 1 / 2 * np.cos(cf.THETA)**2 * y**2))
@@ -157,7 +159,7 @@ def isr_spectrum(version):
         if not version in versions:
             raise SystemError
         else:
-            print(f'Using version "{version}"')
+            print(f'Using version "{version}"', end='\r', flush=True)
     except Exception:
         version_error(version, versions)
     if version == 'hagfors':
@@ -167,26 +169,26 @@ def isr_spectrum(version):
     elif version == 'maxwell':
         func = maxwell_gordeyev
     w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
-    M_i = cf.MI * (cf.M_P + cf.M_N) / 2
+    M_i = cf.MI * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), M_i)
     Xp = np.sqrt(1 / (2 * L_Debye(cf.NE, cf.T_E)**2 * cf.K_RADAR**2))
     Lambda_e, Lambda_i = cf.NU_E / w_c, cf.NU_I / W_c
-    dt_e = cf.T_MAX_e / cf.N_POINTS
-    dt_i = cf.T_MAX_i / cf.N_POINTS
-    # dt_i = dt_e * cf.SCALING
+    # dt_e = cf.T_MAX_e / cf.N_POINTS
+    # dt_i = cf.T_MAX_i / cf.N_POINTS
 
-    # NN = cf.N_POINTS
-    # for _ in range(2):
-    #     dW = 2 * np.pi * (cf.F_MAX - 0) / (NN / 2)
-    #     N_min = T_MAX * (NN - 1) * dW / np.pi
-    #     print('%1.3e' % N_min)
-    #     NN = N_min
-
-    # Fe = make_F(dt_e, w_c, Lambda_e, [cf.M_E, cf.T_E], function=func)
+    # Chirp-z transform
+    # Fe = make_F(dt_e, w_c, Lambda_e, [const.m_e, cf.T_E], function=func)
     # Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.T_I], function=func)
-    Fe = integrate(w_c, cf.M_E, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
-    Fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
-
+    # Time comparison between linear and parallel implementation
+    # fe_params = {'w_c': w_c, 'lambda': Lambda_e, 'function': func}
+    # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
+    # Fe, Fi = compare_linear_parallel(fe_params, fi_params)
+    # Simpson integration in linear
+    # Fe = integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
+    # Fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    # Simpson integration in parallel
+    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
+    Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
     f_scaled = cf.f / 1e6
     Is = cf.NE / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
         4 * Xp**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
@@ -227,7 +229,7 @@ def H_spectrum(version):
         if not version in versions:
             raise SystemError
         else:
-            print(f'Using version "{version}"')
+            print(f'Using version "{version}"', end='    \r')
     except Exception:
         version_error(version, versions)
     # NOTE: if Hagfors is used, sub in 1e-2 for 1e2 (he scales with w_c).
@@ -240,17 +242,13 @@ def H_spectrum(version):
     elif version == 'maxwell':
         func = maxwell_gordeyev
     w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
-    W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), (cf.MI * cf.M_P))
-    M_i = cf.MI * (cf.M_P + cf.M_N) / 2
+    W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), (cf.MI * const.m_p))
+    M_i = cf.MI * (const.m_p + const.m_n) / 2
     Lambda_e, Lambda_i = 0, 0
-    dt_e = cf.T_MAX_e / cf.N_POINTS
-    dt_i = dt_e * cf.SCALING
 
-    _, X = make_X(w_c, cf.M_E, cf.T_E)
-    # Fe = make_F(dt_e, w_c, Lambda_e, [cf.M_E, cf.T_E], function=func)
-    # Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.T_I], function=func)
-    Fe = integrate(w_c, cf.M_E, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
-    Fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    _, X = make_X(w_c, const.m_e, cf.T_E)
+    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
+    Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
     X, F = clip(X, 1e-4, 1e1, Fe, Fi)
     Fe, Fi = F[0], F[1]
 
@@ -307,8 +305,8 @@ def make_X(w_c, M, T):
     Returns:
         float, 1D array -- the value of X_s and the X function as a function of frequency
     """
-    X_s = np.sqrt(M * w_c**2 / (2 * cf.K_B * T * cf.K_RADAR**2))
-    X = np.sqrt(M * cf.w**2 / (2 * cf.K_B * T * cf.K_RADAR**2))
+    X_s = np.sqrt(M * w_c**2 / (2 * const.k * T * cf.K_RADAR**2))
+    X = np.sqrt(M * cf.w**2 / (2 * const.k * T * cf.K_RADAR**2))
 
     return X_s, X
 
@@ -338,11 +336,11 @@ def L_Debye(*args):
     Ep0 = 1e-09 / 36 / np.pi
 
     if nargin < 3:
-        LD = np.sqrt(Ep0 * cf.K_B * T_e /
-                     (max(0, n_e) * cf.Q_E**2))
+        LD = np.sqrt(Ep0 * const.k * T_e /
+                     (max(0, n_e) * const.e**2))
     else:
-        LD = np.sqrt(Ep0 * cf.K_B /
-                     ((max(0, n_e) / T_e + max(0, n_e) / T_i) / cf.Q_E**2))
+        LD = np.sqrt(Ep0 * const.k /
+                     ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e**2))
 
     return LD
 
@@ -357,7 +355,7 @@ def w_ion_gyro(B, m_ion):
     Returns:
         float -- ion gyro frequency
     """
-    w_e = cf.Q_E * B / m_ion
+    w_e = const.e * B / m_ion
 
     return w_e
 
@@ -371,7 +369,7 @@ def w_e_gyro(B):
     Returns:
         float -- electron gyro frequency
     """
-    w_e = cf.Q_E * B / cf.M_E
+    w_e = const.e * B / const.m_e
 
     return w_e
 
@@ -382,3 +380,30 @@ def version_error(version, versions):
     print(f'{exc_type} error in file {fname}, line {exc_tb.tb_lineno}')
     print(f'The version is wrong: {version} not found in {versions}')
     exit()
+
+
+def compare_linear_parallel(fe_params, fi_params):
+    w_c, Lambda_e, func = fe_params['w_c'], fe_params['lambda'], fe_params['function']
+    W_c, M_i, Lambda_i, func = fi_params['w_c'], fi_params['m'], fi_params['lambda'], fi_params['function']
+    tt = time.localtime()
+    t0 = tt[3] * 3600 + tt[4] * 60 + tt[5]
+    fe = integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
+    tt = time.localtime()
+    t1 = tt[3] * 3600 + tt[4] * 60 + tt[5]
+    print('')
+    print('Linear, Fe: ', t1 - t0, ' [s]')
+    fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    tt = time.localtime()
+    t2 = tt[3] * 3600 + tt[4] * 60 + tt[5]
+    print('Linear, Fi: ', t2 - t1, ' [s]')
+    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e,
+                        cf.T_MAX_e, function=func)
+    tt = time.localtime()
+    t3 = tt[3] * 3600 + tt[4] * 60 + tt[5]
+    print('Parallel, Fe: ', t3 - t2, ' [s]')
+    Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    tt = time.localtime()
+    t4 = tt[3] * 3600 + tt[4] * 60 + tt[5]
+    print('Parallel, Fi: ', t4 - t3, ' [s]')
+    print('Claim: "All elements from linear is equal to the equivalent elements from parallel."\n * Fe:', all(Fe == fe), '\n * Fi:', all(Fi == fi))
+    return Fe, Fi
