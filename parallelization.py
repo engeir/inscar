@@ -1,10 +1,11 @@
-import multiprocessing as mp
 import ctypes
-import numpy as np
+import multiprocessing as mp
 from functools import partial
-import tool
+
+import numpy as np
 
 import config as cf
+import tool
 
 
 def integrate(w_c, m, T, Lambda_s, T_MAX, function):
