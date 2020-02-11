@@ -2,21 +2,12 @@
 """
 
 import numpy as np
+import scipy.constants as const
 
-# Physical constants
-C_0 = 299792458  # Speed of light
-M_E = 9.10938291e-31  # electron rest mass [kg]
-M_P = 1.672621778e-27  # proton rest mass [kg]
-M_N = 1.674927352e-27  # neutron rest mass [kg]
-Q_E = 1.602176565e-19  # elementary charge [C]
-
-K_B = 1.380662e-23  # Boltzmann constant [J/K]
-MY_0 = 4 * np.pi * 1e-7  # Permeability [Vs/Am]
-
-N_POINTS = 1e4  # Number of sample points in integral variable
+F_N_POINTS = 1e4  # Number of sample points in frequency
+N_POINTS = 1e5  # Number of sample points in integral variable
 T_MAX_e = 1.5e-3  # Upper limit to integration (= infinity)
 T_MAX_i = 1.5e-3
-SCALING = 1e2
 
 # === Input parameters ===
 # For seeing gyro lines
@@ -48,8 +39,7 @@ KAPPA = 5 / 2
 NU = - KAPPA - 1 / 2
 
 # DO NOT EDIT
-K_RADAR = - 2 * F0 * 2 * np.pi / C_0  # Radar wavenumber
-F_N_POINTS = 1e3
+K_RADAR = - 2 * F0 * 2 * np.pi / const.c  # Radar wavenumber
 f = np.linspace(- F_MAX, F_MAX, F_N_POINTS)
 # f = np.arange(F_N_POINTS / 2) * (F_MAX - 0) / (F_N_POINTS / 2)  # Frequency
 dW = 2 * np.pi * (F_MAX - 0) / (F_N_POINTS / 2)  # Step size angular frequency
