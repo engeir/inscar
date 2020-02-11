@@ -48,7 +48,7 @@ def two_side_lin_plot(f, Is):
     plt.xlabel('Frequency [MHz]')
     plt.ylabel('Power')
     plt.plot(f, Is, 'r')
-    plt.plot(- f, Is, 'r')
+    # plt.plot(- f, Is, 'r')
     plt.grid(True, which="major",ls="-", alpha=0.4)
     plt.tight_layout()
 
@@ -58,11 +58,11 @@ def plot_IS_spectrum(version):
     # Is, w = func.isspec_ne(*args)
     two_side_lin_plot(f, Is)
     loglog(f, Is)
-    semilog_x(f, Is)
+    # semilog_x(f, Is)
     semilog_y(f, Is)
     plt.show()
 
 
 if __name__ == '__main__':
-    plot_IS_spectrum('hagfors')
-    # tool.H_spectrum('maxwell')
+    plot_IS_spectrum('kappa')
+    # tool.H_spectrum('hagfors')
