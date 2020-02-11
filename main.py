@@ -63,11 +63,11 @@ def plot_IS_spectrum(version):
     plt.show()
 
 
+def test_make_plot():
+    _, _ = tool.isr_spectrum('hagfors')
+
+
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
     plot_IS_spectrum('hagfors')
     # tool.H_spectrum('hagfors')
-
-
-def test_make_plot():
-    _, _ = tool.isr_spectrum('hagfors')
