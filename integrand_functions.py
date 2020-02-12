@@ -7,8 +7,8 @@ import config as cf
 
 def z_func(y, w_c, m, T):
     theta_2 = 2 * ((cf.KAPPA - 3 / 2) / cf.KAPPA) * T * const.k / m
-    Z = (2 * cf.KAPPA)**(1 / 2) * (cf.K_RADAR**2 * np.sin(cf.THETA)**2 * theta_2 / w_c**2 *
-                                   (1 - np.cos(w_c * y)) + 1 / 2 * cf.K_RADAR**2 * np.cos(cf.THETA)**2 * theta_2 * y**2)**(1 / 2)
+    Z = (2 * cf.KAPPA)**(1 / 2) * (cf.K_RADAR**2 * np.sin(cf.I_P['THETA'])**2 * theta_2 / w_c**2 *
+                                   (1 - np.cos(w_c * y)) + 1 / 2 * cf.K_RADAR**2 * np.cos(cf.I_P['THETA'])**2 * theta_2 * y**2)**(1 / 2)
     return Z
 
 
@@ -22,8 +22,8 @@ def kappa_gordeyev(y, params):
 
 def maxwell_gordeyev(y, params):
     G = np.exp(- y * params['nu'] -
-               cf.K_RADAR**2 * np.sin(cf.THETA)**2 * params['T'] * const.k / (params['m'] * params['w_c']**2) *
-               (1 - np.cos(params['w_c'] * y)) - .5 * (cf.K_RADAR * np.cos(cf.THETA) * y)**2 * params['T'] * const.k / params['m'])
+               cf.K_RADAR**2 * np.sin(cf.I_P['THETA'])**2 * params['T'] * const.k / (params['m'] * params['w_c']**2) *
+               (1 - np.cos(params['w_c'] * y)) - .5 * (cf.K_RADAR * np.cos(cf.I_P['THETA']) * y)**2 * params['T'] * const.k / params['m'])
     return G
 
 
@@ -38,5 +38,5 @@ def F_s_integrand(y, params):  # X_s, Lambda_s):
     """
     W = np.exp(- params['nu'] * y -
                (params['T'] * const.k * cf.K_RADAR**2 / (params['m'] * params['w_c']**2)) *
-               (np.sin(cf.THETA)**2 * (1 - np.cos(params['w_c'] * y)) + 1 / 2 * params['w_c']**2 * np.cos(cf.THETA)**2 * y**2))
+               (np.sin(cf.I_P['THETA'])**2 * (1 - np.cos(params['w_c'] * y)) + 1 / 2 * params['w_c']**2 * np.cos(cf.I_P['THETA'])**2 * y**2))
     return W
