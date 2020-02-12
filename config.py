@@ -4,36 +4,36 @@
 import numpy as np
 import scipy.constants as const
 
-F_N_POINTS = 1e3  # Number of sample points in frequency
-N_POINTS = 1e5  # Number of sample points in integral variable
+F_N_POINTS = 1e5  # Number of sample points in frequency
+N_POINTS = 1e4  # Number of sample points in integral variable
 T_MAX_e = 1.5e-3  # Upper limit to integration (= infinity)
 T_MAX_i = 1.5e-3
 ORDER = 3
 
 # === Input parameters ===
 # For seeing gyro lines
-B = 35000e-9  # Magnetic field strength [T]
-F0 = 430e6  # Radar frequency [Hz]
-F_MAX = 2e6  # Range of frequency domain
-MI = 29  # Ion mass in atomic mass units [u]
-NE = 2e10  # Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
-NU_E = 0  # Electron collision frequency [Hz]
-NU_I = 0  # Ion collision frequency [Hz]
-T_E = 200  # Electron temperature [K]
-T_I = 200  # Ion temperature [K]
-THETA = 45 * np.pi / 180  # Pitch angle
-
-# For same plots as Hagfors
 # B = 35000e-9  # Magnetic field strength [T]
 # F0 = 430e6  # Radar frequency [Hz]
 # F_MAX = 2e6  # Range of frequency domain
-# MI = 16  # Ion mass in atomic mass units [u]
+# MI = 29  # Ion mass in atomic mass units [u]
 # NE = 2e10  # Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
 # NU_E = 0  # Electron collision frequency [Hz]
 # NU_I = 0  # Ion collision frequency [Hz]
-# T_E = 1000  # Electron temperature [K]
-# T_I = 1000  # Ion temperature [K]
-# THETA = 0 * np.pi / 180  # Pitch angle
+# T_E = 200  # Electron temperature [K]
+# T_I = 200  # Ion temperature [K]
+# THETA = 45 * np.pi / 180  # Pitch angle
+
+# For same plots as Hagfors
+B = 35000e-9  # Magnetic field strength [T]
+F0 = 430e6  # Radar frequency [Hz]
+F_MAX = 2e6  # Range of frequency domain
+MI = 16  # Ion mass in atomic mass units [u]
+NE = 2e10  # Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
+NU_E = 0  # Electron collision frequency [Hz]
+NU_I = 0  # Ion collision frequency [Hz]
+T_E = 1000  # Electron temperature [K]
+T_I = 1000  # Ion temperature [K]
+THETA = 0 * np.pi / 180  # Pitch angle
 
 # For kappa distribution
 KAPPA = 5 / 2
@@ -41,7 +41,7 @@ NU = - KAPPA - 1 / 2
 
 # DO NOT EDIT
 K_RADAR = - 2 * F0 * 2 * np.pi / const.c  # Radar wavenumber
-f = np.linspace(- F_MAX, F_MAX, F_N_POINTS)
+f = np.linspace(- F_MAX, F_MAX, int(F_N_POINTS))
 # f = np.arange(F_N_POINTS / 2) * (F_MAX - 0) / (F_N_POINTS / 2)  # Frequency
 dW = 2 * np.pi * (F_MAX - 0) / (F_N_POINTS / 2)  # Step size angular frequency
 w = 2 * np.pi * f  # Angular frequency
