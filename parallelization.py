@@ -2,9 +2,11 @@ import ctypes
 import multiprocessing as mp
 from functools import partial
 
+import scipy.special as sps
 import numpy as np
 
 import config as cf
+import integrand_functions as intf
 import tool
 
 
@@ -13,7 +15,11 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function):
     func = partial(parallel, w_c, m, T, Lambda_s, T_MAX, function)
     pool = mp.Pool()
     pool.map(func, idx)
-    F = 1 - (1j * cf.w + Lambda_s * w_c) * array
+    if function == intf.kappa_gordeyev:
+        a = array / (2**(cf.KAPPA - 1 / 2) * sps.gamma(cf.KAPPA + 1 / 2))
+    else:
+        a = array
+    F = 1 - (1j * cf.w + Lambda_s * w_c) * a
     return F
 
 
