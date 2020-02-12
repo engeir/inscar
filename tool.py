@@ -128,11 +128,10 @@ def isr_spectrum(version):
         func = intf.kappa_gordeyev
     elif version == 'maxwell':
         func = intf.maxwell_gordeyev
-    w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
-    M_i = cf.MI * (const.m_p + const.m_n) / 2
-    W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), M_i)
-    Xp = np.sqrt(1 / (2 * L_Debye(cf.NE, cf.T_E)**2 * cf.K_RADAR**2))
-    Lambda_e, Lambda_i = cf.NU_E / w_c, cf.NU_I / W_c
+    w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
+    M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
+    W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
+    Lambda_e, Lambda_i = cf.I_P['NU_E'] / w_c, cf.I_P['NU_I'] / W_c
     # dt_e = cf.T_MAX_e / cf.N_POINTS
     # dt_i = cf.T_MAX_i / cf.N_POINTS
 
@@ -147,11 +146,13 @@ def isr_spectrum(version):
     # Fe = integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
     # Fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
     # Simpson integration in parallel
-    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e,
+    Fe = para.integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e,
                         cf.T_MAX_e, function=func)
-    Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    Fi = para.integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+
+    Xp = np.sqrt(1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'])**2 * cf.K_RADAR**2))
     f_scaled = cf.f / 1e6
-    Is = cf.NE / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
+    Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
         4 * Xp**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
 
     return f_scaled, abs(Is)
@@ -202,21 +203,20 @@ def H_spectrum(version, test=False):
         func = intf.kappa_gordeyev
     elif version == 'maxwell':
         func = intf.maxwell_gordeyev
-    w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
-    W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), (cf.MI * const.m_p))
-    M_i = cf.MI * (const.m_p + const.m_n) / 2
+    w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
+    W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), (cf.I_P['MI'] * const.m_p))
+    M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
     Lambda_e, Lambda_i = 0, 0
 
-    _, X = make_X(w_c, const.m_e, cf.T_E)
-    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e,
+    Fe = para.integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e,
                         cf.T_MAX_e, function=func)
-    Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    Fi = para.integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+    _, X = make_X(w_c, const.m_e, cf.I_P['T_E'])
     X, F = clip(X, 1e-4, 1e1, Fe, Fi)
     Fe, Fi = F[0], F[1]
     if test:
         H = H_func(X, 43, 300, Fe, Fi)
         return X, H
-
 
     kappa = [43, 172]
     leg = []
@@ -353,21 +353,21 @@ def compare_linear_parallel(fe_params, fi_params):
     W_c, M_i, Lambda_i, func = fi_params['w_c'], fi_params['m'], fi_params['lambda'], fi_params['function']
     tt = time.localtime()
     t0 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    fe = integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
+    fe = integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func)
     tt = time.localtime()
     t1 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('')
     print('Linear, Fe: ', t1 - t0, ' [s]')
-    fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    fi = integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
     tt = time.localtime()
     t2 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('Linear, Fi: ', t2 - t1, ' [s]')
-    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e,
+    Fe = para.integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e,
                         cf.T_MAX_e, function=func)
     tt = time.localtime()
     t3 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('Parallel, Fe: ', t3 - t2, ' [s]')
-    Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    Fi = para.integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
     tt = time.localtime()
     t4 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('Parallel, Fi: ', t4 - t3, ' [s]')
