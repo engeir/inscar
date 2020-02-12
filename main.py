@@ -63,16 +63,6 @@ def plot_IS_spectrum(version):
     plt.show()
 
 
-def test_isr_spectrum():
-    a, b = tool.isr_spectrum('hagfors')
-    assert isinstance(a, type(b)) and a.shape == b.shape
-
-
-def test_H_spectrum():
-    a, b = tool.H_spectrum('kappa', test=True)
-    assert isinstance(a, type(b)) and a.shape == b.shape
-
-
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
     # plot_IS_spectrum('kappa')
