@@ -176,7 +176,7 @@ def H_func(X, kappa, X_p, F_e, F_i):
     return num / den
 
 
-def H_spectrum(version):
+def H_spectrum(version, test=False):
     """Make plots similar to fig. (2) in Hagfors' paper.
 
     Arguments:
@@ -213,6 +213,10 @@ def H_spectrum(version):
     Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
     X, F = clip(X, 1e-4, 1e1, Fe, Fi)
     Fe, Fi = F[0], F[1]
+    if test:
+        H = H_func(X, 43, 300, Fe, Fi)
+        return X, H
+
 
     kappa = [43, 172]
     leg = []
