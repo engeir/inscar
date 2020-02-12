@@ -64,7 +64,7 @@ def plot_IS_spectrum(version):
 
 
 def test_make_plot():
-    _, _ = tool.isr_spectrum('hagfors')
+    _, _ = tool.isr_spectrum('hagors')
 
 
 if __name__ == '__main__':
