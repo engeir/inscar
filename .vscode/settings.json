@@ -24,6 +24,7 @@
         "hilim",
         "ifft",
         "imag",
+        "intf",
         "isspec",
         "kudeki",
         "linalg",
@@ -46,5 +47,6 @@
         "ylabel",
         "ylim",
         "yscale"
-    ]
+    ],
+    "python.pythonPath": "/usr/local/bin/python3"
 }

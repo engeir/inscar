@@ -10,6 +10,7 @@ import scipy.constants as const
 
 import config as cf
 import parallelization as para
+import integrand_functions as intf
 
 
 def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX):
@@ -64,47 +65,7 @@ def chirpz(g, n, dt, wo, w_c):
     return G[0: int(n / 2)]
 
 
-def z_func(y, w_c, m, T):
-    theta_2 = 2 * ((cf.KAPPA - 3 / 2) / cf.KAPPA) * T * const.k / m
-    Z = (2 * cf.KAPPA)**(1 / 2) * (cf.K_RADAR**2 * np.sin(cf.THETA)**2 * theta_2 / w_c**2 *
-                                   (1 - np.cos(w_c * y)) + 1 / 2 * cf.K_RADAR**2 * np.cos(cf.THETA)**2 * theta_2 * y**2)**(1 / 2)
-    return Z
-
-
-def kappa_gordeyev(y, params):
-    z_value = z_func(y, params['w_c'], params['m'], params['T'])
-    Kn = sps.kn(cf.KAPPA + 1 / 2, z_value)
-    # if not isinstance(Kn, float):
-    #     print(Kn)
-    #     exit()
-    Kn[Kn == np.inf] = 1e100
-    G = z_value**(cf.KAPPA + .5) * Kn * np.exp(- y * cf.NU)
-    return G
-
-
-def maxwell_gordeyev(y, params):
-    G = np.exp(- y * params['nu'] - cf.K_RADAR**2 * np.sin(cf.THETA)**2 * params['T'] * const.k / (params['m'] * params['w_c']**2) *
-               (1 - np.cos(params['w_c'] * y)) - .5 * (cf.K_RADAR * np.cos(cf.THETA) * y)**2 * params['T'] * const.k / params['m'])
-    return G
-
-
-def F_s_integrand(y, params):  # X_s, Lambda_s):
-    """Calculate the integral in the expression for F_i in Hagfors.
-
-    Arguments:
-        y {float} -- integration variable
-
-    Returns:
-        float -- the value of the integral
-    """
-    W = np.exp(- params['nu'] * y - (params['T'] * const.k * cf.K_RADAR**2 / (params['m'] * params['w_c']**2)) * (np.sin(cf.THETA)**2 *
-                                                                                                                 (1 - np.cos(params['w_c'] * y)) + 1 / 2 * params['w_c']**2 * np.cos(cf.THETA)**2 * y**2))
-    # W = np.exp(- Lambda_s * y - (1 / (2 * X_s**2)) * (np.sin(cf.THETA)**2 *
-    #                                                   (1 - np.cos(y)) + 1 / 2 * np.cos(cf.THETA)**2 * y**2))
-    return W
-
-
-def make_F(dt_s, w_c, Lambda_s, MT, function=F_s_integrand):
+def make_F(dt_s, w_c, Lambda_s, MT, function=intf.F_s_integrand):
     """Calculate the F function according to Hagfors using the chirp-z transform.
 
     Arguments:
@@ -120,20 +81,20 @@ def make_F(dt_s, w_c, Lambda_s, MT, function=F_s_integrand):
         1D array -- the F function as a function of frequency
     """
     t = np.arange(cf.N_POINTS) * dt_s
-    if function == F_s_integrand:
+    if function == intf.F_s_integrand:
         # X_s, X = make_X(w_c, MT[0], MT[1])
         params = {'nu': Lambda_s * w_c, 'm': MT[0], 'T': MT[1], 'w_c': w_c}
         F = function(t, params)
         F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)  # w_c
         F = 1 - (1j * cf.w + Lambda_s * w_c) * F
         # F = 1 - (1j * X / X_s + Lambda_s) * F
-    elif function == kappa_gordeyev:
+    elif function == intf.kappa_gordeyev:
         params = {'w_c': w_c, 'm': MT[0], 'T': MT[1]}
         F = function(t, params)
         F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
         F *= cf.w / (2**(cf.KAPPA - 1 / 2) * sps.gamma(cf.KAPPA + 1 / 2))
         F = 1 - (1j + Lambda_s * w_c) * F
-    elif function == maxwell_gordeyev:
+    elif function == intf.maxwell_gordeyev:
         params = {'w_c': w_c, 'm': MT[0], 'T': MT[1], 'nu': Lambda_s * w_c}
         F = function(t, params)
         F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
@@ -162,11 +123,11 @@ def isr_spectrum(version):
     except Exception:
         version_error(version, versions)
     if version == 'hagfors':
-        func = F_s_integrand
+        func = intf.F_s_integrand
     elif version == 'kappa':
-        func = kappa_gordeyev
+        func = intf.kappa_gordeyev
     elif version == 'maxwell':
-        func = maxwell_gordeyev
+        func = intf.maxwell_gordeyev
     w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
     M_i = cf.MI * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), M_i)
@@ -186,7 +147,8 @@ def isr_spectrum(version):
     # Fe = integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
     # Fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
     # Simpson integration in parallel
-    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
+    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e,
+                        cf.T_MAX_e, function=func)
     Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
     f_scaled = cf.f / 1e6
     Is = cf.NE / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
@@ -235,18 +197,19 @@ def H_spectrum(version):
     # W_c approx 2.0954e+02
     # w_c approx 6.1559e+06
     if version == 'hagfors':
-        func = F_s_integrand
+        func = intf.F_s_integrand
     elif version == 'kappa':
-        func = kappa_gordeyev
+        func = intf.kappa_gordeyev
     elif version == 'maxwell':
-        func = maxwell_gordeyev
+        func = intf.maxwell_gordeyev
     w_c = w_e_gyro(np.linalg.norm([cf.B], 2))
     W_c = w_ion_gyro(np.linalg.norm([cf.B], 2), (cf.MI * const.m_p))
     M_i = cf.MI * (const.m_p + const.m_n) / 2
     Lambda_e, Lambda_i = 0, 0
 
     _, X = make_X(w_c, const.m_e, cf.T_E)
-    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
+    Fe = para.integrate(w_c, const.m_e, cf.T_E, Lambda_e,
+                        cf.T_MAX_e, function=func)
     Fi = para.integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
     X, F = clip(X, 1e-4, 1e1, Fe, Fi)
     Fe, Fi = F[0], F[1]
@@ -404,5 +367,6 @@ def compare_linear_parallel(fe_params, fi_params):
     tt = time.localtime()
     t4 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('Parallel, Fi: ', t4 - t3, ' [s]')
-    print('Claim: "All elements from linear is equal to the equivalent elements from parallel."\n * Fe:', all(Fe == fe), '\n * Fi:', all(Fi == fi))
+    print('Claim: "All elements from linear is equal to the equivalent elements from parallel."\n * Fe:',
+          all(Fe == fe), '\n * Fi:', all(Fi == fi))
     return Fe, Fi
