@@ -27,7 +27,7 @@ def semilog_y(f, Is):
     plt.plot(f, 10 * np.log10(Is), 'r')
     # plt.yscale('log')
     plt.minorticks_on()
-    plt.grid(True, which="both",ls="-", alpha=0.4)
+    plt.grid(True, which="both", ls="-", alpha=0.4)
     plt.tight_layout()
 
 
@@ -38,7 +38,7 @@ def semilog_x(f, Is):
     # plt.xlabel('log10(Frequency [MHz])')
     plt.ylabel('Power')
     plt.semilogx(f, Is, 'r')
-    plt.grid(True, which="both",ls="-", alpha=0.4)
+    plt.grid(True, which="both", ls="-", alpha=0.4)
     plt.tight_layout()
 
 
@@ -49,7 +49,7 @@ def two_side_lin_plot(f, Is):
     plt.ylabel('Power')
     plt.plot(f, Is, 'r')
     # plt.plot(- f, Is, 'r')
-    plt.grid(True, which="major",ls="-", alpha=0.4)
+    plt.grid(True, which="major", ls="-", alpha=0.4)
     plt.tight_layout()
 
 

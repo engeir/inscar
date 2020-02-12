@@ -14,7 +14,7 @@ def z_func(y, w_c, m, T):
 
 def kappa_gordeyev(y, params):
     z_value = z_func(y, params['w_c'], params['m'], params['T'])
-    Kn = sps.kn(cf.KAPPA + 1 / 2, z_value)
+    Kn = sps.kv(cf.KAPPA + 1 / 2, z_value)
     Kn[Kn == np.inf] = 1
     G = z_value**(cf.KAPPA + .5) * Kn * np.exp(- y * cf.NU)
     return G
