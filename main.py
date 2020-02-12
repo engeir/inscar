@@ -64,7 +64,7 @@ def plot_IS_spectrum(version):
 
 
 def test_make_plot():
-    a, _ = tool.isr_spectrum('hagors')
+    a, _ = tool.isr_spectrum('hagfors')
     assert isinstance(a, np.ndarray)
 
 
