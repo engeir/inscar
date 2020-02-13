@@ -1,17 +1,19 @@
 """Constants used system wide.
 """
 
-import os, sys
+import os
+import sys
 
 import numpy as np
 import scipy.constants as const
 
 
-F_N_POINTS = 1e4  # Number of sample points in frequency
-N_POINTS = 1e5  # Number of sample points in integral variable
 if os.path.basename(os.path.realpath(sys.argv[0])) == 'pytest.py':
     F_N_POINTS = 1e2
     N_POINTS = 1e2
+else:
+    F_N_POINTS = 1e3  # Number of sample points in frequency
+    N_POINTS = 1e5  # Number of sample points in integral variable
 T_MAX_e = 1.5e-3  # Upper limit to integration (= infinity)
 T_MAX_i = 1.5e-3
 ORDER = 3
@@ -45,7 +47,8 @@ f = np.linspace(- I_P['F_MAX'], I_P['F_MAX'], int(F_N_POINTS))
 w = 2 * np.pi * f  # Angular frequency
 # NOT USED: used for chirp-z transform
 # f = np.arange(F_N_POINTS / 2) * (F_MAX - 0) / (F_N_POINTS / 2)  # Frequency
-dW = 2 * np.pi * (I_P['F_MAX'] - 0) / (F_N_POINTS / 2)  # Step size angular frequency
+dW = 2 * np.pi * (I_P['F_MAX'] - 0) / (F_N_POINTS /
+                                       2)  # Step size angular frequency
 # w = np.arange(F_N_POINTS / 2) * dW  # Angular frequency
 
 # This give a clear indication that the sampling is too low.
