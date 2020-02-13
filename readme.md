@@ -1,4 +1,5 @@
-## ISR spectrum    ![ISR spectrum](https://github.com/engeir/code-for-master/workflows/ISR%20spectrum/badge.svg)
+## ISR spectrum
+![ISR spectrum](https://github.com/engeir/code-for-master/workflows/ISR%20spectrum/badge.svg)
 #### Code
 Makes plots of ISR spectrum based on the theory presented in Hagfors [1961].
 
