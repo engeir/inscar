@@ -34,6 +34,7 @@
         "neials",
         "pylint",
         "pyplot",
+        "pytest",
         "scipy",
         "semilogx",
         "semilogy",
