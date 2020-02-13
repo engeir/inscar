@@ -11,16 +11,16 @@ T_MAX_i = 1.5e-3
 ORDER = 3
 
 # === Input parameters ===
-# B: Magnetic field strength [T]
-# F0: Radar frequency [Hz]
-# F_MAX: Range of frequency domain
-# MI: Ion mass in atomic mass units [u]
-# NE:  # Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
-# NU_E: Electron collision frequency [Hz]
-# NU_I: Ion collision frequency [Hz]
-# T_E: Electron temperature [K]
-# T_I: Ion temperature [K]
-# THETA: Pitch angle
+# B -- Magnetic field strength [T]
+# F0 -- Radar frequency [Hz]
+# F_MAX -- Range of frequency domain
+# MI -- Ion mass in atomic mass units [u]
+# NE -- Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
+# NU_E -- Electron collision frequency [Hz]
+# NU_I -- Ion collision frequency [Hz]
+# T_E -- Electron temperature [K]
+# T_I -- Ion temperature [K]
+# THETA -- Pitch angle [1]
 
 # For seeing gyro lines
 I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 2e6, 'MI': 29, 'NE': 2e10,
