@@ -14,6 +14,9 @@ if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest']:
 else:
     F_N_POINTS = 1e3  # Number of sample points in frequency
     N_POINTS = 1e5  # Number of sample points in integral variable
+print(os.path.basename(os.path.realpath(sys.argv[0])))
+print(N_POINTS)
+exit()
 T_MAX_e = 1.5e-3  # Upper limit to integration (= infinity)
 T_MAX_i = 1.5e-3
 ORDER = 3
