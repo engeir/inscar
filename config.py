@@ -8,7 +8,7 @@ import numpy as np
 import scipy.constants as const
 
 
-if os.path.basename(os.path.realpath(sys.argv[0])) == 'pytest.py':
+if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest']:
     F_N_POINTS = 1e2
     N_POINTS = 1e2
 else:
