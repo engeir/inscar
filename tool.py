@@ -23,6 +23,7 @@ def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX):
     return sint
 
 
+# DEPRECATED FUNCTION (see parallelization.py -- integrate)
 def integrate(w_c, m, T, Lambda_s, T_MAX, function):
     res = np.zeros(len(cf.w), dtype=np.complex128)
     for c, v in enumerate(cf.w):
@@ -31,6 +32,7 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function):
     return F
 
 
+# DEPRECATED FUNCTION (see parallelization.py -- integrate)
 def chirpz(g, n, dt, wo, w_c):
     """transforms g(t) into G(w)
     g(t) is n-point array and output G(w) is (n/2)-points starting at wo
