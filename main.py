@@ -158,5 +158,5 @@ def plot_IS_spectrum(version):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa')
+    plot_IS_spectrum('hagfors')
     # tool.H_spectrum('kappa')
