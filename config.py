@@ -14,8 +14,8 @@ if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest']:
     F_N_POINTS = 1e2
     N_POINTS = 1e2
 else:
-    F_N_POINTS = 1e4  # Number of sample points in frequency
-    N_POINTS = 1e5  # Number of sample points in integral variable
+    F_N_POINTS = 1e3  # Number of sample points in frequency
+    N_POINTS = 1e6  # Number of sample points in integral variable
 T_MAX_e = 1.5e-3  # Upper limit to integration (= infinity)
 T_MAX_i = 1.5e-3
 ORDER = 3
@@ -33,14 +33,14 @@ ORDER = 3
 # THETA -- Pitch angle [1]
 
 # For seeing gyro lines
-I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 6e6, 'MI': 29, 'NE': 2e10,
+I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 2e6, 'MI': 29, 'NE': 2e10,
        'NU_E': 0, 'NU_I': 0, 'T_E': 200, 'T_I': 200, 'THETA': 45 * np.pi / 180}
 # For same plots as Hagfors
 # I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 2e6, 'MI': 16, 'NE': 2e10,
 #        'NU_E': 0, 'NU_I': 0, 'T_E': 1000, 'T_I': 1000, 'THETA': 0 * np.pi / 180}
 
 # For kappa distribution
-KAPPA = 2
+KAPPA = 5 / 2
 NU = - KAPPA - 1 / 2
 
 # DO NOT EDIT
