@@ -153,10 +153,12 @@ def plot_IS_spectrum(version):
     loglog(f, Is)
     # semilog_x(f, Is)
     semilog_y(f, Is)
+    plt.savefig(f'../../report/master-thesis/figures/kappa_5over2.pdf',
+                bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('hagfors')
+    plot_IS_spectrum('kappa')
     # tool.H_spectrum('kappa')

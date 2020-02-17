@@ -121,7 +121,7 @@ def isr_spectrum(version):
         if not version in versions:
             raise SystemError
         else:
-            print(f'Using version "{version}"', end='\r', flush=True)
+            print(f'Using version "{version}"', flush=True)
     except Exception:
         version_error(version, versions)
     if version == 'hagfors':

@@ -43,6 +43,7 @@
         "sint",
         "smop",
         "spint",
+        "tqdm",
         "xlabel",
         "xlim",
         "ylabel",
