@@ -3,11 +3,13 @@
 
 import os
 import time
+import datetime
 
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
-# import config as cf
+import config as cf
 # import integrand_functions as intf
 # import parallelization as para
 import tool
@@ -158,15 +160,26 @@ def plot_IS_spectrum(version):
     # semilog_x(f, Is)
     semilog_y(f, Is)
     if save in ['y', 'yes']:
+        I_P = dict(cf.I_P, **{'kappa': cf.KAPPA, 'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
         tt = time.localtime()
-        the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}/{tt[4]}/{tt[5]}'
+        the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}-{tt[4]}-{tt[5]}'
+        pdffig = PdfPages(
+            f'../../report/master-thesis/figures/{the_time}_{version}.pdf')
         os.makedirs('../../report/master-thesis/figures', exist_ok=True)
-        plt.savefig(f'../../report/master-thesis/figures/{the_time}_hagfors.pdf',
-                    bbox_inches='tight', format='pdf', dpi=600)
+        plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
+        metadata = pdffig.infodict()
+        metadata['Title'] = f'ISR Spectrum w/ {version}'
+        metadata['Author'] = 'Eirik R. Enger'
+        metadata['Subject'] = f'{I_P}'
+        metadata['Keywords'] = 'incoherent scatter'
+        metadata['ModDate'] = datetime.datetime.today()
+        pdffig.close()
+        # plt.savefig(f'../../report/master-thesis/figures/{the_time}_{version}.pdf',
+        #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('hagfors')
+    plot_IS_spectrum('maxwell')
     # tool.H_spectrum('kappa')
