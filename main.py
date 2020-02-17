@@ -1,9 +1,11 @@
 """Main script for calculating the IS spectrum based on realistic parameters.
 """
 
-import numpy as np
+import os
+import time
+
 import matplotlib.pyplot as plt
-# import scipy.constants as const
+import numpy as np
 
 # import config as cf
 # import integrand_functions as intf
@@ -149,16 +151,22 @@ def two_side_lin_plot(f, Is):
 
 def plot_IS_spectrum(version):
     f, Is = tool.isr_spectrum(version)
+    save = input(
+        'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     two_side_lin_plot(f, Is)
     loglog(f, Is)
     # semilog_x(f, Is)
     semilog_y(f, Is)
-    plt.savefig(f'../../report/master-thesis/figures/kappa_5over2.pdf',
-                bbox_inches='tight', format='pdf', dpi=600)
+    if save in ['y', 'yes']:
+        tt = time.localtime()
+        the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}/{tt[4]}/{tt[5]}'
+        os.makedirs('../../report/master-thesis/figures', exist_ok=True)
+        plt.savefig(f'../../report/master-thesis/figures/{the_time}_hagfors.pdf',
+                    bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa')
+    plot_IS_spectrum('hagfors')
     # tool.H_spectrum('kappa')
