@@ -4,6 +4,7 @@ from functools import partial
 
 import scipy.special as sps
 import numpy as np
+from tqdm import tqdm
 
 import config as cf
 import integrand_functions as intf
@@ -14,7 +15,8 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function):
     idx = [x for x in enumerate(cf.w)]
     func = partial(parallel, w_c, m, T, Lambda_s, T_MAX, function)
     pool = mp.Pool()
-    pool.map(func, idx)
+    for _ in tqdm(pool.imap(func, idx)):
+        pass
     if function == intf.kappa_gordeyev:
         a = array / (2**(cf.KAPPA - 1 / 2) * sps.gamma(cf.KAPPA + 1 / 2))
     else:
@@ -24,6 +26,7 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function):
 
 
 def parallel(w_c, m, T, Lambda_s, T_MAX, function, index):
+    # print(index[0], end='\r')
     array[index[0]] = tool.simpson(
         function, index[1], w_c, m, T, Lambda_s, T_MAX)
 
