@@ -2,8 +2,8 @@ import ctypes
 import multiprocessing as mp
 from functools import partial
 
-import scipy.special as sps
 import numpy as np
+import scipy.special as sps
 from tqdm import tqdm
 
 import config as cf
@@ -26,7 +26,6 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function):
 
 
 def parallel(w_c, m, T, Lambda_s, T_MAX, function, index):
-    # print(index[0], end='\r')
     array[index[0]] = tool.simpson(
         function, index[1], w_c, m, T, Lambda_s, T_MAX)
 

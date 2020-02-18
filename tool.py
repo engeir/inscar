@@ -18,6 +18,11 @@ def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX):
     params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c}
     f = integrand(t, params)
     val = np.exp(- 1j * w * t) * f
+    # print(w, round(w) % 100)
+    # if round(w) % 1000 < 100:
+    #     plt.figure()
+    #     plt.plot(t, val)
+    #     plt.show()
 
     sint = si.simps(val, t)
     return sint
@@ -145,14 +150,20 @@ def isr_spectrum(version):
     # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
     # Fe, Fi = compare_linear_parallel(fe_params, fi_params)
     # Simpson integration in linear
-    # Fe = integrate(w_c, const.m_e, cf.T_E, Lambda_e, cf.T_MAX_e, function=func)
-    # Fi = integrate(W_c, M_i, cf.T_I, Lambda_i, cf.T_MAX_i, function=func)
+    # Fe = integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func)
+    # Fi = integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
     # Simpson integration in parallel
-    Fe = para.integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e,
-                        cf.T_MAX_e, function=func)
-    Fi = para.integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+    Fe = para.integrate(
+        w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func)
+    Fi = para.integrate(
+        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+    # params_e = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'], 'w_c': w_c}
+    # params_i = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'], 'w_c': W_c}
+    # Fe = intf.two_p_isotropic_kappa(params_e)
+    # Fi = intf.two_p_isotropic_kappa(params_i)
 
-    Xp = np.sqrt(1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'])**2 * cf.K_RADAR**2))
+    Xp = np.sqrt(
+        1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'])**2 * cf.K_RADAR**2))
     f_scaled = cf.f / 1e6
     Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
         4 * Xp**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
@@ -206,13 +217,15 @@ def H_spectrum(version, test=False):
     elif version == 'maxwell':
         func = intf.maxwell_gordeyev
     w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
-    W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), (cf.I_P['MI'] * const.m_p))
+    W_c = w_ion_gyro(np.linalg.norm(
+        [cf.I_P['B']], 2), (cf.I_P['MI'] * const.m_p))
     M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
     Lambda_e, Lambda_i = 0, 0
 
     Fe = para.integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e,
                         cf.T_MAX_e, function=func)
-    Fi = para.integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+    Fi = para.integrate(
+        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
     _, X = make_X(w_c, const.m_e, cf.I_P['T_E'])
     X, F = clip(X, 1e-4, 1e1, Fe, Fi)
     Fe, Fi = F[0], F[1]
@@ -351,25 +364,26 @@ def version_error(version, versions):
 
 
 def compare_linear_parallel(fe_params, fi_params):
-    w_c, Lambda_e, func = fe_params['w_c'], fe_params['lambda'], fe_params['function']
-    W_c, M_i, Lambda_i, func = fi_params['w_c'], fi_params['m'], fi_params['lambda'], fi_params['function']
     tt = time.localtime()
     t0 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    fe = integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func)
+    fe = integrate(fe_params['w_c'], const.m_e, cf.I_P['T_E'],
+                   fe_params['lambda'], cf.T_MAX_e, function=fe_params['function'])
     tt = time.localtime()
     t1 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('')
     print('Linear, Fe: ', t1 - t0, ' [s]')
-    fi = integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+    fi = integrate(fi_params['w_c'], fi_params['m'], cf.I_P['T_I'],
+                   fi_params['lambda'], cf.T_MAX_i, function=fi_params['function'])
     tt = time.localtime()
     t2 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('Linear, Fi: ', t2 - t1, ' [s]')
-    Fe = para.integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e,
-                        cf.T_MAX_e, function=func)
+    Fe = para.integrate(fe_params['w_c'], const.m_e, cf.I_P['T_E'], fe_params['lambda'],
+                        cf.T_MAX_e, function=fe_params['function'])
     tt = time.localtime()
     t3 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('Parallel, Fe: ', t3 - t2, ' [s]')
-    Fi = para.integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+    Fi = para.integrate(fi_params['w_c'], fi_params['m'], cf.I_P['T_I'],
+                        fi_params['lambda'], cf.T_MAX_i, function=fi_params['function'])
     tt = time.localtime()
     t4 = tt[3] * 3600 + tt[4] * 60 + tt[5]
     print('Parallel, Fi: ', t4 - t3, ' [s]')
