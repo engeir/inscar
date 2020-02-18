@@ -32,6 +32,7 @@
         "nargin",
         "ndarray",
         "neials",
+        "pdffig",
         "pylint",
         "pyplot",
         "pytest",
@@ -49,6 +50,7 @@
         "ylabel",
         "ylim",
         "yscale",
+        "ziebell",
         "zorder"
     ],
     "python.pythonPath": "/usr/local/bin/python3",

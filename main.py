@@ -61,8 +61,8 @@ def two_side_lin_plot(f, Is):
 
 def plot_IS_spectrum(version):
     f, Is = tool.isr_spectrum(version)
-    save = 'y'  # input(
-    # 'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
+    save = input(
+        'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     two_side_lin_plot(f, Is)
     loglog(f, Is)
     # semilog_x(f, Is)
@@ -75,20 +75,18 @@ def plot_IS_spectrum(version):
         pdffig = PdfPages(
             f'../../report/master-thesis/figures/{the_time}_{version}.pdf')
         os.makedirs('../../report/master-thesis/figures', exist_ok=True)
-        plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
         metadata = pdffig.infodict()
         metadata['Title'] = f'ISR Spectrum w/ {version}'
         metadata['Author'] = 'Eirik R. Enger'
-        metadata['Subject'] = f'{I_P}'
-        metadata['Keywords'] = 'incoherent scatter'
+        metadata['Subject'] = f"IS spectrum made using a {version} distribution and a Simpson's integration rule."
+        metadata['Keywords'] = f'{I_P}'
         metadata['ModDate'] = datetime.datetime.today()
+        plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
         pdffig.close()
-        # plt.savefig(f'../../report/master-thesis/figures/{the_time}_{version}.pdf',
-        #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa')
+    plot_IS_spectrum('hagfors')
     # tool.H_spectrum('kappa')
