@@ -15,7 +15,7 @@ def ziebell_z_func(kappa, m, xi):
 
 
 def two_p_isotropic_kappa(params):
-    w_bk = ((cf.KAPPA - 3 / 2) / cf.KAPPA)**.5 * params['T'] * const.k / params['m']
+    w_bk = (2 * (cf.KAPPA - 3 / 2) / cf.KAPPA * params['T'] * const.k / params['m'])**.5
     zbn = cf.w / (cf.K_RADAR * np.cos(cf.I_P['THETA']) * w_bk)  # (\zeta_\beta^0)
     D = 2 * params['w_c']**2 / cf.w**2 * zbn**2 * \
         ((cf.KAPPA - .5) / cf.KAPPA + zbn * ziebell_z_func(cf.KAPPA, 1, zbn))
