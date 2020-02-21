@@ -26,7 +26,7 @@ def loglog(f, Is):
 
 def semilog_y(f, Is):
     plt.figure()
-    plt.title('ISR spectrum')
+    # plt.title('ISR spectrum')
     plt.xlabel('Frequency [MHz]')
     plt.ylabel('10*log10(Power) [dB]')
     # plt.semilogy(f, Is, 'r')
@@ -71,14 +71,14 @@ def plot_IS_spectrum(version):
         I_P = dict(cf.I_P, **{'kappa': cf.KAPPA,
                               'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
         tt = time.localtime()
-        the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}-{tt[4]}-{tt[5]}'
+        the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
         pdffig = PdfPages(
             f'../../report/master-thesis/figures/{the_time}_{version}.pdf')
         os.makedirs('../../report/master-thesis/figures', exist_ok=True)
         metadata = pdffig.infodict()
         metadata['Title'] = f'ISR Spectrum w/ {version}'
         metadata['Author'] = 'Eirik R. Enger'
-        metadata['Subject'] = f"IS spectrum made using a {version} distribution and a Simpson's integration rule."
+        metadata['Subject'] = f"IS spectrum made using a {version} distribution and Simpson's integration rule."
         metadata['Keywords'] = f'{I_P}'
         metadata['ModDate'] = datetime.datetime.today()
         plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
@@ -88,5 +88,5 @@ def plot_IS_spectrum(version):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('hagfors')
+    plot_IS_spectrum('kappa')
     # tool.H_spectrum('kappa')
