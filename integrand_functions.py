@@ -35,6 +35,18 @@ def z_func(y, w_c, m, T):
 
 
 def kappa_gordeyev(y, params):
+    """Gordeyev integral for a kappa velocity distribution as defined by Mace (2003).
+
+    The integral is valid for a plasma that is uniform, collisionless and permeated by a homogeneous,
+    constant magnetic field. In the unperturbed state its intrinsic electric field vanishes.
+
+    Arguments:
+        y {np.ndarray} -- 1D array of the integration variable
+        params {dict} -- a dictionary listing all plasma parameters needed to evaluate the integrand
+
+    Returns:
+        np.ndarray -- 1D array with the values of the integrand at the positions of the integration variable
+    """
     z_value = z_func(y, params['w_c'], params['m'], params['T'])
     Kn = sps.kv(cf.KAPPA + 1 / 2, z_value)
     Kn[Kn == np.inf] = 1
