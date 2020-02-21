@@ -13,7 +13,7 @@ def chirp_sampling():
     t_max = 1e-3
     n = 1e4
     plt.figure(figsize=(8, 6))
-    for o, s in zip(order, style):
+    for o, _ in zip(order, style):
         t = np.linspace(0, t_max**(1 / o), int(n))**o
         plt.plot(t, 'k', label=f'n = {o}')  # , linestyle=s)
     plt.ylabel('Sampled variable')
@@ -66,6 +66,30 @@ def vdf_plots():
     plt.show()
 
 
+def chirp_z_fail():
+    # This give a clear indication that the sampling is too low.
+    # y1, y2, y3 represent the peaks of the electron, gyro and ion lines.
+    x = np.array([5e6, 1e7, 2e7, 3e7, 4e7, 5e7, 1e8])
+    y1 = np.array([2.078, 2.692, 3.322, 3.620, 3.7787, 3.8703, 3.8536])
+    y2 = np.array([.679, .6812, .6819, .6820, .6820, .6820, .6821])
+    y3 = np.array([6.288, 6.35, 6.384, 6.392, 6.390, 6.393, 6.403]) * 1e-4
+    y1 -= np.min(y1)
+    y2 -= np.min(y2)
+    y3 -= np.min(y3)
+    y1 /= np.max(y1)
+    y2 /= np.max(y2)
+    y3 /= np.max(y3)
+    plt.figure()
+    plt.semilogx(x, y1, 'k', linestyle='-', label='Plasma line')
+    plt.semilogx(x, y2, 'k', linestyle=':', label='Gyro line')
+    plt.semilogx(x, y3, 'k', linestyle='--', label='Ion line')
+    plt.xlabel(r'$N$')
+    plt.ylabel(r'$(f-f_\min)/f_\max$')
+    plt.legend()
+    plt.show()
+
+
 if __name__ == '__main__':
     # chirp_sampling()
-    vdf_plots()
+    # vdf_plots()
+    chirp_z_fail()
