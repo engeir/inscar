@@ -69,23 +69,30 @@ def vdf_plots():
 def chirp_z_fail():
     # This give a clear indication that the sampling is too low.
     # y1, y2, y3 represent the peaks of the electron, gyro and ion lines.
-    x = np.array([5e6, 1e7, 2e7, 3e7, 4e7, 5e7, 1e8])
-    y1 = np.array([2.078, 2.692, 3.322, 3.620, 3.7787, 3.8703, 3.8536])
-    y2 = np.array([.679, .6812, .6819, .6820, .6820, .6820, .6821])
-    y3 = np.array([6.288, 6.35, 6.384, 6.392, 6.390, 6.393, 6.403]) * 1e-4
+    # x = np.array([5e6, 1e7, 2e7, 3e7, 4e7, 5e7, 1e8])
+    # y1 = np.array([2.078, 2.692, 3.322, 3.620, 3.7787, 3.8703, 3.8536])
+    # y2 = np.array([.679, .6812, .6819, .6820, .6820, .6820, .6821])
+    # y3 = np.array([6.288, 6.35, 6.384, 6.392, 6.390, 6.393, 6.403]) * 1e-4
+    x = np.array([5e6, 1e7, 2e7, 4e7, 1e8])
+    y1 = np.array([1.51449, 1.51601, 1.51639, 1.51649, 1.51651])
+    y2 = np.array([.606318, .606359, .606369, .606372, .606373])
+    y3 = np.array([9.42397, 9.43598, 9.438, 9.441, 9.442]) * 1e-4
     y1 -= np.min(y1)
     y2 -= np.min(y2)
     y3 -= np.min(y3)
     y1 /= np.max(y1)
     y2 /= np.max(y2)
     y3 /= np.max(y3)
+    plot = plt.semilogx
     plt.figure()
-    plt.semilogx(x, y1, 'k', linestyle='-', label='Plasma line')
-    plt.semilogx(x, y2, 'k', linestyle=':', label='Gyro line')
-    plt.semilogx(x, y3, 'k', linestyle='--', label='Ion line')
+    plot(x, y1, 'k', linestyle='-', label='Plasma line')
+    plot(x, y2, 'k', linestyle=':', label='Gyro line')
+    plot(x, y3, 'k', linestyle='--', label='Ion line')
     plt.xlabel(r'$N$')
-    plt.ylabel(r'$(f-f_\min)/f_\max$')
+    plt.ylabel(r'$(f-f_\min)/(f_\max-f_\min)$')
     plt.legend()
+    # plt.savefig(f'../../report/master-thesis/figures/chirp-z_artefact.pdf',
+    #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
 

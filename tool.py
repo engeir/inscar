@@ -89,18 +89,16 @@ def make_F(dt_s, w_c, Lambda_s, MT, function=intf.F_s_integrand):
     """
     t = np.arange(cf.N_POINTS) * dt_s
     if function == intf.F_s_integrand:
-        # X_s, X = make_X(w_c, MT[0], MT[1])
         params = {'nu': Lambda_s * w_c, 'm': MT[0], 'T': MT[1], 'w_c': w_c}
         F = function(t, params)
-        F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)  # w_c
+        F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
         F = 1 - (1j * cf.w + Lambda_s * w_c) * F
-        # F = 1 - (1j * X / X_s + Lambda_s) * F
     elif function == intf.kappa_gordeyev:
         params = {'w_c': w_c, 'm': MT[0], 'T': MT[1]}
         F = function(t, params)
         F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
-        F *= cf.w / (2**(cf.KAPPA - 1 / 2) * sps.gamma(cf.KAPPA + 1 / 2))
-        F = 1 - (1j + Lambda_s * w_c) * F
+        F /= (2**(cf.KAPPA - 1 / 2) * sps.gamma(cf.KAPPA + 1 / 2))
+        F = 1 - (1j * cf.w + Lambda_s * w_c) * F
     elif function == intf.maxwell_gordeyev:
         params = {'w_c': w_c, 'm': MT[0], 'T': MT[1], 'nu': Lambda_s * w_c}
         F = function(t, params)
@@ -139,12 +137,12 @@ def isr_spectrum(version):
     M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
     Lambda_e, Lambda_i = cf.I_P['NU_E'] / w_c, cf.I_P['NU_I'] / W_c
-    # dt_e = cf.T_MAX_e / cf.N_POINTS
-    # dt_i = cf.T_MAX_i / cf.N_POINTS
+    dt_e = cf.T_MAX_e / cf.N_POINTS
+    dt_i = cf.T_MAX_i / cf.N_POINTS
 
     # Chirp-z transform
-    # Fe = make_F(dt_e, w_c, Lambda_e, [const.m_e, cf.T_E], function=func)
-    # Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.T_I], function=func)
+    # Fe = make_F(dt_e, w_c, Lambda_e, [const.m_e, cf.I_P['T_E']], function=func)
+    # Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.I_P['T_I']], function=func)
     # Time comparison between linear and parallel implementation
     # fe_params = {'w_c': w_c, 'lambda': Lambda_e, 'function': func}
     # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
