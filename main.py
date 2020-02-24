@@ -15,7 +15,7 @@ import tool
 
 def loglog(f, Is):
     plt.figure()
-    plt.title('ISR spectrum')
+    # plt.title('ISR spectrum')
     plt.xlabel('Frequency [MHz]')
     plt.ylabel('Power')
     plt.loglog(f, Is, 'r')
@@ -39,7 +39,7 @@ def semilog_y(f, Is):
 
 def semilog_x(f, Is):
     plt.figure()
-    plt.title('ISR spectrum')
+    # plt.title('ISR spectrum')
     plt.xlabel('Frequency [MHz]')
     # plt.xlabel('log10(Frequency [MHz])')
     plt.ylabel('Power')
@@ -63,10 +63,6 @@ def plot_IS_spectrum(version):
     f, Is = tool.isr_spectrum(version)
     save = input(
         'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
-    two_side_lin_plot(f, Is)
-    loglog(f, Is)
-    # semilog_x(f, Is)
-    semilog_y(f, Is)
     if save in ['y', 'yes']:
         I_P = dict(cf.I_P, **{'kappa': cf.KAPPA,
                               'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
@@ -81,8 +77,22 @@ def plot_IS_spectrum(version):
         metadata['Subject'] = f"IS spectrum made using a {version} distribution and Simpson's integration rule."
         metadata['Keywords'] = f'{I_P}'
         metadata['ModDate'] = datetime.datetime.today()
+        semilog_y(f, Is)
+        pdffig.attach_note("Semilog y")
         plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
+        two_side_lin_plot(f, Is)
+        pdffig.attach_note("Linear plot")
+        plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
+        loglog(f, Is)
+        pdffig.attach_note("Loglog")
+        plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
+        # semilog_x(f, Is)
         pdffig.close()
+    else:
+        two_side_lin_plot(f, Is)
+        loglog(f, Is)
+        # semilog_x(f, Is)
+        semilog_y(f, Is)
     plt.show()
 
 
