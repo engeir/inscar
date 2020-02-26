@@ -15,7 +15,7 @@ if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest']:
     N_POINTS = 1e2
 else:
     F_N_POINTS = 1e3  # Number of sample points in frequency
-    N_POINTS = 1e5  # Number of sample points in integral variable
+    N_POINTS = 1e4  # Number of sample points in integral variable
 # T_MAX_e = 1.5e-3, T_MAX_i = 1.5e-3: good for Maxwellian
 # T_MAX_e = 1.5e-4, T_MAX_i = 1.5e-2: good for kappa
 T_MAX_e = 1.5e-4  # Upper limit to integration (= infinity)
@@ -41,17 +41,18 @@ ORDER = 3
 # I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 1.5e6, 'MI': 16, 'NE': 2e10,
 #        'NU_E': 0, 'NU_I': 0, 'T_E': 1000, 'T_I': 1000, 'THETA': 0 * np.pi / 180}
 # High frequency plasma lines
-I_P = {'B': 5e-4, 'F0': 430e6, 'F_MAX': 6e6, 'MI': 16, 'NE': 3e11,
-       'NU_E': 0, 'NU_I': 0, 'T_E': 10000, 'T_I': 1000, 'THETA': 6 * np.pi / 180}
+I_P = {'B': 5e-4, 'F0': 933e6, 'F_MAX': 40e3, 'MI': 16, 'NE': 2e11,
+       'NU_E': 0, 'NU_I': 0, 'T_E': 3000, 'T_I': 2000, 'THETA': 0 * np.pi / 180}
 
 # For kappa distribution
 # NOTE: kappa != n + 1/2, n in the integers
-KAPPA = 5
-NU = - KAPPA - 1 / 2
+# KAPPA = 20
+# NU = - KAPPA - 1 / 2
 
 # DO NOT EDIT
 K_RADAR = - 2 * I_P['F0'] * 2 * np.pi / const.c  # Radar wavenumber
-f = np.linspace(0, I_P['F_MAX'], int(F_N_POINTS))
+f = np.linspace(- I_P['F_MAX'], I_P['F_MAX'], int(F_N_POINTS))
+f = (f / I_P['F_MAX'])**3 * I_P['F_MAX']
 w = 2 * np.pi * f  # Angular frequency
 # NOT USED: used for chirp-z transform
 # f = np.arange(F_N_POINTS / 2) * (I_P['F_MAX'] - 0) / (F_N_POINTS / 2)  # Frequency
