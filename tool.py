@@ -107,7 +107,7 @@ def make_F(dt_s, w_c, Lambda_s, MT, function=intf.F_s_integrand):
     return F
 
 
-def isr_spectrum(version, kappa=None):
+def isr_spectrum(version, kappa=5):
     """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
 
     Arguments:
@@ -188,7 +188,7 @@ def H_func(X, kappa, X_p, F_e, F_i):
     return num / den
 
 
-def H_spectrum(version, test=False):
+def H_spectrum(version, test=False, k=5):
     """Make plots similar to fig. (2) in Hagfors' paper.
 
     Arguments:
@@ -221,9 +221,9 @@ def H_spectrum(version, test=False):
     Lambda_e, Lambda_i = 0, 0
 
     Fe = para.integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e,
-                        cf.T_MAX_e, function=func)
+                        cf.T_MAX_e, function=func, kappa=k)
     Fi = para.integrate(
-        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func, kappa=k)
     _, X = make_X(w_c, const.m_e, cf.I_P['T_E'])
     X, F = clip(X, 1e-4, 1e1, Fe, Fi)
     Fe, Fi = F[0], F[1]
