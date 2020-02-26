@@ -160,8 +160,12 @@ def isr_spectrum(version, kappa=5):
     # Fe = intf.two_p_isotropic_kappa(params_e)
     # Fi = intf.two_p_isotropic_kappa(params_i)
 
-    Xp = np.sqrt(
-        1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'])**2 * cf.K_RADAR**2))
+    if func == intf.kappa_gordeyev:
+        Xp = np.sqrt(
+            1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
+    else:
+        Xp = np.sqrt(
+            1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'])**2 * cf.K_RADAR**2))
     f_scaled = cf.f / 1e6
     Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
         4 * Xp**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
@@ -290,7 +294,7 @@ def make_X(w_c, M, T):
     return X_s, X
 
 
-def L_Debye(*args):
+def L_Debye(*args, kappa=None):
     """Calculate the Debye length.
 
     Input args may be
@@ -315,8 +319,12 @@ def L_Debye(*args):
     Ep0 = 1e-09 / 36 / np.pi
 
     if nargin < 3:
-        LD = np.sqrt(Ep0 * const.k * T_e /
-                     (max(0, n_e) * const.e**2))
+        if kappa is None:
+            LD = np.sqrt(Ep0 * const.k * T_e /
+                         (max(0, n_e) * const.e**2))
+        else:
+            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)
+                         ) * np.sqrt((kappa - 3 / 2) / (kappa - 1 / 2))
     else:
         LD = np.sqrt(Ep0 * const.k /
                      ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e**2))
