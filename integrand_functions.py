@@ -15,20 +15,20 @@ def ziebell_z_func(kappa, m, xi):
 
 
 def two_p_isotropic_kappa(params):
-    w_bk = (2 * (cf.KAPPA - 3 / 2) / cf.KAPPA * params['T'] * const.k / params['m'])**.5
+    w_bk = (2 * (params['kappa'] - 3 / 2) / params['kappa'] * params['T'] * const.k / params['m'])**.5
     zbn = cf.w / (cf.K_RADAR * np.cos(cf.I_P['THETA']) * w_bk)  # (\zeta_\beta^0)
     D = 2 * params['w_c']**2 / cf.w**2 * zbn**2 * \
-        ((cf.KAPPA - .5) / cf.KAPPA + zbn * ziebell_z_func(cf.KAPPA, 1, zbn))
-    l_D2 = const.epsilon_0 * params['T'] / (cf.I_P['NE'] * const.elementary_charge**2) * (cf.KAPPA - 3 / 2) / (cf.KAPPA - 1 / 2)
+        ((params['kappa'] - .5) / params['kappa'] + zbn * ziebell_z_func(params['kappa'], 1, zbn))
+    l_D2 = const.epsilon_0 * params['T'] / (cf.I_P['NE'] * const.elementary_charge**2) * (params['kappa'] - 3 / 2) / (params['kappa'] - 1 / 2)
     A = 1 / (cf.K_RADAR**2 * l_D2)
     G = 1j * (1 - A * D) / cf.w
     F = 1 - (1j * cf.w + params['nu']) * G
     return F
 
 
-def z_func(y, w_c, m, T):
-    theta_2 = 2 * ((cf.KAPPA - 3 / 2) / cf.KAPPA) * T * const.k / m
-    Z = (2 * cf.KAPPA)**(1 / 2) * \
+def z_func(y, w_c, m, T, kappa):
+    theta_2 = 2 * ((kappa - 3 / 2) / kappa) * T * const.k / m
+    Z = (2 * kappa)**(1 / 2) * \
         (cf.K_RADAR**2 * np.sin(cf.I_P['THETA'])**2 * theta_2 / w_c**2 *
          (1 - np.cos(w_c * y)) + 1 / 2 * cf.K_RADAR**2 * np.cos(cf.I_P['THETA'])**2 * theta_2 * y**2)**(1 / 2)
     return Z
@@ -47,10 +47,10 @@ def kappa_gordeyev(y, params):
     Returns:
         np.ndarray -- 1D array with the values of the integrand at the positions of the integration variable
     """
-    z_value = z_func(y, params['w_c'], params['m'], params['T'])
-    Kn = sps.kv(cf.KAPPA + 1 / 2, z_value)
+    z_value = z_func(y, params['w_c'], params['m'], params['T'], params['kappa'])
+    Kn = sps.kv(params['kappa'] + 1 / 2, z_value)
     Kn[Kn == np.inf] = 1
-    G = z_value**(cf.KAPPA + .5) * Kn * np.exp(- y * cf.NU)
+    G = z_value**(params['kappa'] + .5) * Kn * np.exp(- y * (- params['kappa'] - 1 / 2))
     return G
 
 

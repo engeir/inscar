@@ -13,9 +13,9 @@ import parallelization as para
 import integrand_functions as intf
 
 
-def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX):
+def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
     t = np.linspace(0, T_MAX**(1 / cf.ORDER), int(cf.N_POINTS))**cf.ORDER
-    params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c}
+    params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
     f = integrand(t, params)
     val = np.exp(- 1j * w * t) * f
     # print(w, round(w) % 100)
@@ -107,7 +107,7 @@ def make_F(dt_s, w_c, Lambda_s, MT, function=intf.F_s_integrand):
     return F
 
 
-def isr_spectrum(version):
+def isr_spectrum(version, kappa=None):
     """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
 
     Arguments:
@@ -137,8 +137,8 @@ def isr_spectrum(version):
     M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
     Lambda_e, Lambda_i = cf.I_P['NU_E'] / w_c, cf.I_P['NU_I'] / W_c
-    dt_e = cf.T_MAX_e / cf.N_POINTS
-    dt_i = cf.T_MAX_i / cf.N_POINTS
+    # dt_e = cf.T_MAX_e / cf.N_POINTS
+    # dt_i = cf.T_MAX_i / cf.N_POINTS
 
     # Chirp-z transform
     # Fe = make_F(dt_e, w_c, Lambda_e, [const.m_e, cf.I_P['T_E']], function=func)
@@ -152,9 +152,9 @@ def isr_spectrum(version):
     # Fi = integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
     # Simpson integration in parallel
     Fe = para.integrate(
-        w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func)
+        w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func, kappa=kappa)
     Fi = para.integrate(
-        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
+        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func, kappa=kappa)
     # params_e = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'], 'w_c': w_c}
     # params_i = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'], 'w_c': W_c}
     # Fe = intf.two_p_isotropic_kappa(params_e)
