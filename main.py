@@ -29,11 +29,11 @@ def loglog(f, Is, l=None):
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
             plt.loglog(f, s, 'r', linestyle=st, linewidth=.8, label=lab)
+        plt.legend()
     else:
         plt.loglog(f, Is, 'r')
     plt.minorticks_on()
     plt.grid(True, which="both", ls="-", alpha=0.4)
-    plt.legend()
     plt.tight_layout()
 
 
@@ -54,12 +54,12 @@ def semilog_y(f, Is, l=None):
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
             plt.plot(f, 10 * np.log10(s), 'r', linestyle=st, linewidth=.8, label=lab)
+        plt.legend()
     else:
         plt.plot(f, 10 * np.log10(Is), 'r')
     # plt.yscale('log')
     plt.minorticks_on()
     plt.grid(True, which="both", ls="-", alpha=0.4)
-    plt.legend()
     plt.tight_layout()
 
 
@@ -80,10 +80,10 @@ def semilog_x(f, Is, l=None):
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
             plt.semilogx(f, s, 'r', linestyle=st, linewidth=.8, label=lab)
+        plt.legend()
     else:
         plt.semilogx(f, Is, 'r')
     plt.grid(True, which="both", ls="-", alpha=0.4)
-    plt.legend()
     plt.tight_layout()
 
 
@@ -103,19 +103,19 @@ def two_side_lin_plot(f, Is, l=None):
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
             plt.plot(f, s, 'r', linestyle=st, linewidth=.8, label=lab)
+        plt.legend()
     else:
         plt.plot(f, Is, 'r')
     # plt.plot(- f, Is, 'r')
     plt.grid(True, which="major", ls="-", alpha=0.4)
-    plt.legend()
     plt.tight_layout()
 
 
-def saver(f, Is, version, l=None):
-    I_P = dict(cf.I_P, **{'F_N_POINTS': cf.F_N_POINTS,
-                          'N_POINTS': cf.N_POINTS})
-    # I_P = dict(cf.I_P, **{'kappa': cf.KAPPA,
-    #                       'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
+def saver(f, Is, version, l=None, kappa=None):
+    # I_P = dict(cf.I_P, **{'F_N_POINTS': cf.F_N_POINTS,
+    #                       'N_POINTS': cf.N_POINTS})
+    I_P = dict(cf.I_P, **{'kappa': kappa,
+                          'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
     tt = time.localtime()
     the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
     pdffig = PdfPages(
@@ -141,6 +141,8 @@ def saver(f, Is, version, l=None):
 
 
 def plot_IS_spectrum(version, kappa=None):
+    save = input(
+        'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     spectrum = False
     if isinstance(kappa, list):
         spectrum = []
@@ -153,8 +155,6 @@ def plot_IS_spectrum(version, kappa=None):
         f, Is = tool.isr_spectrum('kappa', kappa=kappa)
     else:
         f, Is = tool.isr_spectrum(version)
-    save = input(
-        'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     if spectrum:
         if save in ['y', 'yes']:
             saver(f, spectrum, 'both', l=kappa)
@@ -165,7 +165,10 @@ def plot_IS_spectrum(version, kappa=None):
             semilog_y(f, spectrum, l=kappa)
     else:
         if save in ['y', 'yes']:
-            saver(f, Is, version)
+            if version == 'kappa':
+                saver(f, Is, version, kappa=kappa)
+            else:
+                saver(f, Is, version)
         else:
             two_side_lin_plot(f, Is)
             loglog(f, Is)
