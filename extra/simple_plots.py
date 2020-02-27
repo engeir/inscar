@@ -77,10 +77,10 @@ def d_vdf_plots():
         # f = f**(1 / n)
         plot(v, f, 'k', label=f'Kappa = {k}', linestyle=s, linewidth=.8)
     plt.legend()
-    # plt.ylim([1e-5, 1e1])
-    plt.xlabel(r'$v/v_{th}$')
-    plt.ylabel(r'$f/\max(f_{maxwellian})$')
-    # plt.savefig(f'../../report/master-thesis/figures/vdf.pdf',
+    plt.ylim([1e-5, 3e1])
+    plt.xlabel(r'$v/v_{\mathrm{th}}$')
+    plt.ylabel(r'$f_0/\max(f_{0,M})$')
+    # plt.savefig(f'../../report/master-thesis/figures/d_vdf.pdf',
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
@@ -106,8 +106,8 @@ def vdf_plots():
         plot(v, f, 'k', label=f'Kappa = {k}', linestyle=s, linewidth=.8)
     plt.legend()
     plt.ylim([1e-5, 1e1])
-    plt.xlabel(r'$v/v_{th}$')
-    plt.ylabel(r'$f/\max(f_{maxwellian})$')
+    plt.xlabel(r'$v/v_{\mathrm{th}}$')
+    plt.ylabel(r'$f_0/\max(f_{0,M})$')
     # plt.savefig(f'../../report/master-thesis/figures/vdf.pdf',
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
@@ -146,5 +146,5 @@ def chirp_z_fail():
 if __name__ == '__main__':
     # chirp_sampling()
     vdf_plots()
-    # d_vdf_plots()
+    d_vdf_plots()
     # chirp_z_fail()
