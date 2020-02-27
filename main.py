@@ -5,6 +5,7 @@ import os
 import time
 import datetime
 
+import si_prefix as sip
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
@@ -13,10 +14,19 @@ import config as cf
 import tool
 
 
+def scale_f(frequency):
+    freq = np.copy(frequency)
+    exp = sip.split(np.max(freq))[1]
+    freq /= 10**exp
+    pre = sip.prefix(exp)
+    return pre, freq
+
+
 def loglog(f, Is, l=None):
+    p, freq = scale_f(f)
     plt.figure()
     # plt.title('ISR spectrum')
-    plt.xlabel('Frequency [MHz]')
+    plt.xlabel(f'Frequency [{p}Hz]')
     plt.ylabel('Power')
     if isinstance(Is, list):
         if any([isinstance(i, int) for i in l]):
@@ -28,19 +38,20 @@ def loglog(f, Is, l=None):
                  (0, (3, 5, 1, 5, 1, 5)),
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
-            plt.loglog(f, s, 'r', linestyle=st, linewidth=.8, label=lab)
+            plt.loglog(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
         plt.legend()
     else:
-        plt.loglog(f, Is, 'r')
+        plt.loglog(freq, Is, 'r')
     plt.minorticks_on()
     plt.grid(True, which="both", ls="-", alpha=0.4)
     plt.tight_layout()
 
 
 def semilog_y(f, Is, l=None):
+    p, freq = scale_f(f)
     plt.figure()
     # plt.title('ISR spectrum')
-    plt.xlabel('Frequency [MHz]')
+    plt.xlabel(f'Frequency [{p}Hz]')
     plt.ylabel('10*log10(Power) [dB]')
     # plt.semilogy(f, Is, 'r')
     if isinstance(Is, list):
@@ -53,10 +64,10 @@ def semilog_y(f, Is, l=None):
                  (0, (3, 5, 1, 5, 1, 5)),
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
-            plt.plot(f, 10 * np.log10(s), 'r', linestyle=st, linewidth=.8, label=lab)
+            plt.plot(freq, 10 * np.log10(s), 'r', linestyle=st, linewidth=.8, label=lab)
         plt.legend()
     else:
-        plt.plot(f, 10 * np.log10(Is), 'r')
+        plt.plot(freq, 10 * np.log10(Is), 'r')
     # plt.yscale('log')
     plt.minorticks_on()
     plt.grid(True, which="both", ls="-", alpha=0.4)
@@ -64,9 +75,10 @@ def semilog_y(f, Is, l=None):
 
 
 def semilog_x(f, Is, l=None):
+    p, freq = scale_f(f)
     plt.figure()
     # plt.title('ISR spectrum')
-    plt.xlabel('Frequency [MHz]')
+    plt.xlabel(f'Frequency [{p}Hz]')
     # plt.xlabel('log10(Frequency [MHz])')
     plt.ylabel('Power')
     if isinstance(Is, list):
@@ -79,18 +91,19 @@ def semilog_x(f, Is, l=None):
                  (0, (3, 5, 1, 5, 1, 5)),
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
-            plt.semilogx(f, s, 'r', linestyle=st, linewidth=.8, label=lab)
+            plt.semilogx(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
         plt.legend()
     else:
-        plt.semilogx(f, Is, 'r')
+        plt.semilogx(freq, Is, 'r')
     plt.grid(True, which="both", ls="-", alpha=0.4)
     plt.tight_layout()
 
 
 def two_side_lin_plot(f, Is, l=None):
+    p, freq = scale_f(f)
     plt.figure()
     # plt.title('ISR spectrum')
-    plt.xlabel('Frequency [MHz]')
+    plt.xlabel(f'Frequency [{p}Hz]')
     plt.ylabel('Power')
     if isinstance(Is, list):
         if any([isinstance(i, int) for i in l]):
@@ -102,10 +115,10 @@ def two_side_lin_plot(f, Is, l=None):
                  (0, (3, 5, 1, 5, 1, 5)),
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
-            plt.plot(f, s, 'r', linestyle=st, linewidth=.8, label=lab)
+            plt.plot(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
         plt.legend()
     else:
-        plt.plot(f, Is, 'r')
+        plt.plot(freq, Is, 'r')
     # plt.plot(- f, Is, 'r')
     plt.grid(True, which="major", ls="-", alpha=0.4)
     plt.tight_layout()
@@ -157,7 +170,7 @@ def plot_IS_spectrum(version, kappa=None):
         f, Is = tool.isr_spectrum(version)
     if spectrum:
         if save in ['y', 'yes']:
-            saver(f, spectrum, 'both', l=kappa)
+            saver(f, spectrum, 'both', l=kappa, kappa=kappa)
         else:
             two_side_lin_plot(f, spectrum, l=kappa)
             loglog(f, spectrum, l=kappa)
@@ -179,5 +192,5 @@ def plot_IS_spectrum(version, kappa=None):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa', kappa=[3, 5, 8, 20])
+    plot_IS_spectrum('kappa', kappa=7)
     # tool.H_spectrum('kappa')
