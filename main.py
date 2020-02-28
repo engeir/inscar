@@ -31,7 +31,7 @@ def loglog(f, Is, l=None):
     if isinstance(Is, list):
         if any([isinstance(i, int) for i in l]):
             for v, i in enumerate(l):
-                l[v] = f'Kappa = {i}'
+                l[v] = r'$\kappa =$' + f'{i}'
         if 'Maxwellian' not in l:
             l.insert(0, 'Maxwellian')
         style = ['-', '--', ':', '-.',
@@ -57,7 +57,7 @@ def semilog_y(f, Is, l=None):
     if isinstance(Is, list):
         if any([isinstance(i, int) for i in l]):
             for v, i in enumerate(l):
-                l[v] = f'Kappa = {i}'
+                l[v] = r'$\kappa =$' + f'{i}'
         if 'Maxwellian' not in l:
             l.insert(0, 'Maxwellian')
         style = ['-', '--', ':', '-.',
@@ -84,7 +84,7 @@ def semilog_x(f, Is, l=None):
     if isinstance(Is, list):
         if any([isinstance(i, int) for i in l]):
             for v, i in enumerate(l):
-                l[v] = f'Kappa = {i}'
+                l[v] = r'$\kappa =$' + f'{i}'
         if 'Maxwellian' not in l:
             l.insert(0, 'Maxwellian')
         style = ['-', '--', ':', '-.',
@@ -108,7 +108,7 @@ def two_side_lin_plot(f, Is, l=None):
     if isinstance(Is, list):
         if any([isinstance(i, int) for i in l]):
             for v, i in enumerate(l):
-                l[v] = f'Kappa = {i}'
+                l[v] = r'$\kappa =$' + f'{i}'
         if 'Maxwellian' not in l:
             l.insert(0, 'Maxwellian')
         style = ['-', '--', ':', '-.',
@@ -192,5 +192,5 @@ def plot_IS_spectrum(version, kappa=None):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa', kappa=7)
+    plot_IS_spectrum('kappa', kappa=[3, 5, 8, 20])
     # tool.H_spectrum('kappa')
