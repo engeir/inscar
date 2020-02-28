@@ -35,7 +35,7 @@ ORDER = 3
 # THETA -- Pitch angle [1]
 
 # For seeing gyro lines
-I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 2e6, 'MI': 29, 'NE': 2e10,
+I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 3e3, 'MI': 29, 'NE': 2e10,
        'NU_E': 0, 'NU_I': 0, 'T_E': 200, 'T_I': 200, 'THETA': 45 * np.pi / 180}
 # For same plots as Hagfors
 # I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 1.5e6, 'MI': 16, 'NE': 2e10,
