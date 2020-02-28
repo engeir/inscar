@@ -75,7 +75,7 @@ def d_vdf_plots():
         f /= norm
         f = abs(f)
         # f = f**(1 / n)
-        plot(v, f, 'k', label=f'Kappa = {k}', linestyle=s, linewidth=.8)
+        plot(v, f, 'k', label=r'$\kappa = $' + f'{k}', linestyle=s, linewidth=.8)
     plt.legend()
     plt.ylim([1e-5, 3e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
@@ -103,7 +103,7 @@ def vdf_plots():
     for k, s in zip(K, style):
         f = kappa(w, 1000, const.electron_mass, k)
         f /= norm
-        plot(v, f, 'k', label=f'Kappa = {k}', linestyle=s, linewidth=.8)
+        plot(v, f, 'k', label=r'$\kappa = $' + f'{k}', linestyle=s, linewidth=.8)
     plt.legend()
     plt.ylim([1e-5, 1e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
@@ -145,6 +145,6 @@ def chirp_z_fail():
 
 if __name__ == '__main__':
     # chirp_sampling()
-    vdf_plots()
+    # vdf_plots()
     d_vdf_plots()
     # chirp_z_fail()
