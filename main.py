@@ -64,7 +64,8 @@ def semilog_y(f, Is, l=None):
                  (0, (3, 5, 1, 5, 1, 5)),
                  (0, (3, 1, 1, 1, 1, 1))]
         for st, s, lab in zip(style, Is, l):
-            plt.plot(freq, 10 * np.log10(s), 'r', linestyle=st, linewidth=.8, label=lab)
+            plt.plot(freq, 10 * np.log10(s), 'r',
+                     linestyle=st, linewidth=.8, label=lab)
         plt.legend()
     else:
         plt.plot(freq, 10 * np.log10(Is), 'r')
@@ -157,14 +158,14 @@ def plot_IS_spectrum(version, kappa=None):
     save = input(
         'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     spectrum = False
-    if isinstance(kappa, list):
+    if isinstance(kappa, list) and version == 'kappa':
         spectrum = []
         f, Is = tool.isr_spectrum('maxwell')
         spectrum.append(Is)
         for k in kappa:
             f, Is = tool.isr_spectrum('kappa', kappa=k)
             spectrum.append(Is)
-    elif isinstance(kappa, int):
+    elif isinstance(kappa, int) and version == 'kappa':
         f, Is = tool.isr_spectrum('kappa', kappa=kappa)
     else:
         f, Is = tool.isr_spectrum(version)
@@ -192,5 +193,5 @@ def plot_IS_spectrum(version, kappa=None):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa', kappa=[3, 5, 8, 20])
+    plot_IS_spectrum('hagfors', kappa=5)
     # tool.H_spectrum('kappa')
