@@ -1,16 +1,17 @@
-import sys
 import os
+import sys
+import textwrap as txt
 import time
 
-import numpy as np
 import matplotlib.pyplot as plt
-import scipy.special as sps
-import scipy.integrate as si
+import numpy as np
 import scipy.constants as const
+import scipy.integrate as si
+import scipy.special as sps
 
 import config as cf
-import parallelization as para
 import integrand_functions as intf
+import parallelization as para
 
 
 def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
@@ -130,6 +131,11 @@ def isr_spectrum(version, kappa=5):
     if version == 'hagfors':
         func = intf.F_s_integrand
     elif version == 'kappa':
+        if cf.I_P['NU_E'] != 0 or cf.I_P['NU_I'] != 0:
+            text = f'''\
+                    Warning: the kappa function is defined for a collisionless plasma.
+                    You are using: nu_i = {cf.I_P['NU_I']} and nu_e = {cf.I_P['NU_E']}.'''
+            print(txt.fill(txt.dedent(text), width=300))
         func = intf.kappa_gordeyev
     elif version == 'maxwell':
         func = intf.maxwell_gordeyev
