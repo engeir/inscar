@@ -177,7 +177,7 @@ def isr_spectrum(version, kappa=5, area=False):
         4 * Xp**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
 
     if area and cf.I_P['F_MAX'] < 1e4:
-        area = si.simps(Is, cf.w)
+        area = si.simps(Is, cf.f)
         print('The area under the ion line is %1.6e.' % area)
 
     return f_scaled, abs(Is)

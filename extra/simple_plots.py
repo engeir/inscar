@@ -53,7 +53,7 @@ def d_kappa(x, T, m, k):
 
 
 def d_vdf_plots():
-    n = 5
+    # n = 5
     w = np.linspace(- 8e5, 8e5, 1e4)
     v = w * np.sqrt(const.electron_mass / (1000 * const.k))
     f = d_maxwell(w, 1000, const.electron_mass)
