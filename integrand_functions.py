@@ -15,11 +15,15 @@ def ziebell_z_func(kappa, m, xi):
 
 
 def two_p_isotropic_kappa(params):
-    w_bk = (2 * (params['kappa'] - 3 / 2) / params['kappa'] * params['T'] * const.k / params['m'])**.5
-    zbn = cf.w / (cf.K_RADAR * np.cos(cf.I_P['THETA']) * w_bk)  # (\zeta_\beta^0)
+    w_bk = (2 * (params['kappa'] - 3 / 2) / params['kappa']
+            * params['T'] * const.k / params['m'])**.5
+    # (\zeta_\beta^0)
+    zbn = cf.w / (cf.K_RADAR * np.cos(cf.I_P['THETA']) * w_bk)
     D = 2 * params['w_c']**2 / cf.w**2 * zbn**2 * \
-        ((params['kappa'] - .5) / params['kappa'] + zbn * ziebell_z_func(params['kappa'], 1, zbn))
-    l_D2 = const.epsilon_0 * params['T'] / (cf.I_P['NE'] * const.elementary_charge**2) * (params['kappa'] - 3 / 2) / (params['kappa'] - 1 / 2)
+        ((params['kappa'] - .5) / params['kappa'] +
+         zbn * ziebell_z_func(params['kappa'], 1, zbn))
+    l_D2 = const.epsilon_0 * params['T'] / (cf.I_P['NE'] * const.elementary_charge**2) * (
+        params['kappa'] - 3 / 2) / (params['kappa'] - 1 / 2)
     A = 1 / (cf.K_RADAR**2 * l_D2)
     G = 1j * (1 - A * D) / cf.w
     F = 1 - (1j * cf.w + params['nu']) * G
@@ -47,10 +51,12 @@ def kappa_gordeyev(y, params):
     Returns:
         np.ndarray -- 1D array with the values of the integrand at the positions of the integration variable
     """
-    z_value = z_func(y, params['w_c'], params['m'], params['T'], params['kappa'])
+    z_value = z_func(y, params['w_c'], params['m'],
+                     params['T'], params['kappa'])
     Kn = sps.kv(params['kappa'] + 1 / 2, z_value)
     Kn[Kn == np.inf] = 1
-    G = z_value**(params['kappa'] + .5) * Kn * np.exp(- y * (- params['kappa'] - 1 / 2))
+    G = z_value**(params['kappa'] + .5) * Kn * \
+        np.exp(- y * (- params['kappa'] - 1 / 2))
     return G
 
 
