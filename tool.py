@@ -33,7 +33,7 @@ def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
 def integrate(w_c, m, T, Lambda_s, T_MAX, function):
     res = np.zeros(len(cf.w), dtype=np.complex128)
     for c, v in enumerate(cf.w):
-        res[c] = simpson(function, v, w_c, m, T, Lambda_s, T_MAX)
+        res[c] = simpson(function, v, w_c, m, T, Lambda_s, T_MAX, 5)
     F = 1 - (1j * cf.w + Lambda_s * w_c) * res
     return F
 
@@ -108,7 +108,7 @@ def make_F(dt_s, w_c, Lambda_s, MT, function=intf.F_s_integrand):
     return F
 
 
-def isr_spectrum(version, kappa=5):
+def isr_spectrum(version, kappa=5, area=False):
     """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
 
     Arguments:
@@ -175,6 +175,10 @@ def isr_spectrum(version, kappa=5):
     f_scaled = cf.f
     Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp**2 * Fi)**2 + (
         4 * Xp**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp**2 * (Fe + Fi))**2
+
+    if area and cf.I_P['F_MAX'] < 1e4:
+        area = si.simps(Is, cf.w)
+        print('The area under the ion line is %1.6e.' % area)
 
     return f_scaled, abs(Is)
 
@@ -330,7 +334,7 @@ def L_Debye(*args, kappa=None):
                          (max(0, n_e) * const.e**2))
         else:
             LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)
-                         ) * np.sqrt((kappa - 3 / 2) / (kappa - 1 / 2))
+                        ) * np.sqrt((kappa - 3 / 2) / (kappa - 1 / 2))
     else:
         LD = np.sqrt(Ep0 * const.k /
                      ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e**2))

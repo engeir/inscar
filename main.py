@@ -154,16 +154,16 @@ def saver(f, Is, version, l=None, kappa=None):
     pdffig.close()
 
 
-def plot_IS_spectrum(version, kappa=None):
+def plot_IS_spectrum(version, kappa=None, area=False):
     save = input(
         'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     spectrum = False
     if isinstance(kappa, list) and version == 'kappa':
         spectrum = []
-        f, Is = tool.isr_spectrum('maxwell')
+        f, Is = tool.isr_spectrum('maxwell', area=area)
         spectrum.append(Is)
         for k in kappa:
-            f, Is = tool.isr_spectrum('kappa', kappa=k)
+            f, Is = tool.isr_spectrum('kappa', kappa=k, area=area)
             spectrum.append(Is)
     elif isinstance(kappa, int) and version == 'kappa':
         f, Is = tool.isr_spectrum('kappa', kappa=kappa)
@@ -193,5 +193,5 @@ def plot_IS_spectrum(version, kappa=None):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('hagfors', kappa=5)
+    plot_IS_spectrum('kappa', kappa=[3, 5, 8, 20], area=True)
     # tool.H_spectrum('kappa')
