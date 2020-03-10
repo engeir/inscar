@@ -23,11 +23,20 @@ def scale_f(frequency):
     return pre, freq, exp
 
 
-def find_p_line(scale):
-    w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge**2 / (const.m_e * const.epsilon_0))
+def find_p_line(freq, spec, scale):
+    fr = np.copy(freq)
+    sp = np.copy(spec)
+    w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge **
+                  2 / (const.m_e * const.epsilon_0))
     f = w_p * (1 + 3 * cf.K_RADAR**2 *
                cf.I_P['T_E'] * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
-    return (f - 3e5) / 10**scale, (f + 3e5) / 10**scale
+    lower, upper = (f - 1e6) / 10**scale, (f + 1e6) / 10**scale
+    m = (fr > lower) & (fr < upper)
+    fr_n = fr[m]
+    sp = sp[m]
+    av = fr_n[np.argmax(sp)]
+    lower, upper = av - 2e6 / 10**scale, av + 2e6 / 10**scale
+    return lower, upper
 
 
 def loglog(f, Is, l=None, plasma=False):
@@ -35,7 +44,11 @@ def loglog(f, Is, l=None, plasma=False):
     plt.figure()
     # plt.title('ISR spectrum')
     if plasma:
-        mini, maxi = find_p_line(exp)
+        if isinstance(Is, list):
+            spectrum = Is[0]
+        else:
+            spectrum = Is
+        mini, maxi = find_p_line(freq, spectrum, exp)
         mask = (freq > mini) & (freq < maxi)
         freq = freq[mask]
     plt.xlabel(f'Frequency [{p}Hz]')
@@ -68,7 +81,11 @@ def semilog_y(f, Is, l=None, plasma=False):
     plt.figure()
     # plt.title('ISR spectrum')
     if plasma:
-        mini, maxi = find_p_line(exp)
+        if isinstance(Is, list):
+            spectrum = Is[0]
+        else:
+            spectrum = Is
+        mini, maxi = find_p_line(freq, spectrum, exp)
         mask = (freq > mini) & (freq < maxi)
         freq = freq[mask]
     plt.xlabel(f'Frequency [{p}Hz]')
@@ -104,7 +121,11 @@ def semilog_x(f, Is, l=None, plasma=False):
     plt.figure()
     # plt.title('ISR spectrum')
     if plasma:
-        mini, maxi = find_p_line(exp)
+        if isinstance(Is, list):
+            spectrum = Is[0]
+        else:
+            spectrum = Is
+        mini, maxi = find_p_line(freq, spectrum, exp)
         mask = (freq > mini) & (freq < maxi)
         freq = freq[mask]
     plt.xlabel(f'Frequency [{p}Hz]')
@@ -136,7 +157,11 @@ def two_side_lin_plot(f, Is, l=None, plasma=False):
     plt.figure()
     # plt.title('ISR spectrum')
     if plasma:
-        mini, maxi = find_p_line(exp)
+        if isinstance(Is, list):
+            spectrum = Is[0]
+        else:
+            spectrum = Is
+        mini, maxi = find_p_line(freq, spectrum, exp)
         mask = (freq > mini) & (freq < maxi)
         freq = freq[mask]
     plt.xlabel(f'Frequency [{p}Hz]')
@@ -231,5 +256,5 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa', kappa=[3, 10], area=True, plasma=True)
+    plot_IS_spectrum('kappa', kappa=[3, 5, 8, 20], area=True, plasma=False)
     # tool.H_spectrum('kappa')
