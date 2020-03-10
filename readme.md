@@ -1,7 +1,7 @@
 ## ISR spectrum
 ![ISR spectrum](https://github.com/engeir/code-for-master/workflows/ISR%20spectrum/badge.svg)
 #### Info
-Makes plots of ISR spectrum based on the theory presented in Hagfors [1961].
+Makes plots of ISR spectrum based on the theory presented in [Hagfors (1961)](https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699).
 
 #### Installing
 Run
