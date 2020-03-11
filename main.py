@@ -39,10 +39,9 @@ def find_p_line(freq, spec, scale):
     return lower, upper
 
 
-def loglog(f, Is, l=None, plasma=False):
+def plotter(f, Is, plot_func, l=None, plasma=False):
     p, freq, exp = scale_f(f)
     plt.figure()
-    # plt.title('ISR spectrum')
     if plasma:
         if isinstance(Is, list):
             spectrum = Is[0]
@@ -51,8 +50,18 @@ def loglog(f, Is, l=None, plasma=False):
         mini, maxi = find_p_line(freq, spectrum, exp)
         mask = (freq > mini) & (freq < maxi)
         freq = freq[mask]
-    plt.xlabel(f'Frequency [{p}Hz]')
-    plt.ylabel('Power')
+    if plot_func == plt.semilogy:
+        plt.xlabel(f'Frequency [{p}Hz]')
+        plt.ylabel('10*log10(Power) [dB]')
+        plot_func = plt.plot
+        if isinstance(Is, list):
+            for s in Is:
+                s = 10 * np.log10(s)
+        else:
+            Is = 10 * np.log10(Is)
+    else:
+        plt.xlabel(f'Frequency [{p}Hz]')
+        plt.ylabel('Power')
     if isinstance(Is, list):
         if any([isinstance(i, int) for i in l]):
             for v, i in enumerate(l):
@@ -65,132 +74,18 @@ def loglog(f, Is, l=None, plasma=False):
         for st, s, lab in zip(style, Is, l):
             if plasma:
                 s = s[mask]
-            plt.loglog(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
+            plot_func(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
         plt.legend()
     else:
         if plasma:
             Is = Is[mask]
-        plt.loglog(freq, Is, 'r')
+        plot_func(freq, Is, 'r')
     plt.minorticks_on()
     plt.grid(True, which="both", ls="-", alpha=0.4)
-    plt.tight_layout()
-
-
-def semilog_y(f, Is, l=None, plasma=False):
-    p, freq, exp = scale_f(f)
-    plt.figure()
-    # plt.title('ISR spectrum')
-    if plasma:
-        if isinstance(Is, list):
-            spectrum = Is[0]
-        else:
-            spectrum = Is
-        mini, maxi = find_p_line(freq, spectrum, exp)
-        mask = (freq > mini) & (freq < maxi)
-        freq = freq[mask]
-    plt.xlabel(f'Frequency [{p}Hz]')
-    plt.ylabel('10*log10(Power) [dB]')
-    # plt.semilogy(f, Is, 'r')
-    if isinstance(Is, list):
-        if any([isinstance(i, int) for i in l]):
-            for v, i in enumerate(l):
-                l[v] = r'$\kappa =$' + f'{i}'
-        if 'Maxwellian' not in l:
-            l.insert(0, 'Maxwellian')
-        style = ['-', '--', ':', '-.',
-                 (0, (3, 5, 1, 5, 1, 5)),
-                 (0, (3, 1, 1, 1, 1, 1))]
-        for st, s, lab in zip(style, Is, l):
-            if plasma:
-                s = s[mask]
-            plt.plot(freq, 10 * np.log10(s), 'r',
-                     linestyle=st, linewidth=.8, label=lab)
-        plt.legend()
-    else:
-        if plasma:
-            Is = Is[mask]
-        plt.plot(freq, 10 * np.log10(Is), 'r')
-    # plt.yscale('log')
-    plt.minorticks_on()
-    plt.grid(True, which="both", ls="-", alpha=0.4)
-    plt.tight_layout()
-
-
-def semilog_x(f, Is, l=None, plasma=False):
-    p, freq, exp = scale_f(f)
-    plt.figure()
-    # plt.title('ISR spectrum')
-    if plasma:
-        if isinstance(Is, list):
-            spectrum = Is[0]
-        else:
-            spectrum = Is
-        mini, maxi = find_p_line(freq, spectrum, exp)
-        mask = (freq > mini) & (freq < maxi)
-        freq = freq[mask]
-    plt.xlabel(f'Frequency [{p}Hz]')
-    plt.ylabel('Power')
-    if isinstance(Is, list):
-        if any([isinstance(i, int) for i in l]):
-            for v, i in enumerate(l):
-                l[v] = r'$\kappa =$' + f'{i}'
-        if 'Maxwellian' not in l:
-            l.insert(0, 'Maxwellian')
-        style = ['-', '--', ':', '-.',
-                 (0, (3, 5, 1, 5, 1, 5)),
-                 (0, (3, 1, 1, 1, 1, 1))]
-        for st, s, lab in zip(style, Is, l):
-            if plasma:
-                s = s[mask]
-            plt.semilogx(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
-        plt.legend()
-    else:
-        if plasma:
-            Is = Is[mask]
-        plt.semilogx(freq, Is, 'r')
-    plt.grid(True, which="both", ls="-", alpha=0.4)
-    plt.tight_layout()
-
-
-def two_side_lin_plot(f, Is, l=None, plasma=False):
-    p, freq, exp = scale_f(f)
-    plt.figure()
-    # plt.title('ISR spectrum')
-    if plasma:
-        if isinstance(Is, list):
-            spectrum = Is[0]
-        else:
-            spectrum = Is
-        mini, maxi = find_p_line(freq, spectrum, exp)
-        mask = (freq > mini) & (freq < maxi)
-        freq = freq[mask]
-    plt.xlabel(f'Frequency [{p}Hz]')
-    plt.ylabel('Power')
-    if isinstance(Is, list):
-        if any([isinstance(i, int) for i in l]):
-            for v, i in enumerate(l):
-                l[v] = r'$\kappa =$' + f'{i}'
-        if 'Maxwellian' not in l:
-            l.insert(0, 'Maxwellian')
-        style = ['-', '--', ':', '-.',
-                 (0, (3, 5, 1, 5, 1, 5)),
-                 (0, (3, 1, 1, 1, 1, 1))]
-        for st, s, lab in zip(style, Is, l):
-            if plasma:
-                s = s[mask]
-            plt.plot(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
-        plt.legend()
-    else:
-        if plasma:
-            Is = Is[mask]
-        plt.plot(freq, Is, 'r')
-    plt.grid(True, which="major", ls="-", alpha=0.4)
     plt.tight_layout()
 
 
 def saver(f, Is, version, l=None, kappa=None, plasma=False):
-    # I_P = dict(cf.I_P, **{'F_N_POINTS': cf.F_N_POINTS,
-    #                       'N_POINTS': cf.N_POINTS})
     I_P = dict(cf.I_P, **{'kappa': kappa,
                           'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
     tt = time.localtime()
@@ -204,16 +99,16 @@ def saver(f, Is, version, l=None, kappa=None, plasma=False):
     metadata['Subject'] = f"IS spectrum made using a {version} distribution and Simpson's integration rule."
     metadata['Keywords'] = f'{I_P}'
     metadata['ModDate'] = datetime.datetime.today()
-    semilog_y(f, Is, l, plasma=plasma)
+    plotter(f, Is, plt.semilogy, l, plasma=plasma)
     pdffig.attach_note("Semilog y")
     plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-    two_side_lin_plot(f, Is, l, plasma=plasma)
+    plotter(f, Is, plt.plot, l, plasma=plasma)
     pdffig.attach_note("Linear plot")
     plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-    loglog(f, Is, l, plasma=plasma)
+    plotter(f, Is, plt.loglog, l, plasma=plasma)
     pdffig.attach_note("Loglog")
     plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-    # semilog_x(f, Is, l, plasma=plasma)
+    # plotter(f, Is, plt.semilogx, l, plasma=plasma)
     pdffig.close()
 
 
@@ -236,10 +131,10 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
         if save in ['y', 'yes']:
             saver(f, spectrum, 'both', l=kappa, kappa=kappa, plasma=plasma)
         else:
-            two_side_lin_plot(f, spectrum, l=kappa, plasma=plasma)
-            loglog(f, spectrum, l=kappa, plasma=plasma)
-            # semilog_x(f, spectrum, l=kappa, plasma=plasma)
-            semilog_y(f, spectrum, l=kappa, plasma=plasma)
+            plotter(f, spectrum, plt.plot, l=kappa, plasma=plasma)
+            plotter(f, spectrum, plt.semilogy, l=kappa, plasma=plasma)
+            # plotter(f, spectrum, plt.semilogx, l=kappa, plasma=plasma)
+            plotter(f, spectrum, plt.loglog, l=kappa, plasma=plasma)
     else:
         if save in ['y', 'yes']:
             if version == 'kappa':
@@ -247,14 +142,14 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
             else:
                 saver(f, Is, version, plasma=plasma)
         else:
-            two_side_lin_plot(f, Is, plasma=plasma)
-            loglog(f, Is, plasma=plasma)
-            # semilog_x(f, Is, plasma=plasma)
-            semilog_y(f, Is, plasma=plasma)
+            plotter(f, Is, plt.plot, plasma=plasma)
+            plotter(f, Is, plt.semilogy, plasma=plasma)
+            # plotter(f, Is, plt.semilogx, plasma=plasma)
+            plotter(f, Is, plt.loglog, plasma=plasma)
     plt.show()
 
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa', kappa=[3, 5, 8, 20], area=True, plasma=False)
+    plot_IS_spectrum('kappa', kappa=3, area=True, plasma=False)
     # tool.H_spectrum('kappa')
