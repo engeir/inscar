@@ -1,6 +1,8 @@
 import scipy.constants as const
 import scipy.special as sps
+import scipy.integrate as si
 import numpy as np
+import matplotlib.pyplot as plt
 
 import config as cf
 
@@ -55,8 +57,7 @@ def kappa_gordeyev(y, params):
                      params['T'], params['kappa'])
     Kn = sps.kv(params['kappa'] + 1 / 2, z_value)
     Kn[Kn == np.inf] = 1
-    G = z_value**(params['kappa'] + .5) * Kn * \
-        np.exp(- y * (- params['kappa'] - 1 / 2))
+    G = z_value**(params['kappa'] + .5) * Kn * np.exp(- y * params['nu'])  # * np.exp(- y * (- params['kappa'] - 1 / 2))
     return G
 
 
@@ -82,3 +83,65 @@ def F_s_integrand(y, params):
                (np.sin(cf.I_P['THETA'])**2 * (1 - np.cos(params['w_c'] * y)) +
                 1 / 2 * params['w_c']**2 * np.cos(cf.I_P['THETA'])**2 * y**2))
     return W
+
+
+# def I(y, params):
+#     # Possibly rewrite this to be an integral over velocity.
+#     # Hence, solve it numerically only, and not care about the analytical.
+#     pp = p(y, params)
+#     v_th_2 = params['T'] * const.k / params['m']
+#     exp = np.exp(- .5 * pp * v_th_2)
+#     cos = np.cos(pp * params['v_0'])
+#     sin = np.sin(pp * params['v_0'])
+#     first = pp * exp * cos / (2 * np.pi)
+#     second = params['v_0'] * sin * exp / (2 * np.pi * v_th_2)
+#     third = sin * (v_th_2 - np.sqrt(2 * v_th_2**3) * pp * sps.dawsn(pp *
+#                                                                     np.sqrt(v_th_2 / 2))) / np.sqrt(2 * np.pi**3 * v_th_2**3)
+#     fourth = sps.dawsn(pp * np.sqrt(v_th_2 / 2)) * \
+#         cos * C / (v_th_2 * np.pi**(3 / 2))
+
+
+def f_0_maxwell(v, params):
+    A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2)
+    func = A * np.exp(- v**2 / (2 * params['T'] * const.k / params['m']))
+    return func
+
+
+def v_int(y, params):
+    res = np.copy(y)
+    V_MAX = 2e6
+    v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e2))**cf.ORDER
+    f = f_0_maxwell(v, params)
+    for i, j in enumerate(y):
+        cos = np.cos(p(j, params) * v)
+        val = cos * f
+        res[i] = si.simps(val, v)
+    return res
+
+
+def p(y, params):
+    k_perp = cf.K_RADAR * np.sin(cf.I_P['THETA'])
+    k_par = cf.K_RADAR * np.cos(cf.I_P['THETA'])
+    return (2 * k_perp**2 / params['w_c']**2 * (1 - np.cos(y * params['w_c'])) + k_par**2 * y**2)**.5
+
+
+def p_d(y, params):
+    # At y=0 we get 0/0, but in the limit as y tends to zero, we get frac = |k| * |w_c| / np.sqrt(w_c**2) (from above, opposite sign from below)
+    cos_t = np.cos(cf.I_P['THETA'])
+    sin_t = np.sin(cf.I_P['THETA'])
+    w_c = params['w_c']
+    num = abs(cf.K_RADAR) * abs(w_c) * (cos_t**2 * w_c * y + sin_t * np.sin(w_c * y))
+    den = w_c * (cos_t**2 * w_c**2 * y**2 - 2 * np.sin(cf.I_P['THETA'])**2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
+    first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / np.sqrt(w_c**2)
+    second = num[1:] / den[1:]
+    out = np.r_[first, second]
+    plt.figure()
+    # # plt.plot(num / den)
+    plt.plot(out)
+    plt.show()
+    return out
+
+
+# params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
+def long_calc(y, params):
+    return p_d(- y, params) * v_int(- y, params)
