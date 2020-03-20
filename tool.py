@@ -19,11 +19,6 @@ def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
     params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
     f = integrand(t, params)
     val = np.exp(- 1j * w * t) * f
-    # print(w, round(w) % 100)
-    # if round(w) % 1000 < 100:
-    #     plt.figure()
-    #     plt.plot(t, val)
-    #     plt.show()
 
     sint = si.simps(val, t)
     return sint
@@ -120,7 +115,7 @@ def isr_spectrum(version, kappa=None, area=False):
     Returns:
         1D array -- two one dimensional numpy arrays for the frequency domain and the values of the spectrum
     """
-    versions = ['hagfors', 'kappa', 'maxwell']
+    versions = ['hagfors', 'kappa', 'maxwell', 'long_calc']
     try:
         if not version in versions:
             raise SystemError
@@ -142,6 +137,8 @@ def isr_spectrum(version, kappa=None, area=False):
         func = intf.kappa_gordeyev
     elif version == 'maxwell':
         func = intf.maxwell_gordeyev
+    elif version == 'long_calc':
+        func = intf.long_calc
     w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
     M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
@@ -163,7 +160,7 @@ def isr_spectrum(version, kappa=None, area=False):
     Fe = para.integrate(
         w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func, kappa=kappa)
     Fi = para.integrate(
-        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=intf.maxwell_gordeyev, kappa=kappa)
+        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func, kappa=kappa)
     # params_e = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'], 'w_c': w_c}
     # params_i = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'], 'w_c': W_c}
     # Fe = intf.two_p_isotropic_kappa(params_e)
@@ -172,7 +169,7 @@ def isr_spectrum(version, kappa=None, area=False):
     Xp_e = np.sqrt(
         1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
     Xp_i = np.sqrt(
-        1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=None)**2 * cf.K_RADAR**2))
+        1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
     f_scaled = cf.f
     Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
         4 * Xp_e**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp_e**2 * Fe + 2 * Xp_i**2 * Fi)**2
@@ -335,7 +332,7 @@ def L_Debye(*args, kappa=None):
                          (max(0, n_e) * const.e**2))
         else:
             LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)
-                        ) * np.sqrt((kappa - 3 / 2) / (kappa - 1 / 2))
+                         ) * np.sqrt((kappa - 3 / 2) / (kappa - 1 / 2))
     else:
         LD = np.sqrt(Ep0 * const.k /
                      ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e**2))
