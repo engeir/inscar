@@ -4,6 +4,7 @@ from functools import partial
 
 import numpy as np
 import scipy.special as sps
+import scipy.constants as const
 from tqdm import tqdm
 
 import config as cf
@@ -34,6 +35,8 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
         pass
     if function == intf.kappa_gordeyev:
         a = array / (2**(kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
+    elif function == intf.long_calc:
+        a = 4 * np.pi * T * const.k * array / m
     else:
         a = array
     F = 1 - (1j * cf.w + Lambda_s * w_c) * a
