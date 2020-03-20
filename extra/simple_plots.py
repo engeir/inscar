@@ -1,8 +1,10 @@
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
-from labellines import labelLines
+# from labellines import labelLines
 import scipy.constants as const
 import scipy.special as sps
+from scipy import stats
 
 
 def chirp_sampling():
@@ -40,7 +42,8 @@ def kappa(x, T, m, k):
 
 
 def d_maxwell(x, T, m):
-    f = (2 * np.pi * T * const.k / m)**(- 3 / 2) * (- x * m / (T * const.k)) * np.exp(- x**2 / (2 * T * const.k / m))
+    f = (2 * np.pi * T * const.k / m)**(- 3 / 2) * (- x * m /
+                                                    (T * const.k)) * np.exp(- x**2 / (2 * T * const.k / m))
     return f
 
 
@@ -48,7 +51,8 @@ def d_kappa(x, T, m, k):
     theta2 = 2 * (k - 3 / 2) / k * T * const.k / m
     A = (np.pi * k * theta2)**(- 3 / 2) * \
         sps.gamma(k + 1) / sps.gamma(k - .5)
-    f = A * (- k - 1) * (2 * x / (k * theta2)) * (1 + x**2 / (k * theta2))**(- k - 2)
+    f = A * (- k - 1) * (2 * x / (k * theta2)) * \
+        (1 + x**2 / (k * theta2))**(- k - 2)
     return f
 
 
@@ -75,7 +79,8 @@ def d_vdf_plots():
         f /= norm
         f = abs(f)
         # f = f**(1 / n)
-        plot(v, f, 'k', label=r'$\kappa = $' + f'{k}', linestyle=s, linewidth=.8)
+        plot(v, f, 'k', label=r'$\kappa = $' +
+             f'{k}', linestyle=s, linewidth=.8)
     plt.legend()
     plt.ylim([1e-5, 3e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
@@ -86,24 +91,26 @@ def d_vdf_plots():
 
 
 def vdf_plots():
-    w = np.linspace(- 8e5, 8e5, 1e4)
-    v = w * np.sqrt(const.electron_mass / (1000 * const.k))
-    f = maxwell(w, 1000, const.electron_mass)
+    T = 1000
+    w = np.linspace(- 8e5, 8e5, int(1e4))
+    v = w * np.sqrt(const.electron_mass / (T * const.k))
+    f = maxwell(w, T, const.electron_mass)
     norm = np.max(f)
     f /= norm
     style = [
         '-', '--', ':', '-.',
         (0, (3, 5, 1, 5, 1, 5)),
         (0, (3, 1, 1, 1, 1, 1))
-        ]
+    ]
     plot = plt.semilogy
     plt.figure()
     plot(v, f, 'k', label='Maxwellian', linestyle='-', linewidth=1.3)
     K = [2, 2.5, 3, 4, 10]
     for k, s in zip(K, style):
-        f = kappa(w, 1000, const.electron_mass, k)
+        f = kappa(w, T, const.electron_mass, k)
         f /= norm
-        plot(v, f, 'k', label=r'$\kappa = $' + f'{k}', linestyle=s, linewidth=.8)
+        plot(v, f, 'k', label=r'$\kappa = $' +
+             f'{k}', linestyle=s, linewidth=.8)
     plt.legend()
     plt.ylim([1e-5, 1e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
@@ -143,8 +150,67 @@ def chirp_z_fail():
     plt.show()
 
 
+def l_Debye():
+    k0 = 2 * 933e6 * 2 * np.pi / const.c  # Radar wavenumber
+    T = np.linspace(1000, 10000, 1000)
+    k = 3
+    l_D = (const.epsilon_0 * const.k * T /
+           (2e11 * const.elementary_charge**2))**.5
+    l = l_D * ((k - 3 / 2) / (k - 1 / 2))**.5
+    plt.figure()
+    plt.plot(T, (k0 * l_D)**2)
+    plt.plot(T, (k0 * l)**2)
+    plt.legend(['l_D', 'l_D_k'])
+    plt.show()
+
+
+def twoD_gauss():
+    xi, yi = np.linspace(- 1, 1, 100), np.linspace(- 1, 1, 100)
+    x, y = np.meshgrid(xi, yi)
+    e = np.exp(- (np.sqrt(x**2 + y**2) - .7)**2)
+    plt.figure()
+    plt.imshow(e, extent=[- 1, 1, - 1, 1])
+    plt.show()
+
+
+def sample_this(x, y, z):
+    v = np.exp(- (np.sqrt(x**2 + y**2 + z**2) - 3)**2) * \
+        (2 * np.pi**2)**(- 3 / 2) / 2
+    if np.random.uniform() < 2 * v:
+        return (x, y, z)
+    return None
+
+
+def gauss_3d():
+    xi = np.linspace(- 10, 10, 100)
+    yi = np.linspace(- 10, 10, 100)
+    zi = np.linspace(- 10, 10, 100)
+    xs = []
+    ys = []
+    zs = []
+    for x in xi:
+        for y in yi:
+            for z in zi:
+                back = sample_this(x, y, 0)
+                if back is not None:
+                    xs.append(back[0])
+                    ys.append(back[1])
+                    zs.append(back[2])
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(xs, ys, zs=0, zdir='z')
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+    plt.show()
+
+
 if __name__ == '__main__':
     # chirp_sampling()
     # vdf_plots()
-    d_vdf_plots()
+    # d_vdf_plots()
     # chirp_z_fail()
+    # l_Debye()
+    # twoD_gauss()
+    gauss_3d()
