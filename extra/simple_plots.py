@@ -4,7 +4,6 @@ import numpy as np
 from labellines import labelLines
 import scipy.constants as const
 import scipy.special as sps
-from scipy import stats
 
 
 def chirp_sampling():
@@ -182,6 +181,8 @@ def sample_this(x, y, z):
 
 
 def gauss_3d():
+    """Visual of a Gaussian shell distribution, both 2d and 3d.
+    """
     xi = np.linspace(- 10, 10, 100)
     yi = np.linspace(- 10, 10, 100)
     zi = np.linspace(- 10, 10, 100)
