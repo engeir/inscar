@@ -151,5 +151,5 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa', kappa=3, area=True, plasma=False)
+    plot_IS_spectrum('long_calc')  # , kappa=3, area=True, plasma=False)
     # tool.H_spectrum('kappa')
