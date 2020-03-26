@@ -1,8 +1,13 @@
-import scipy.constants as const
-import scipy.special as sps
-import scipy.integrate as si
-import numpy as np
+import warnings
+from functools import partial
+
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy.constants as const
+import scipy.integrate as si
+import scipy.special as sps
+# import sympy as sym
+import mpmath
 
 import config as cf
 
@@ -107,16 +112,31 @@ def f_0_maxwell(v, params):
     return func
 
 
+def vv_int(params, j, v):
+    return f_0_maxwell(v, params) * v * np.sin(p(j, params) * v)
+
+
 def v_int(y, params):
     res = np.copy(y)
-    V_MAX = 2e6
-    v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e2))**cf.ORDER
+    V_MAX = 1e3
+    v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e3))**cf.ORDER
     f = f_0_maxwell(v, params)
     for i, j in enumerate(y):
-        cos = np.cos(p(j, params) * v)
-        val = cos * f
+        sin = np.sin(p(j, params) * v)
+        val = v * sin * f
+        # if not i % 100:
+        #     plt.figure()
+        #     plt.plot(v, val)
+        #     plt.show()
+        # f = lambda x: vv_int(params, j, x)
+        # res[i] = mpmath.quad(f, [0, mpmath.inf])
         res[i] = si.simps(val, v)
     return res
+
+
+def pp(y, params, d=False):
+    if d == True:
+        pass
 
 
 def p(y, params):
@@ -130,18 +150,35 @@ def p_d(y, params):
     cos_t = np.cos(cf.I_P['THETA'])
     sin_t = np.sin(cf.I_P['THETA'])
     w_c = params['w_c']
-    num = abs(cf.K_RADAR) * abs(w_c) * (cos_t**2 * w_c * y + sin_t * np.sin(w_c * y))
-    den = w_c * (cos_t**2 * w_c**2 * y**2 - 2 * np.sin(cf.I_P['THETA'])**2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
+    num = abs(cf.K_RADAR) * abs(w_c) * (cos_t**2 * w_c * y + sin_t**2 * np.sin(w_c * y))
+    den = w_c * (cos_t**2 * w_c**2 * y**2 - 2 * sin_t**2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
     first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / np.sqrt(w_c**2)
-    second = num[1:] / den[1:]
-    out = np.r_[first, second]
-    plt.figure()
-    # # plt.plot(num / den)
-    plt.plot(out)
-    plt.show()
+    count_hack = 0
+    out = np.array([])
+    np.seterr(divide='warn')
+    warnings.filterwarnings('error')
+    while 1:
+        try:
+            num[count_hack:] / den[count_hack:]
+        except RuntimeWarning:  # ZeroDivisionError:
+            count_hack += 1
+            out = np.r_[out, first]
+        else:
+            break
+    second = num[count_hack:] / den[count_hack:]
+    out = np.r_[out, second]
     return out
 
 
 # params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
 def long_calc(y, params):
-    return p_d(- y, params) * v_int(- y, params)
+    """Based on eq. (12) of Mace (2003).
+
+    Arguments:
+        y {np.ndarray} -- integration variable, 1D array of floats
+        params {dict} -- dict of all plasma parameters
+
+    Returns:
+        np.ndarray -- the value of the integrand going into the integral in eq. (12)
+    """
+    return p_d(y, params) * v_int(y, params)
