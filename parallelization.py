@@ -39,7 +39,10 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
         a = 4 * np.pi * T * const.k * array / m
     else:
         a = array
-    F = 1 - (1j * cf.w + Lambda_s * w_c) * a
+    if function == intf.long_calc:
+        F = a
+    else:
+        F = 1 - (1j * cf.w + Lambda_s * w_c) * a
     return F
 
 
