@@ -48,6 +48,7 @@
         "sinv",
         "smop",
         "spint",
+        "sympy",
         "tqdm",
         "vint",
         "xlabel",
