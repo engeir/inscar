@@ -7,7 +7,7 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 # import sympy as sym
-import mpmath
+import mpmath as mpm
 
 import config as cf
 
@@ -90,59 +90,60 @@ def F_s_integrand(y, params):
     return W
 
 
-# def I(y, params):
-#     # Possibly rewrite this to be an integral over velocity.
-#     # Hence, solve it numerically only, and not care about the analytical.
-#     pp = p(y, params)
-#     v_th_2 = params['T'] * const.k / params['m']
-#     exp = np.exp(- .5 * pp * v_th_2)
-#     cos = np.cos(pp * params['v_0'])
-#     sin = np.sin(pp * params['v_0'])
-#     first = pp * exp * cos / (2 * np.pi)
-#     second = params['v_0'] * sin * exp / (2 * np.pi * v_th_2)
-#     third = sin * (v_th_2 - np.sqrt(2 * v_th_2**3) * pp * sps.dawsn(pp *
-#                                                                     np.sqrt(v_th_2 / 2))) / np.sqrt(2 * np.pi**3 * v_th_2**3)
-#     fourth = sps.dawsn(pp * np.sqrt(v_th_2 / 2)) * \
-#         cos * C / (v_th_2 * np.pi**(3 / 2))
-
-
 def f_0_maxwell(v, params):
     A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2)
     func = A * np.exp(- v**2 / (2 * params['T'] * const.k / params['m']))
     return func
 
 
+def f_0_kappa(v, params):
+    theta_2 = 2 * ((params['kappa'] - 3 / 2) / params['kappa']) * params['T'] * const.k / params['m']
+    A = (np.pi * params['kappa'] * theta_2)**(- 3 / 2) * sps.gamma(params['kappa'] + 1) / sps.gamma(params['kappa'] - 1 / 2)
+    func = A * (1 + v**2 / (params['kappa'] * theta_2))**(- params['kappa'] - 1)
+    return func
+
+
+def mpm_f_0_maxwell(v, params):
+    A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2)
+    func = A * mpm.exp(- v**2 / (2 * params['T'] * const.k / params['m']))
+    return func
+
+
 def vv_int(params, j, v):
-    return f_0_maxwell(v, params) * v * np.sin(p(j, params) * v)
+    return mpm_f_0_maxwell(v, params) * v * mpm.sin(mpm_p(j, params) * v)
 
 
 def v_int(y, params):
     res = np.copy(y)
-    V_MAX = 1e3
-    v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e3))**cf.ORDER
+    V_MAX = 1e7
+    v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e4))**cf.ORDER
     f = f_0_maxwell(v, params)
+    # f = f_0_kappa(v, params)
     for i, j in enumerate(y):
         sin = np.sin(p(j, params) * v)
         val = v * sin * f
-        # if not i % 100:
+        # if not i % 800 and np.random.uniform(0, 1) < .1:
         #     plt.figure()
         #     plt.plot(v, val)
         #     plt.show()
         # f = lambda x: vv_int(params, j, x)
-        # res[i] = mpmath.quad(f, [0, mpmath.inf])
+        # f = partial(vv_int, params, j)
+        # res[i] = mpm.quad(f, [0, mpm.inf], method='gauss-legendre')
         res[i] = si.simps(val, v)
+        # print(res[i])
     return res
-
-
-def pp(y, params, d=False):
-    if d == True:
-        pass
 
 
 def p(y, params):
     k_perp = cf.K_RADAR * np.sin(cf.I_P['THETA'])
     k_par = cf.K_RADAR * np.cos(cf.I_P['THETA'])
     return (2 * k_perp**2 / params['w_c']**2 * (1 - np.cos(y * params['w_c'])) + k_par**2 * y**2)**.5
+
+
+def mpm_p(y, params):
+    k_perp = cf.K_RADAR * mpm.sin(cf.I_P['THETA'])
+    k_par = cf.K_RADAR * mpm.cos(cf.I_P['THETA'])
+    return (2 * k_perp**2 / params['w_c']**2 * (1 - mpm.cos(y * params['w_c'])) + k_par**2 * y**2)**.5
 
 
 def p_d(y, params):

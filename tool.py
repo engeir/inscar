@@ -170,10 +170,7 @@ def isr_spectrum(version, kappa=None, area=False):
         1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
     Xp_i = np.sqrt(
         1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
-    # TEST FOR LONG CALC
-    Fi = Fi / (2 * Xp_i**2)
-    Fe = Fe / (2 * Xp_e**2)
-    # TEST FOR LONG CALC
+
     f_scaled = cf.f
     Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
         4 * Xp_e**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp_e**2 * Fe + 2 * Xp_i**2 * Fi)**2
