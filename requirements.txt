@@ -3,3 +3,4 @@ matplotlib==3.*
 scipy==1.3.*
 tqdm
 mpmath
+cython==0.29.*
