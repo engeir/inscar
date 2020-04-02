@@ -85,9 +85,13 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
     plt.tight_layout()
 
 
-def saver(f, Is, version, l=None, kappa=None, plasma=False):
-    I_P = dict(cf.I_P, **{'kappa': kappa,
-                          'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
+def saver(f, Is, version, l=None, kappa=None, plasma=False, info=None):
+    if info is None:
+        I_P = dict(cf.I_P, **{'kappa': kappa,
+                              'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
+    else:
+        I_P = dict(cf.I_P, **{'info': info, 'kappa': kappa,
+                              'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
     tt = time.localtime()
     the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
     pdffig = PdfPages(
@@ -112,7 +116,7 @@ def saver(f, Is, version, l=None, kappa=None, plasma=False):
     pdffig.close()
 
 
-def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
+def plot_IS_spectrum(version, kappa=None, area=False, plasma=False, info=None):
     save = input(
         'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     spectrum = False
@@ -138,9 +142,9 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
     else:
         if save in ['y', 'yes']:
             if version == 'kappa':
-                saver(f, Is, version, kappa=kappa, plasma=plasma)
+                saver(f, Is, version, kappa=kappa, plasma=plasma, info=info)
             else:
-                saver(f, Is, version, kappa=kappa, plasma=plasma)
+                saver(f, Is, version, kappa=kappa, plasma=plasma, info=info)
         else:
             plotter(f, Is, plt.plot, plasma=plasma)
             plotter(f, Is, plt.semilogy, plasma=plasma)
@@ -151,5 +155,5 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('long_calc')  # , area=True, kappa=3)  # , area=True, plasma=False)
+    plot_IS_spectrum('long_calc', info='gauss_shell')  # , area=True, kappa=3)  # , area=True, plasma=False, info='extra info')
     # tool.H_spectrum('kappa')
