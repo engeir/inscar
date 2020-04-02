@@ -32,6 +32,13 @@ def maxwell(x, T, m):
     return f
 
 
+def f_0_gauss_shell(x, T, m):
+    vth = np.sqrt(T * const.k / m)
+    A = (2 * np.pi * T * const.k / m)**(- 3 / 2) / 2
+    func = A * np.exp(- (np.sqrt(x**2) - 5 * vth)**2 / (2 * T * const.k / m)) + 10 * maxwell(x, T, m)
+    return func / 11
+
+
 def kappa(x, T, m, k):
     theta2 = 2 * (k - 3 / 2) / k * T * const.k / m
     A = (np.pi * k * theta2)**(- 3 / 2) * \
@@ -91,7 +98,7 @@ def d_vdf_plots():
 
 def vdf_plots():
     T = 1000
-    w = np.linspace(- 8e5, 8e5, int(1e4))
+    w = np.linspace(- 13e5, 13e5, int(1e4))
     v = w * np.sqrt(const.electron_mass / (T * const.k))
     f = maxwell(w, T, const.electron_mass)
     norm = np.max(f)
@@ -104,6 +111,9 @@ def vdf_plots():
     plot = plt.semilogy
     plt.figure()
     plot(v, f, 'k', label='Maxwellian', linestyle='-', linewidth=1.3)
+    f = f_0_gauss_shell(w, T, const.electron_mass)
+    f /= norm
+    plot(v, f, 'k', label='Gauss shell', linestyle=':', linewidth=1.3)
     K = [2, 2.5, 3, 4, 10]
     for k, s in zip(K, style):
         f = kappa(w, T, const.electron_mass, k)
@@ -111,7 +121,7 @@ def vdf_plots():
         plot(v, f, 'k', label=r'$\kappa = $' +
              f'{k}', linestyle=s, linewidth=.8)
     plt.legend()
-    plt.ylim([1e-5, 1e1])
+    # plt.ylim([1e-5, 1e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
     plt.ylabel(r'$f_0/\max(f_{0,M})$')
     # plt.savefig(f'../../report/master-thesis/figures/vdf.pdf',
@@ -209,9 +219,9 @@ def gauss_3d():
 
 if __name__ == '__main__':
     # chirp_sampling()
-    # vdf_plots()
+    vdf_plots()
     # d_vdf_plots()
     # chirp_z_fail()
     # l_Debye()
     # twoD_gauss()
-    gauss_3d()
+    # gauss_3d()
