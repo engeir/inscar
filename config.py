@@ -11,11 +11,11 @@ import scipy.constants as const
 # Check if a test is running
 if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest']:
     # DO NOT EDIT
-    F_N_POINTS = 1e2
+    F_N_POINTS = 1e1
     N_POINTS = 1e2
 else:
     F_N_POINTS = 1e2  # Number of sample points in frequency
-    N_POINTS = 3e2  # Number of sample points in integral variable
+    N_POINTS = 3e3  # Number of sample points in integral variable
 # T_MAX_e = 1.5e-3, T_MAX_i = 1.5e-3: good for Maxwellian
 # T_MAX_e = 1.5e-4, T_MAX_i = 1.5e-2: good for kappa
 T_MAX_e = 1.5e-4  # Upper limit to integration (= infinity)
