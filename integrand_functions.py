@@ -1,15 +1,15 @@
 import warnings
-from functools import partial
 
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
-# import sympy as sym
 import mpmath as mpm
 
 import config as cf
+import test_long
+import pure_cython
 
 
 def ziebell_z_func(kappa, m, xi):
@@ -62,7 +62,8 @@ def kappa_gordeyev(y, params):
                      params['T'], params['kappa'])
     Kn = sps.kv(params['kappa'] + 1 / 2, z_value)
     Kn[Kn == np.inf] = 1
-    G = z_value**(params['kappa'] + .5) * Kn * np.exp(- y * params['nu'])  # * np.exp(- y * (- params['kappa'] - 1 / 2))
+    # * np.exp(- y * (- params['kappa'] - 1 / 2))
+    G = z_value**(params['kappa'] + .5) * Kn * np.exp(- y * params['nu'])
     return G
 
 
@@ -97,10 +98,21 @@ def f_0_maxwell(v, params):
 
 
 def f_0_kappa(v, params):
-    theta_2 = 2 * ((params['kappa'] - 3 / 2) / params['kappa']) * params['T'] * const.k / params['m']
-    A = (np.pi * params['kappa'] * theta_2)**(- 3 / 2) * sps.gamma(params['kappa'] + 1) / sps.gamma(params['kappa'] - 1 / 2)
-    func = A * (1 + v**2 / (params['kappa'] * theta_2))**(- params['kappa'] - 1)
+    theta_2 = 2 * ((params['kappa'] - 3 / 2) / params['kappa']
+                  ) * params['T'] * const.k / params['m']
+    A = (np.pi * params['kappa'] * theta_2)**(- 3 / 2) * \
+        sps.gamma(params['kappa'] + 1) / sps.gamma(params['kappa'] - 1 / 2)
+    func = A * (1 + v**2 / (params['kappa'] *
+                            theta_2))**(- params['kappa'] - 1)
     return func
+
+
+def f_0_gauss_shell(v, params):
+    vth = np.sqrt(params['T'] * const.k / params['m'])
+    A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2) / 2
+    func = A * np.exp(- (np.sqrt(v**2) - 5 * vth)**2 / (2 *
+                                                        params['T'] * const.k / params['m'])) + 10 * f_0_maxwell(v, params)
+    return func / 11
 
 
 def mpm_f_0_maxwell(v, params):
@@ -117,20 +129,13 @@ def v_int(y, params):
     res = np.copy(y)
     V_MAX = 1e7
     v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e4))**cf.ORDER
-    f = f_0_maxwell(v, params)
+    # f = f_0_maxwell(v, params)
     # f = f_0_kappa(v, params)
+    f = f_0_gauss_shell(v, params)
     for i, j in enumerate(y):
         sin = np.sin(p(j, params) * v)
         val = v * sin * f
-        # if not i % 800 and np.random.uniform(0, 1) < .1:
-        #     plt.figure()
-        #     plt.plot(v, val)
-        #     plt.show()
-        # f = lambda x: vv_int(params, j, x)
-        # f = partial(vv_int, params, j)
-        # res[i] = mpm.quad(f, [0, mpm.inf], method='gauss-legendre')
         res[i] = si.simps(val, v)
-        # print(res[i])
     return res
 
 
@@ -151,8 +156,10 @@ def p_d(y, params):
     cos_t = np.cos(cf.I_P['THETA'])
     sin_t = np.sin(cf.I_P['THETA'])
     w_c = params['w_c']
-    num = abs(cf.K_RADAR) * abs(w_c) * (cos_t**2 * w_c * y + sin_t**2 * np.sin(w_c * y))
-    den = w_c * (cos_t**2 * w_c**2 * y**2 - 2 * sin_t**2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
+    num = abs(cf.K_RADAR) * abs(w_c) * (cos_t**2 *
+                                        w_c * y + sin_t**2 * np.sin(w_c * y))
+    den = w_c * (cos_t**2 * w_c**2 * y**2 - 2 * sin_t **
+                 2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
     first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / np.sqrt(w_c**2)
     count_hack = 0
     out = np.array([])
@@ -182,4 +189,6 @@ def long_calc(y, params):
     Returns:
         np.ndarray -- the value of the integrand going into the integral in eq. (12)
     """
-    return p_d(y, params) * v_int(y, params)
+    # return p_d(y, params) * v_int(y, params)
+    return p_d(y, params) * test_long.v_int(y, params)
+    # return p_d(y, params) * pure_cython.v_int(y, params)
