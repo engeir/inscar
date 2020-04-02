@@ -124,9 +124,9 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
             f, Is = tool.isr_spectrum('kappa', kappa=k, area=area)
             spectrum.append(Is)
     elif isinstance(kappa, int) and version == 'kappa':
-        f, Is = tool.isr_spectrum('kappa', kappa=kappa)
+        f, Is = tool.isr_spectrum('kappa', kappa=kappa, area=area)
     else:
-        f, Is = tool.isr_spectrum(version)
+        f, Is = tool.isr_spectrum(version, kappa=kappa, area=area)
     if spectrum:
         if save in ['y', 'yes']:
             saver(f, spectrum, 'both', l=kappa, kappa=kappa, plasma=plasma)
@@ -140,7 +140,7 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
             if version == 'kappa':
                 saver(f, Is, version, kappa=kappa, plasma=plasma)
             else:
-                saver(f, Is, version, plasma=plasma)
+                saver(f, Is, version, kappa=kappa, plasma=plasma)
         else:
             plotter(f, Is, plt.plot, plasma=plasma)
             plotter(f, Is, plt.semilogy, plasma=plasma)
@@ -151,5 +151,5 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('long_calc')  # , kappa=3, area=True, plasma=False)
+    plot_IS_spectrum('long_calc')  # , area=True, kappa=3)  # , area=True, plasma=False)
     # tool.H_spectrum('kappa')
