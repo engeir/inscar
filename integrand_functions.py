@@ -8,8 +8,7 @@ import scipy.special as sps
 import mpmath as mpm
 
 import config as cf
-import test_long
-import pure_cython
+import int_cy
 
 
 def ziebell_z_func(kappa, m, xi):
@@ -190,5 +189,4 @@ def long_calc(y, params):
         np.ndarray -- the value of the integrand going into the integral in eq. (12)
     """
     # return p_d(y, params) * v_int(y, params)
-    return p_d(y, params) * test_long.v_int(y, params)
-    # return p_d(y, params) * pure_cython.v_int(y, params)
+    return p_d(y, params) * int_cy.v_int(y, params)
