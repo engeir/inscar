@@ -126,7 +126,7 @@ def vv_int(params, j, v):
 
 def v_int(y, params):
     res = np.copy(y)
-    V_MAX = 1e7
+    V_MAX = 1e6
     v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e4))**cf.ORDER
     # f = f_0_maxwell(v, params)
     # f = f_0_kappa(v, params)
@@ -160,20 +160,28 @@ def p_d(y, params):
     den = w_c * (cos_t**2 * w_c**2 * y**2 - 2 * sin_t **
                  2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
     first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / np.sqrt(w_c**2)
-    count_hack = 0
-    out = np.array([])
-    np.seterr(divide='warn')
-    warnings.filterwarnings('error')
-    while 1:
-        try:
-            num[count_hack:] / den[count_hack:]
-        except RuntimeWarning:  # ZeroDivisionError:
-            count_hack += 1
-            out = np.r_[out, first]
-        else:
-            break
-    second = num[count_hack:] / den[count_hack:]
-    out = np.r_[out, second]
+    # count_hack = 0
+    den[np.where(den==0.)[0]] = first
+    # while 1:
+    #     if den[count_hack] == 0.:
+    #         den[count_hack] = first
+    #         count_hack += 1
+    #     else:
+    #         break
+    # out = np.array([])
+    # np.seterr(divide='warn')
+    # warnings.filterwarnings('error')
+    # while 1:
+    #     try:
+    #         num[count_hack:] / den[count_hack:]
+    #     except RuntimeWarning:  # ZeroDivisionError:
+    #         count_hack += 1
+    #         out = np.r_[out, first]
+    #     else:
+    #         break
+    # second = num[count_hack:] / den[count_hack:]
+    # out = np.r_[out, second]
+    out = num / den
     return out
 
 
@@ -188,5 +196,5 @@ def long_calc(y, params):
     Returns:
         np.ndarray -- the value of the integrand going into the integral in eq. (12)
     """
-    # return p_d(y, params) * v_int(y, params)
-    return p_d(y, params) * int_cy.v_int(y, params)
+    return p_d(y, params) * v_int(y, params)
+    # return p_d(y, params) * int_cy.v_int(y, params)
