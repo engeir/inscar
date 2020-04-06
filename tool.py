@@ -304,32 +304,3 @@ def version_error(version, versions):
     print(f'{exc_type} error in file {fname}, line {exc_tb.tb_lineno}')
     print(f'The version is wrong: {version} not found in {versions}')
     exit()
-
-
-def compare_linear_parallel(fe_params, fi_params):
-    tt = time.localtime()
-    t0 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    fe = integrate(fe_params['w_c'], const.m_e, cf.I_P['T_E'],
-                   fe_params['lambda'], cf.T_MAX_e, function=fe_params['function'])
-    tt = time.localtime()
-    t1 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    print('')
-    print('Linear, Fe: ', t1 - t0, ' [s]')
-    fi = integrate(fi_params['w_c'], fi_params['m'], cf.I_P['T_I'],
-                   fi_params['lambda'], cf.T_MAX_i, function=fi_params['function'])
-    tt = time.localtime()
-    t2 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    print('Linear, Fi: ', t2 - t1, ' [s]')
-    Fe = para.integrate(fe_params['w_c'], const.m_e, cf.I_P['T_E'], fe_params['lambda'],
-                        cf.T_MAX_e, function=fe_params['function'])
-    tt = time.localtime()
-    t3 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    print('Parallel, Fe: ', t3 - t2, ' [s]')
-    Fi = para.integrate(fi_params['w_c'], fi_params['m'], cf.I_P['T_I'],
-                        fi_params['lambda'], cf.T_MAX_i, function=fi_params['function'])
-    tt = time.localtime()
-    t4 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    print('Parallel, Fi: ', t4 - t3, ' [s]')
-    print('Claim: "All elements from linear is equal to the equivalent elements from parallel."\n * Fe:',
-          all(Fe == fe), '\n * Fi:', all(Fi == fi))
-    return Fe, Fi
