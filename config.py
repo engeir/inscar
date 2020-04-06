@@ -14,8 +14,8 @@ if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest']:
     F_N_POINTS = 1e1
     N_POINTS = 1e2
 else:
-    F_N_POINTS = 1e2  # Number of sample points in frequency
-    N_POINTS = 1e3  # Number of sample points in integral variable
+    F_N_POINTS = 1e3  # Number of sample points in frequency
+    N_POINTS = 1e5  # Number of sample points in integral variable
 # T_MAX_e = 1.5e-3, T_MAX_i = 1.5e-3: good for Maxwellian
 # T_MAX_e = 1.5e-4, T_MAX_i = 1.5e-2: good for kappa
 T_MAX_e = 1.5e-4  # Upper limit to integration (= infinity)
@@ -54,6 +54,9 @@ K_RADAR = - 2 * I_P['F0'] * 2 * np.pi / const.c  # Radar wavenumber
 f = np.linspace(- I_P['F_MAX'], I_P['F_MAX'], int(F_N_POINTS))
 f = (f / I_P['F_MAX'])**3 * I_P['F_MAX']
 w = 2 * np.pi * f  # Angular frequency
+
+ff = None
+
 # NOT USED: used for chirp-z transform
 # f = np.arange(F_N_POINTS / 2) * (I_P['F_MAX'] - 0) / (F_N_POINTS / 2)  # Frequency
 # dW = 2 * np.pi * (I_P['F_MAX'] - 0) / (F_N_POINTS / 2)  # Step size angular frequency

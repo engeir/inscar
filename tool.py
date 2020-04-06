@@ -15,94 +15,12 @@ import parallelization as para
 import int_cy
 
 
-def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
+def simpson(w, T_MAX):
     t = np.linspace(0, T_MAX**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
-    params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
-    f = int_cy.long_calc(t, params)
-    # f = integrand(t, params)
-    val = np.exp(- 1j * w * t) * f
+    val = np.exp(- 1j * w * t) * cf.ff
 
     sint = si.simps(val, t)
     return sint
-
-
-# DEPRECATED FUNCTION (see parallelization.py -- integrate)
-def integrate(w_c, m, T, Lambda_s, T_MAX, function):
-    res = np.zeros(len(cf.w), dtype=np.complex128)
-    for c, v in enumerate(cf.w):
-        res[c] = simpson(function, v, w_c, m, T, Lambda_s, T_MAX, 5)
-    F = 1 - (1j * cf.w + Lambda_s * w_c) * res
-    return F
-
-
-# DEPRECATED FUNCTION (see parallelization.py -- integrate)
-def chirpz(g, n, dt, wo, w_c):
-    """transforms g(t) into G(w)
-    g(t) is n-point array and output G(w) is (n/2)-points starting at wo
-    dt and dw, sampling intervals of g(t) and G(w), and wo are
-    prescribed externally in an independent manner
-    --- see Li, Franke, Liu [1991]
-
-    Function written by Erhan Kudeki.
-
-    Eirik Enger 23_01_2020:
-    Edited to accept a value for alpha (Li, Franke, Liu [1991]).
-    Here, alpha = 1 / w_c.
-
-    Arguments:
-    g {1D array} -- ACF ⟨e^{jkΔr}⟩ (dim: (N,))
-    n {int} -- number of data points / samples along time axis
-    dt {float} -- step size in time (dt = T_MAX / n)
-    dw {float} -- step size in frequency (dw = 2 pi (fmax - fo) / (N / 2), where fo = 0.)
-    wo {float} -- center frequency along axis (wo = 2 pi f0)
-    """
-    g[0] = 0.5 * g[0]  # first interval is over dt/2, and hence ...
-    W = np.exp(-1j * cf.dW * dt * np.arange(n)**2 / (2. * w_c))
-    S = np.exp(-1j * wo * dt * np.arange(n) / w_c)  # frequency shift by wo
-    x = g * W * S
-    y = np.conj(W)
-    x[int(n / 2):] = 0.
-    # treat 2nd half of x and y specially
-    y[int(n / 2):] = y[0: int(n / 2)][::-1]
-    xi = np.fft.fft(x)
-    yi = np.fft.fft(y)
-    G = dt * W * np.fft.ifft(xi * yi)  # in MATLAB use ifft then fft (EK)
-    return G[0: int(n / 2)]
-
-
-def make_F(dt_s, w_c, Lambda_s, MT, function=intf.F_s_integrand):
-    """Calculate the F function according to Hagfors using the chirp-z transform.
-
-    Arguments:
-        dt_s {float} -- time step size
-        w_c {float} -- gyro frequency
-        Lambda_s {float} -- Debye length
-        MT {list} -- list of floats; first value is mass, second is temperature
-
-    Keyword Arguments:
-        function {function} -- reference to a function representing the integrand (default: {F_s_integrand})
-
-    Returns:
-        1D array -- the F function as a function of frequency
-    """
-    t = np.arange(cf.N_POINTS) * dt_s
-    if function == intf.F_s_integrand:
-        params = {'nu': Lambda_s * w_c, 'm': MT[0], 'T': MT[1], 'w_c': w_c}
-        F = function(t, params)
-        F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
-        F = 1 - (1j * cf.w + Lambda_s * w_c) * F
-    elif function == intf.kappa_gordeyev:
-        params = {'w_c': w_c, 'm': MT[0], 'T': MT[1]}
-        F = function(t, params)
-        F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
-        F /= (2**(cf.KAPPA - 1 / 2) * sps.gamma(cf.KAPPA + 1 / 2))
-        F = 1 - (1j * cf.w + Lambda_s * w_c) * F
-    elif function == intf.maxwell_gordeyev:
-        params = {'w_c': w_c, 'm': MT[0], 'T': MT[1], 'nu': Lambda_s * w_c}
-        F = function(t, params)
-        F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
-        F = 1 - (1j * cf.w + Lambda_s * w_c) * F
-    return F
 
 
 def isr_spectrum(version, kappa=None, area=False):
@@ -130,7 +48,7 @@ def isr_spectrum(version, kappa=None, area=False):
     elif version == 'kappa':
         if kappa is None:
             print('You forgot to send in the kappa parameter.')
-            exit()
+            sys.exit()
         if cf.I_P['NU_E'] != 0 or cf.I_P['NU_I'] != 0:
             text = f'''\
                     Warning: the kappa function is defined for a collisionless plasma.
@@ -148,19 +66,21 @@ def isr_spectrum(version, kappa=None, area=False):
     # dt_e = cf.T_MAX_e / cf.N_POINTS
     # dt_i = cf.T_MAX_i / cf.N_POINTS
 
-    # Chirp-z transform
-    # Fe = make_F(dt_e, w_c, Lambda_e, [const.m_e, cf.I_P['T_E']], function=func)
-    # Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.I_P['T_I']], function=func)
     # Time comparison between linear and parallel implementation
     # fe_params = {'w_c': w_c, 'lambda': Lambda_e, 'function': func}
     # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
     # Fe, Fi = compare_linear_parallel(fe_params, fi_params)
-    # Simpson integration in linear
-    # Fe = integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func)
-    # Fi = integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
     # Simpson integration in parallel
+    t = np.linspace(0, cf.T_MAX_i**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
+    params = {'nu': Lambda_i * W_c, 'm': M_i,
+              'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa}
+    cf.ff = func(t, params)
     Fi = para.integrate(
         W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func, kappa=kappa)
+    t = np.linspace(0, cf.T_MAX_e**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
+    params = {'nu': Lambda_e * w_c, 'm': const.m_e,
+              'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa}
+    cf.ff = func(t, params)
     Fe = para.integrate(
         w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func, kappa=kappa)
     # params_e = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'], 'w_c': w_c}
@@ -378,32 +298,3 @@ def version_error(version, versions):
     print(f'{exc_type} error in file {fname}, line {exc_tb.tb_lineno}')
     print(f'The version is wrong: {version} not found in {versions}')
     exit()
-
-
-def compare_linear_parallel(fe_params, fi_params):
-    tt = time.localtime()
-    t0 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    fe = integrate(fe_params['w_c'], const.m_e, cf.I_P['T_E'],
-                   fe_params['lambda'], cf.T_MAX_e, function=fe_params['function'])
-    tt = time.localtime()
-    t1 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    print('')
-    print('Linear, Fe: ', t1 - t0, ' [s]')
-    fi = integrate(fi_params['w_c'], fi_params['m'], cf.I_P['T_I'],
-                   fi_params['lambda'], cf.T_MAX_i, function=fi_params['function'])
-    tt = time.localtime()
-    t2 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    print('Linear, Fi: ', t2 - t1, ' [s]')
-    Fe = para.integrate(fe_params['w_c'], const.m_e, cf.I_P['T_E'], fe_params['lambda'],
-                        cf.T_MAX_e, function=fe_params['function'])
-    tt = time.localtime()
-    t3 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    print('Parallel, Fe: ', t3 - t2, ' [s]')
-    Fi = para.integrate(fi_params['w_c'], fi_params['m'], cf.I_P['T_I'],
-                        fi_params['lambda'], cf.T_MAX_i, function=fi_params['function'])
-    tt = time.localtime()
-    t4 = tt[3] * 3600 + tt[4] * 60 + tt[5]
-    print('Parallel, Fi: ', t4 - t3, ' [s]')
-    print('Claim: "All elements from linear is equal to the equivalent elements from parallel."\n * Fe:',
-          all(Fe == fe), '\n * Fi:', all(Fi == fi))
-    return Fe, Fi
