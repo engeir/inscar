@@ -15,14 +15,8 @@ import parallelization as para
 import int_cy
 
 
-def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
+def simpson(w, T_MAX):
     t = np.linspace(0, T_MAX**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
-    # params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
-    # f = int_cy.long_calc(t, params)
-    # if cf.ff is None:
-    #     cf.ff = integrand(t, params)
-        # print(cf.ff.shape)
-    # f = integrand(t, params)
     val = np.exp(- 1j * w * t) * cf.ff
 
     sint = si.simps(val, t)
