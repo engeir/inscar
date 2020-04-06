@@ -8,6 +8,7 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 import mpmath as mpm
+from tqdm import tqdm
 
 import config as cf
 import int_cy
@@ -158,15 +159,28 @@ def vv_int(params, j, v):
 
 
 def v_int(y, params):
+
+    # Create simulated data matrix
+    data = np.random.random((33,300))
+
+    N, _ = data.shape
+    upper_triangle = [(i,j) for i in range(N) for j in range(i+1, N)]
+
+    with mp.Pool() as pool:
+        result = pool.starmap(partial(fastdtw, dist=euclidean), [(data[i], data[j]) for (i,j) in upper_triangle])
+
+    dist_mat = squareform([item[0] for item in result])
+
     res = np.copy(y)
-    V_MAX = 5e6
+    V_MAX = 1e7
     v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e5))**cf.ORDER
     # f = f_0_maxwell(v, params)
-    # f = f_0_kappa(v, params)
-    f = f_0_kappa_two(v, params)
+    f = f_0_kappa(v, params)
+    # f = f_0_kappa_two(v, params)
     # f = f_0_gauss_shell(v, params)
-    for i, j in enumerate(y):
-        sin = np.sin(p(j, params) * v)
+    # for i, j in tqdm(enumerate(y)):
+    for i in tqdm(range(y.shape[0])):
+        sin = np.sin(p(y[i], params) * v)
         val = v * sin * f
         res[i] = si.simps(val, v)
     return res
