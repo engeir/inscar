@@ -14,15 +14,13 @@ def integrand(y, params, v, f):
     for every value in the np.ndarray w.
 
     Arguments:
-        w_c {float} -- gyro frequency [Hz]
-        m {float} -- mass [kg]
-        T {float} -- temperature [K]
-        Lambda_s {float} -- ratio of collision frequency to gyro frequency [1]
-        T_MAX {float} -- upper integration limit
-        function {function} -- a python function / method (def)
+        y {np.ndarray} -- sample points of integration variable
+        params {dict} -- plasma parameters
+        v {np.ndarray} -- sample points of VDF
+        f {np.ndarray} -- value of VDF at sample points
 
     Returns:
-        np.ndarray -- a scaled version of the result from the integration based on Hagfors [1968]
+        np.ndarray -- the value of the velocity integral at every sample of the integration variable
     """
     idx = [x for x in enumerate(y)]
     func = partial(parallel, params, v, f)
