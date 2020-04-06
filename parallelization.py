@@ -28,7 +28,7 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
         np.ndarray -- a scaled version of the result from the integration based on Hagfors [1968]
     """
     idx = [x for x in enumerate(cf.w)]
-    func = partial(parallel, w_c, m, T, Lambda_s, T_MAX, function, kappa)
+    func = partial(parallel, T_MAX)
     pool = mp.Pool()
     # tqdm give a neat progress bar for the iterative process
     for _ in tqdm(pool.imap(func, idx)):
@@ -46,9 +46,8 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
     return F
 
 
-def parallel(w_c, m, T, Lambda_s, T_MAX, function, kappa, index):
-    array[index[0]] = tool.simpson(
-        function, index[1], w_c, m, T, Lambda_s, T_MAX, kappa)
+def parallel(T_MAX, index):
+    array[index[0]] = tool.simpson(index[1], T_MAX)
 
 
 def shared_array(shape):

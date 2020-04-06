@@ -1,3 +1,5 @@
+import os
+import sys
 import warnings
 
 import matplotlib.pyplot as plt
@@ -6,8 +8,10 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 import mpmath as mpm
+from tqdm import tqdm
 
 import config as cf
+import v_int_parallel as para_int
 import int_cy
 
 
@@ -97,8 +101,19 @@ def f_0_maxwell(v, params):
 
 
 def f_0_kappa(v, params):
+    """Return the values along velocity v of a kappa VDF.
+
+    Kappa VDF used in Gordeyev paper by Mace (2003).
+
+    Arguments:
+        v {np.ndarray} -- 1D array with the sampled velocities
+        params {dict} -- a dictionary with all needed plasma parameters
+
+    Returns:
+        np.ndarray -- 1D array with the VDF values at the sampled points
+    """
     theta_2 = 2 * ((params['kappa'] - 3 / 2) / params['kappa']
-                  ) * params['T'] * const.k / params['m']
+                   ) * params['T'] * const.k / params['m']
     A = (np.pi * params['kappa'] * theta_2)**(- 3 / 2) * \
         sps.gamma(params['kappa'] + 1) / sps.gamma(params['kappa'] - 1 / 2)
     func = A * (1 + v**2 / (params['kappa'] *
@@ -106,11 +121,31 @@ def f_0_kappa(v, params):
     return func
 
 
+def f_0_kappa_two(v, params):
+    """Return the values along velocity v of a kappa VDF.
+
+    Kappa VDF used in dispersion relation paper by Ziebell, Gaelzer and Simoes (2017).
+    Defined by Leubner (2002) (sec 3.2).
+
+    Arguments:
+        v {np.ndarray} -- 1D array with the sampled velocities
+        params {dict} -- a dictionary with all needed plasma parameters
+
+    Returns:
+        np.ndarray -- 1D array with the VDF values at the sampled points
+    """
+    v_th = np.sqrt(params['T'] * const.k / params['m'])
+    A = (np.pi * params['kappa'] * v_th**2)**(- 3 / 2) * \
+        sps.gamma(params['kappa']) / sps.gamma(params['kappa'] - 3 / 2)
+    func = A * (1 + v**2 / (params['kappa'] * v_th**2))**(- params['kappa'])
+    return func
+
+
 def f_0_gauss_shell(v, params):
     vth = np.sqrt(params['T'] * const.k / params['m'])
     A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2) / 2
-    func = A * np.exp(- (np.sqrt(v**2) - 5 * vth)**2 / (2 *
-                                                        params['T'] * const.k / params['m'])) + 10 * f_0_maxwell(v, params)
+    func = A * np.exp(- (np.sqrt(v**2) - 5 * vth)**2 / (2 * params['T'] * const.k / params['m'])) + \
+        10 * f_0_maxwell(v, params)
     return func / 11
 
 
@@ -125,16 +160,26 @@ def vv_int(params, j, v):
 
 
 def v_int(y, params):
-    res = np.copy(y)
-    V_MAX = 1e6
-    v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(1e4))**cf.ORDER
+    # res = np.copy(y)
+    V_MAX = 1e7
+    v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(cf.N_POINTS))**cf.ORDER
     # f = f_0_maxwell(v, params)
     # f = f_0_kappa(v, params)
+    # f = f_0_kappa_two(v, params)
     f = f_0_gauss_shell(v, params)
-    for i, j in enumerate(y):
-        sin = np.sin(p(j, params) * v)
-        val = v * sin * f
-        res[i] = si.simps(val, v)
+    # for i, j in tqdm(enumerate(y)):
+    res = para_int.integrand(y, params, v, f)
+    # for i in tqdm(range(y.shape[0])):
+    #     sin = np.sin(p(y[i], params) * v)
+    #     val = v * sin * f
+    #     res[i] = si.simps(val, v)
+    return res
+
+
+def v_int_integrand(j, params, v, f):
+    sin = np.sin(p(j, params) * v)
+    val = v * sin * f
+    res = si.simps(val, v)
     return res
 
 
@@ -161,7 +206,7 @@ def p_d(y, params):
                  2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
     first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / np.sqrt(w_c**2)
     # count_hack = 0
-    den[np.where(den==0.)[0]] = first
+    den[np.where(den == 0.)[0]] = first
     # while 1:
     #     if den[count_hack] == 0.:
     #         den[count_hack] = first
