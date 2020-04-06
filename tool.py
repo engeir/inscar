@@ -72,16 +72,10 @@ def isr_spectrum(version, kappa=None, area=False):
     # dt_e = cf.T_MAX_e / cf.N_POINTS
     # dt_i = cf.T_MAX_i / cf.N_POINTS
 
-    # Chirp-z transform
-    # Fe = make_F(dt_e, w_c, Lambda_e, [const.m_e, cf.I_P['T_E']], function=func)
-    # Fi = make_F(dt_i, W_c, Lambda_i, [M_i, cf.I_P['T_I']], function=func)
     # Time comparison between linear and parallel implementation
     # fe_params = {'w_c': w_c, 'lambda': Lambda_e, 'function': func}
     # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
     # Fe, Fi = compare_linear_parallel(fe_params, fi_params)
-    # Simpson integration in linear
-    # Fe = integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func)
-    # Fi = integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
     # Simpson integration in parallel
     t = np.linspace(0, cf.T_MAX_i**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
     params = {'nu': Lambda_i * W_c, 'm': M_i,
