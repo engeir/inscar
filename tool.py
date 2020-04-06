@@ -29,41 +29,6 @@ def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
     return sint
 
 
-def make_F(dt_s, w_c, Lambda_s, MT, function=intf.F_s_integrand):
-    """Calculate the F function according to Hagfors using the chirp-z transform.
-
-    Arguments:
-        dt_s {float} -- time step size
-        w_c {float} -- gyro frequency
-        Lambda_s {float} -- Debye length
-        MT {list} -- list of floats; first value is mass, second is temperature
-
-    Keyword Arguments:
-        function {function} -- reference to a function representing the integrand (default: {F_s_integrand})
-
-    Returns:
-        1D array -- the F function as a function of frequency
-    """
-    t = np.arange(cf.N_POINTS) * dt_s
-    if function == intf.F_s_integrand:
-        params = {'nu': Lambda_s * w_c, 'm': MT[0], 'T': MT[1], 'w_c': w_c}
-        F = function(t, params)
-        F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
-        F = 1 - (1j * cf.w + Lambda_s * w_c) * F
-    elif function == intf.kappa_gordeyev:
-        params = {'w_c': w_c, 'm': MT[0], 'T': MT[1]}
-        F = function(t, params)
-        F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
-        F /= (2**(cf.KAPPA - 1 / 2) * sps.gamma(cf.KAPPA + 1 / 2))
-        F = 1 - (1j * cf.w + Lambda_s * w_c) * F
-    elif function == intf.maxwell_gordeyev:
-        params = {'w_c': w_c, 'm': MT[0], 'T': MT[1], 'nu': Lambda_s * w_c}
-        F = function(t, params)
-        F = chirpz(F, cf.N_POINTS, dt_s, 0, 1)
-        F = 1 - (1j * cf.w + Lambda_s * w_c) * F
-    return F
-
-
 def isr_spectrum(version, kappa=None, area=False):
     """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
 
