@@ -18,21 +18,12 @@ import int_cy
 def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
     t = np.linspace(0, T_MAX**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
     params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
-    f = int_cy.long_calc(t, params)
-    # f = integrand(t, params)
+    # f = int_cy.long_calc(t, params)
+    f = integrand(t, params)
     val = np.exp(- 1j * w * t) * f
 
     sint = si.simps(val, t)
     return sint
-
-
-# DEPRECATED FUNCTION (see parallelization.py -- integrate)
-def integrate(w_c, m, T, Lambda_s, T_MAX, function):
-    res = np.zeros(len(cf.w), dtype=np.complex128)
-    for c, v in enumerate(cf.w):
-        res[c] = simpson(function, v, w_c, m, T, Lambda_s, T_MAX, 5)
-    F = 1 - (1j * cf.w + Lambda_s * w_c) * res
-    return F
 
 
 # DEPRECATED FUNCTION (see parallelization.py -- integrate)
@@ -130,7 +121,7 @@ def isr_spectrum(version, kappa=None, area=False):
     elif version == 'kappa':
         if kappa is None:
             print('You forgot to send in the kappa parameter.')
-            exit()
+            sys.exit()
         if cf.I_P['NU_E'] != 0 or cf.I_P['NU_I'] != 0:
             text = f'''\
                     Warning: the kappa function is defined for a collisionless plasma.
