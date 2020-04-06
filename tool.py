@@ -17,51 +17,16 @@ import int_cy
 
 def simpson(integrand, w, w_c, m, T, Lambda_s, T_MAX, kappa):
     t = np.linspace(0, T_MAX**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
-    params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
+    # params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
     # f = int_cy.long_calc(t, params)
-    if cf.ff is None:
-        cf.ff = integrand(t, params)
+    # if cf.ff is None:
+    #     cf.ff = integrand(t, params)
         # print(cf.ff.shape)
     # f = integrand(t, params)
     val = np.exp(- 1j * w * t) * cf.ff
 
     sint = si.simps(val, t)
     return sint
-
-
-# DEPRECATED FUNCTION (see parallelization.py -- integrate)
-def chirpz(g, n, dt, wo, w_c):
-    """transforms g(t) into G(w)
-    g(t) is n-point array and output G(w) is (n/2)-points starting at wo
-    dt and dw, sampling intervals of g(t) and G(w), and wo are
-    prescribed externally in an independent manner
-    --- see Li, Franke, Liu [1991]
-
-    Function written by Erhan Kudeki.
-
-    Eirik Enger 23_01_2020:
-    Edited to accept a value for alpha (Li, Franke, Liu [1991]).
-    Here, alpha = 1 / w_c.
-
-    Arguments:
-    g {1D array} -- ACF ⟨e^{jkΔr}⟩ (dim: (N,))
-    n {int} -- number of data points / samples along time axis
-    dt {float} -- step size in time (dt = T_MAX / n)
-    dw {float} -- step size in frequency (dw = 2 pi (fmax - fo) / (N / 2), where fo = 0.)
-    wo {float} -- center frequency along axis (wo = 2 pi f0)
-    """
-    g[0] = 0.5 * g[0]  # first interval is over dt/2, and hence ...
-    W = np.exp(-1j * cf.dW * dt * np.arange(n)**2 / (2. * w_c))
-    S = np.exp(-1j * wo * dt * np.arange(n) / w_c)  # frequency shift by wo
-    x = g * W * S
-    y = np.conj(W)
-    x[int(n / 2):] = 0.
-    # treat 2nd half of x and y specially
-    y[int(n / 2):] = y[0: int(n / 2)][::-1]
-    xi = np.fft.fft(x)
-    yi = np.fft.fft(y)
-    G = dt * W * np.fft.ifft(xi * yi)  # in MATLAB use ifft then fft (EK)
-    return G[0: int(n / 2)]
 
 
 def make_F(dt_s, w_c, Lambda_s, MT, function=intf.F_s_integrand):
@@ -153,16 +118,16 @@ def isr_spectrum(version, kappa=None, area=False):
     # Fe = integrate(w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func)
     # Fi = integrate(W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func)
     # Simpson integration in parallel
-    # t = np.linspace(0, cf.T_MAX_i**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
-    # params = {'nu': Lambda_i * W_c, 'm': M_i,
-    #           'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa}
-    # cf.ff = func(t, params)
+    t = np.linspace(0, cf.T_MAX_i**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
+    params = {'nu': Lambda_i * W_c, 'm': M_i,
+              'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa}
+    cf.ff = func(t, params)
     Fi = para.integrate(
         W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func, kappa=kappa)
-    # t = np.linspace(0, cf.T_MAX_e**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
-    # params = {'nu': Lambda_e * w_c, 'm': const.m_e,
-    #           'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa}
-    # cf.ff = func(t, params)
+    t = np.linspace(0, cf.T_MAX_e**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
+    params = {'nu': Lambda_e * w_c, 'm': const.m_e,
+              'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa}
+    cf.ff = func(t, params)
     Fe = para.integrate(
         w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func, kappa=kappa)
     # params_e = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'], 'w_c': w_c}
