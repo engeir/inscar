@@ -23,7 +23,7 @@ def simpson(w, T_MAX):
     return sint
 
 
-def isr_spectrum(version, kappa=None, area=False):
+def isr_spectrum(version, kappa=None, area=False, vdf=None):
     """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
 
     Arguments:
@@ -46,18 +46,21 @@ def isr_spectrum(version, kappa=None, area=False):
     if version == 'hagfors':
         func = intf.F_s_integrand
     elif version == 'kappa':
-        if kappa is None:
-            print('You forgot to send in the kappa parameter.')
-            sys.exit()
-        if cf.I_P['NU_E'] != 0 or cf.I_P['NU_I'] != 0:
-            text = f'''\
-                    Warning: the kappa function is defined for a collisionless plasma.
-                    You are using: nu_i = {cf.I_P['NU_I']} and nu_e = {cf.I_P['NU_E']}.'''
-            print(txt.fill(txt.dedent(text), width=300))
+        kappa_check(kappa)
         func = intf.kappa_gordeyev
     elif version == 'maxwell':
         func = intf.maxwell_gordeyev
     elif version == 'long_calc':
+        vdfs = ['maxwell', 'kappa', 'kappa_vol2', 'gauss_shell']
+        try:
+            if not vdf in vdfs:
+                raise SystemError
+            else:
+                print(f'Using VDF "{vdf}"', flush=True)
+        except Exception:
+            version_error(vdf, vdfs, type='VDF')
+        if vdf in ['kappa', 'kappa_vol2']:
+            kappa_check(kappa)
         func = intf.long_calc
     w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
     M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
@@ -292,9 +295,20 @@ def w_e_gyro(B):
     return w_e
 
 
-def version_error(version, versions):
+def version_error(version, versions, type='version'):
     exc_type, _, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f'{exc_type} error in file {fname}, line {exc_tb.tb_lineno}')
-    print(f'The version is wrong: {version} not found in {versions}')
-    exit()
+    print(f'The {type} is wrong: "{version}" not found in {versions}')
+    sys.exit()
+
+
+def kappa_check(kappa):
+    if kappa is None:
+        print('You forgot to send in the kappa parameter.')
+        sys.exit()
+    if cf.I_P['NU_E'] != 0 or cf.I_P['NU_I'] != 0:
+        text = f'''\
+                Warning: the kappa function is defined for a collisionless plasma.
+                You are using: nu_i = {cf.I_P['NU_I']} and nu_e = {cf.I_P['NU_E']}.'''
+        print(txt.fill(txt.dedent(text), width=300))
