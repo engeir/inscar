@@ -165,8 +165,8 @@ def v_int(y, params):
     v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(cf.N_POINTS))**cf.ORDER
     # f = f_0_maxwell(v, params)
     # f = f_0_kappa(v, params)
-    # f = f_0_kappa_two(v, params)
-    f = f_0_gauss_shell(v, params)
+    f = f_0_kappa_two(v, params)
+    # f = f_0_gauss_shell(v, params)
     # for i, j in tqdm(enumerate(y)):
     res = para_int.integrand(y, params, v, f)
     # for i in tqdm(range(y.shape[0])):
@@ -205,28 +205,9 @@ def p_d(y, params):
     den = w_c * (cos_t**2 * w_c**2 * y**2 - 2 * sin_t **
                  2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
     first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / np.sqrt(w_c**2)
-    # count_hack = 0
     den[np.where(den == 0.)[0]] = first
-    # while 1:
-    #     if den[count_hack] == 0.:
-    #         den[count_hack] = first
-    #         count_hack += 1
-    #     else:
-    #         break
-    # out = np.array([])
-    # np.seterr(divide='warn')
-    # warnings.filterwarnings('error')
-    # while 1:
-    #     try:
-    #         num[count_hack:] / den[count_hack:]
-    #     except RuntimeWarning:  # ZeroDivisionError:
-    #         count_hack += 1
-    #         out = np.r_[out, first]
-    #     else:
-    #         break
-    # second = num[count_hack:] / den[count_hack:]
-    # out = np.r_[out, second]
     out = num / den
+
     return out
 
 

@@ -85,12 +85,12 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
     plt.tight_layout()
 
 
-def saver(f, Is, version, l=None, kappa=None, plasma=False, info=None):
+def saver(f, Is, version, l=None, kappa=None, plasma=False, vdf=None, info=None):
     if info is None:
-        I_P = dict(cf.I_P, **{'kappa': kappa,
+        I_P = dict(cf.I_P, **{'kappa': kappa, 'vdf': vdf,
                               'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
     else:
-        I_P = dict(cf.I_P, **{'info': info, 'kappa': kappa,
+        I_P = dict(cf.I_P, **{'info': info, 'kappa': kappa, 'vdf': vdf,
                               'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
     tt = time.localtime()
     the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
@@ -116,7 +116,7 @@ def saver(f, Is, version, l=None, kappa=None, plasma=False, info=None):
     pdffig.close()
 
 
-def plot_IS_spectrum(version, kappa=None, area=False, plasma=False, info=None):
+def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, info=None):
     save = input(
         'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     spectrum = False
@@ -130,10 +130,10 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False, info=None):
     elif isinstance(kappa, int) and version == 'kappa':
         f, Is = tool.isr_spectrum('kappa', kappa=kappa, area=area)
     else:
-        f, Is = tool.isr_spectrum(version, kappa=kappa, area=area)
+        f, Is = tool.isr_spectrum(version, kappa=kappa, area=area, vdf=vdf)
     if spectrum:
         if save in ['y', 'yes']:
-            saver(f, spectrum, 'both', l=kappa, kappa=kappa, plasma=plasma)
+            saver(f, spectrum, 'both', l=kappa, kappa=kappa, plasma=plasma, vdf=vdf)
         else:
             plotter(f, spectrum, plt.plot, l=kappa, plasma=plasma)
             plotter(f, spectrum, plt.semilogy, l=kappa, plasma=plasma)
@@ -141,10 +141,7 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False, info=None):
             plotter(f, spectrum, plt.loglog, l=kappa, plasma=plasma)
     else:
         if save in ['y', 'yes']:
-            if version == 'kappa':
-                saver(f, Is, version, kappa=kappa, plasma=plasma, info=info)
-            else:
-                saver(f, Is, version, kappa=kappa, plasma=plasma, info=info)
+            saver(f, Is, version, kappa=kappa, plasma=plasma, info=info, vdf=vdf)
         else:
             plotter(f, Is, plt.plot, plasma=plasma)
             plotter(f, Is, plt.semilogy, plasma=plasma)
@@ -155,5 +152,5 @@ def plot_IS_spectrum(version, kappa=None, area=False, plasma=False, info=None):
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('long_calc', info='gauss_shell', kappa=3)  # , area=True, plasma=False, info='extra info')
+    plot_IS_spectrum('kappa', vdf='gauss_shell',  info='gauss_shell', kappa=3)  # , area=True, plasma=False, info='extra info')
     # tool.H_spectrum('kappa')
