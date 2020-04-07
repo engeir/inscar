@@ -51,6 +51,7 @@
         "spint",
         "sympy",
         "tqdm",
+        "vdfs",
         "vint",
         "xlabel",
         "xlim",
