@@ -31,8 +31,9 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
     func = partial(parallel, T_MAX)
     pool = mp.Pool()
     # tqdm give a neat progress bar for the iterative process
-    for _ in tqdm(pool.imap(func, idx)):
-        pass
+    with tqdm(total=len(cf.w)) as pbar:
+        for _ in pool.imap(func, idx):
+            pbar.update(1)
     if function == intf.kappa_gordeyev:
         a = array / (2**(kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
     elif function == intf.long_calc:
