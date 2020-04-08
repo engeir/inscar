@@ -14,8 +14,3 @@ def test_isr_spectrum2():
 def test_isr_spectrum3():
     a, b = tool.isr_spectrum('long_calc', vdf='kappa', kappa=6)
     assert isinstance(a, type(b)) and a.shape == b.shape
-
-
-def test_H_spectrum():
-    a, b = tool.H_spectrum('kappa', test=True, k=7)
-    assert isinstance(a, type(b)) and a.shape == b.shape
