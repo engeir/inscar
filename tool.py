@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
-import scipy.special as sps
 
 import config as cf
 import integrand_functions as intf
@@ -15,8 +14,7 @@ import parallelization as para
 import int_cy
 
 
-def simpson(w, T_MAX):
-    t = np.linspace(0, T_MAX**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
+def simpson(w, t):
     val = np.exp(- 1j * w * t) * cf.ff
 
     sint = si.simps(val, t)
@@ -35,33 +33,7 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
     Returns:
         1D array -- two one dimensional numpy arrays for the frequency domain and the values of the spectrum
     """
-    versions = ['hagfors', 'kappa', 'maxwell', 'long_calc']
-    try:
-        if not version in versions:
-            raise SystemError
-        else:
-            print(f'Using version "{version}"', flush=True)
-    except Exception:
-        version_error(version, versions)
-    if version == 'hagfors':
-        func = intf.F_s_integrand
-    elif version == 'kappa':
-        kappa_check(kappa)
-        func = intf.kappa_gordeyev
-    elif version == 'maxwell':
-        func = intf.maxwell_gordeyev
-    elif version == 'long_calc':
-        vdfs = ['maxwell', 'kappa', 'kappa_vol2', 'gauss_shell']
-        try:
-            if not vdf in vdfs:
-                raise SystemError
-            else:
-                print(f'Using VDF "{vdf}"', flush=True)
-        except Exception:
-            version_error(vdf, vdfs, type='VDF')
-        if vdf in ['kappa', 'kappa_vol2']:
-            kappa_check(kappa)
-        func = intf.long_calc
+    func = version_check(version, vdf, kappa)
     w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
     M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
@@ -74,18 +46,18 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
     # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
     # Fe, Fi = compare_linear_parallel(fe_params, fi_params)
     # Simpson integration in parallel
-    t = np.linspace(0, cf.T_MAX_i**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
+    t_i = np.linspace(0, cf.T_MAX_i**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
     params = {'nu': Lambda_i * W_c, 'm': M_i,
               'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
-    cf.ff = func(t, params)
+    cf.ff = func(t_i, params)
     Fi = para.integrate(
-        W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func, kappa=kappa)
-    t = np.linspace(0, cf.T_MAX_e**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
+        W_c, M_i, cf.I_P['T_I'], Lambda_i, t_i, function=func, kappa=kappa)
+    t_e = np.linspace(0, cf.T_MAX_e**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
     params = {'nu': Lambda_e * w_c, 'm': const.m_e,
               'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa, 'vdf': vdf}
-    cf.ff = func(t, params)
+    cf.ff = func(t_e, params)
     Fe = para.integrate(
-        w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func, kappa=kappa)
+        w_c, const.m_e, cf.I_P['T_E'], Lambda_e, t_e, function=func, kappa=kappa)
     # params_e = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'], 'w_c': w_c}
     # params_i = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'], 'w_c': W_c}
     # Fe = intf.two_p_isotropic_kappa(params_e)
@@ -293,6 +265,37 @@ def w_e_gyro(B):
     w_e = const.e * B / const.m_e
 
     return w_e
+
+
+def version_check(version, vdf, kappa):
+    versions = ['hagfors', 'kappa', 'maxwell', 'long_calc']
+    try:
+        if not version in versions:
+            raise SystemError
+        else:
+            print(f'Using version "{version}"', flush=True)
+    except Exception:
+        version_error(version, versions)
+    if version == 'hagfors':
+        func = intf.F_s_integrand
+    elif version == 'kappa':
+        kappa_check(kappa)
+        func = intf.kappa_gordeyev
+    elif version == 'maxwell':
+        func = intf.maxwell_gordeyev
+    elif version == 'long_calc':
+        vdfs = ['maxwell', 'kappa', 'kappa_vol2', 'gauss_shell']
+        try:
+            if not vdf in vdfs:
+                raise SystemError
+            else:
+                print(f'Using VDF "{vdf}"', flush=True)
+        except Exception:
+            version_error(vdf, vdfs, type='VDF')
+        if vdf in ['kappa', 'kappa_vol2']:
+            kappa_check(kappa)
+        func = intf.long_calc
+    return func
 
 
 def version_error(version, versions, type='version'):
