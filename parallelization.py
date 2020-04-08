@@ -33,6 +33,7 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
     # tqdm give a neat progress bar for the iterative process
     with tqdm(total=len(cf.w)) as pbar:
         for _ in pool.imap(func, idx):
+            pbar.set_description("Calculating spectrum")
             pbar.update(1)
     if function == intf.kappa_gordeyev:
         a = array / (2**(kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
