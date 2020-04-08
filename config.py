@@ -15,7 +15,7 @@ if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest']:
     N_POINTS = 1e2
 else:
     F_N_POINTS = 1e3  # Number of sample points in frequency
-    N_POINTS = 1e5  # Number of sample points in integral variable
+    N_POINTS = 1e4  # Number of sample points in integral variable
 T_MAX_e = 1.5e-4  # Upper limit to integration (= infinity)
 T_MAX_i = 1.5e-2
 ORDER = 3
@@ -42,31 +42,11 @@ ORDER = 3
 I_P = {'B': 5e-4, 'F0': 933e6, 'F_MAX': 1e7, 'MI': 16, 'NE': 2e11,
        'NU_E': 1000, 'NU_I': 0, 'T_E': 4000, 'T_I': 2000, 'THETA': 45 * np.pi / 180}
 
-# For kappa distribution
-# NOTE: kappa != n + 1/2, n in the integers
-# KAPPA = 20
-# NU = - KAPPA - 1 / 2
-
 # DO NOT EDIT
 K_RADAR = - 2 * I_P['F0'] * 2 * np.pi / const.c  # Radar wavenumber
 f = np.linspace(- I_P['F_MAX'], I_P['F_MAX'], int(F_N_POINTS))
 f = (f / I_P['F_MAX'])**3 * I_P['F_MAX']
 w = 2 * np.pi * f  # Angular frequency
 
+# Global variable used as the integrand in the Simpson integral for the spectrum
 ff = None
-
-# NOT USED: used for chirp-z transform
-# f = np.arange(F_N_POINTS / 2) * (I_P['F_MAX'] - 0) / (F_N_POINTS / 2)  # Frequency
-# dW = 2 * np.pi * (I_P['F_MAX'] - 0) / (F_N_POINTS / 2)  # Step size angular frequency
-# w = np.arange(F_N_POINTS / 2) * dW  # Angular frequency
-
-# phi = np.linspace(0, 2 * np.pi, 1000)
-# a = [.9, .1, .4 * np.sin(3 * phi), .1 * np.cos(20 * phi)]
-# func = 0
-# for c, v in enumerate(a):
-#     func += v * abs(np.cos(phi))**(c + 1)
-# # plt.figure()
-# _, axs = plt.subplots()
-# axs.set_aspect('equal', 'box')
-# plt.plot(func * np.cos(phi), func * np.sin(phi))
-# plt.show()
