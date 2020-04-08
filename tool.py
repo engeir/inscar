@@ -11,7 +11,6 @@ import scipy.integrate as si
 import config as cf
 import integrand_functions as intf
 import parallelization as para
-import int_cy
 
 
 def simpson(w, t):

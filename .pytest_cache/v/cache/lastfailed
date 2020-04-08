@@ -1,3 +1,5 @@
 {
-  "test_ISR.py": true
+  "test_ISR.py::test_isr_spectrum1": true,
+  "test_ISR.py::test_isr_spectrum2": true,
+  "test_ISR.py::test_isr_spectrum3": true
 }

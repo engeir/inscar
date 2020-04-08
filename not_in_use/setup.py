@@ -1,3 +1,5 @@
+# run with python3 setup.py build_ext --inplace
+
 import subprocess
 from distutils.core import setup, Extension
 # from distutils.extension import Extension
