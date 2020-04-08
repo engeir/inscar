@@ -12,7 +12,7 @@ import integrand_functions as intf
 import tool
 
 
-def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
+def integrate(w_c, m, T, Lambda_s, t, function, kappa=None):
     """Integrate from 0 to T_MAX with an integrand on the form e^{-iwt}f(t),
     for every value in the np.ndarray w.
 
@@ -21,14 +21,14 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
         m {float} -- mass [kg]
         T {float} -- temperature [K]
         Lambda_s {float} -- ratio of collision frequency to gyro frequency [1]
-        T_MAX {float} -- upper integration limit
+        t {np.ndarray} -- integration sample points
         function {function} -- a python function / method (def)
 
     Returns:
         np.ndarray -- a scaled version of the result from the integration based on Hagfors [1968]
     """
     idx = [x for x in enumerate(cf.w)]
-    func = partial(parallel, T_MAX)
+    func = partial(parallel, t)
     pool = mp.Pool()
     # tqdm give a neat progress bar for the iterative process
     with tqdm(total=len(cf.w)) as pbar:
@@ -48,8 +48,8 @@ def integrate(w_c, m, T, Lambda_s, T_MAX, function, kappa=None):
     return F
 
 
-def parallel(T_MAX, index):
-    array[index[0]] = tool.simpson(index[1], T_MAX)
+def parallel(t, index):
+    array[index[0]] = tool.simpson(index[1], t)
 
 
 def shared_array(shape):
