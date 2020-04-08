@@ -152,5 +152,5 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
 
 if __name__ == '__main__':
     # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('kappa', vdf='gauss_shell',  info='gauss_shell', kappa=3)  # , area=True, plasma=False, info='extra info')
+    plot_IS_spectrum('long_calc', vdf='kappa',  info='kappa', kappa=3)  # , area=True, plasma=False, info='extra info')
     # tool.H_spectrum('kappa')
