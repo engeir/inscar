@@ -195,7 +195,8 @@ def mpm_p(y, params):
 
 
 def p_d(y, params):
-    # At y=0 we get 0/0, but in the limit as y tends to zero, we get frac = |k| * |w_c| / np.sqrt(w_c**2) (from above, opposite sign from below)
+    # At y=0 we get 0/0, but in the limit as y tends to zero,
+    # we get p_d = |k| * |w_c| / np.sqrt(w_c**2) (from above, opposite sign from below)
     cos_t = np.cos(cf.I_P['THETA'])
     sin_t = np.sin(cf.I_P['THETA'])
     w_c = params['w_c']
@@ -203,9 +204,12 @@ def p_d(y, params):
                                         w_c * y + sin_t**2 * np.sin(w_c * y))
     den = w_c * (cos_t**2 * w_c**2 * y**2 - 2 * sin_t **
                  2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
+    # np.sign(y[-1]) takes care of weather the limit should be considered taken from above or below,
+    # where the last element of the np.ndarray is chosen since it is assumed y runs from 0 to some finite real number.
     first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / np.sqrt(w_c**2)
-    den[np.where(den == 0.)[0]] = first
-    out = num / den
+    with np.errstate(divide='ignore', invalid='ignore'):
+        out = num / den
+    out[np.where(den == 0.)[0]] = first
 
     return out
 
