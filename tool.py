@@ -76,13 +76,13 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
     # Simpson integration in parallel
     t = np.linspace(0, cf.T_MAX_i**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
     params = {'nu': Lambda_i * W_c, 'm': M_i,
-              'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa}
+              'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
     cf.ff = func(t, params)
     Fi = para.integrate(
         W_c, M_i, cf.I_P['T_I'], Lambda_i, cf.T_MAX_i, function=func, kappa=kappa)
     t = np.linspace(0, cf.T_MAX_e**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
     params = {'nu': Lambda_e * w_c, 'm': const.m_e,
-              'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa}
+              'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa, 'vdf': vdf}
     cf.ff = func(t, params)
     Fe = para.integrate(
         w_c, const.m_e, cf.I_P['T_E'], Lambda_e, cf.T_MAX_e, function=func, kappa=kappa)

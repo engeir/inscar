@@ -160,19 +160,18 @@ def vv_int(params, j, v):
 
 
 def v_int(y, params):
-    # res = np.copy(y)
     V_MAX = 1e7
     v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(cf.N_POINTS))**cf.ORDER
-    # f = f_0_maxwell(v, params)
-    # f = f_0_kappa(v, params)
-    f = f_0_kappa_two(v, params)
-    # f = f_0_gauss_shell(v, params)
-    # for i, j in tqdm(enumerate(y)):
+    if params['vdf'] == 'maxwell':
+        f = f_0_maxwell(v, params)
+    elif params['vdf'] == 'kappa':
+        f = f_0_kappa(v, params)
+    elif params['vdf'] == 'kappa_vol2':
+        f = f_0_kappa_two(v, params)
+    elif params['vdf'] == 'gauss_shell':
+        f = f_0_gauss_shell(v, params)
+
     res = para_int.integrand(y, params, v, f)
-    # for i in tqdm(range(y.shape[0])):
-    #     sin = np.sin(p(y[i], params) * v)
-    #     val = v * sin * f
-    #     res[i] = si.simps(val, v)
     return res
 
 
