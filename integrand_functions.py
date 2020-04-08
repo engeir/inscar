@@ -1,18 +1,10 @@
-import os
-import sys
-import warnings
-
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
-import mpmath as mpm
-from tqdm import tqdm
 
 import config as cf
 import v_int_parallel as para_int
-import int_cy
 
 
 def ziebell_z_func(kappa, m, xi):
@@ -149,16 +141,6 @@ def f_0_gauss_shell(v, params):
     return func / 11
 
 
-def mpm_f_0_maxwell(v, params):
-    A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2)
-    func = A * mpm.exp(- v**2 / (2 * params['T'] * const.k / params['m']))
-    return func
-
-
-def vv_int(params, j, v):
-    return mpm_f_0_maxwell(v, params) * v * mpm.sin(mpm_p(j, params) * v)
-
-
 def v_int(y, params):
     V_MAX = 1e7
     v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(cf.N_POINTS))**cf.ORDER
@@ -188,12 +170,6 @@ def p(y, params):
     return (2 * k_perp**2 / params['w_c']**2 * (1 - np.cos(y * params['w_c'])) + k_par**2 * y**2)**.5
 
 
-def mpm_p(y, params):
-    k_perp = cf.K_RADAR * mpm.sin(cf.I_P['THETA'])
-    k_par = cf.K_RADAR * mpm.cos(cf.I_P['THETA'])
-    return (2 * k_perp**2 / params['w_c']**2 * (1 - mpm.cos(y * params['w_c'])) + k_par**2 * y**2)**.5
-
-
 def p_d(y, params):
     # At y=0 we get 0/0, but in the limit as y tends to zero,
     # we get p_d = |k| * |w_c| / np.sqrt(w_c**2) (from above, opposite sign from below)
@@ -214,7 +190,6 @@ def p_d(y, params):
     return out
 
 
-# params = {'nu': Lambda_s * w_c, 'm': m, 'T': T, 'w_c': w_c, 'kappa': kappa}
 def long_calc(y, params):
     """Based on eq. (12) of Mace (2003).
 
@@ -226,4 +201,3 @@ def long_calc(y, params):
         np.ndarray -- the value of the integrand going into the integral in eq. (12)
     """
     return p_d(y, params) * v_int(y, params)
-    # return p_d(y, params) * int_cy.v_int(y, params)
