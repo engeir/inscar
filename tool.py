@@ -151,8 +151,7 @@ def version_check(version, vdf, kappa):
     try:
         if not version in versions:
             raise SystemError
-        else:
-            print(f'Using version "{version}"', flush=True)
+        print(f'Using version "{version}"', flush=True)
     except Exception:
         version_error(version, versions)
     if version == 'hagfors':
@@ -167,21 +166,20 @@ def version_check(version, vdf, kappa):
         try:
             if not vdf in vdfs:
                 raise SystemError
-            else:
-                print(f'Using VDF "{vdf}"', flush=True)
+            print(f'Using VDF "{vdf}"', flush=True)
         except Exception:
-            version_error(vdf, vdfs, type='VDF')
+            version_error(vdf, vdfs, element='VDF')
         if vdf in ['kappa', 'kappa_vol2']:
             kappa_check(kappa)
         func = intf.long_calc
     return func
 
 
-def version_error(version, versions, type='version'):
+def version_error(version, versions, element='version'):
     exc_type, _, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f'{exc_type} error in file {fname}, line {exc_tb.tb_lineno}')
-    print(f'The {type} is wrong: "{version}" not found in {versions}')
+    print(f'The {element} is wrong: "{version}" not found in {versions}')
     sys.exit()
 
 
