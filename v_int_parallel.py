@@ -26,8 +26,9 @@ def integrand(y, params, v, f):
     func = partial(parallel, params, v, f)
     pool = mp.Pool()
     # tqdm give a neat progress bar for the iterative process
-    for _ in tqdm(pool.imap(func, idx)):
-        pass
+    with tqdm(total=len(y)) as pbar:
+        for _ in pool.imap(func, idx):
+            pbar.update(1)
     return array
 
 
