@@ -16,6 +16,14 @@ import tool
 
 
 def scale_f(frequency):
+    """Scale the axis and add the appropriate SI prefix.
+
+    Arguments:
+        frequency {np.ndarray} -- the variable along an axis
+
+    Returns:
+        str, np.ndarray, int -- the prefix, the scaled variables, the exponent corresponding to the prefix
+    """
     freq = np.copy(frequency)
     exp = sip.split(np.max(freq))[1]
     freq /= 10**exp
@@ -24,6 +32,16 @@ def scale_f(frequency):
 
 
 def find_p_line(freq, spec, scale):
+    """Find the frequency that is most likely the peak of the plasma line and return the lower and upper bounds for an interval around the peak.
+
+    Arguments:
+        freq {np.ndarray} -- sample points of frequency parameter
+        spec {np.ndarray} -- values of spectrum at the sampled frequencies
+        scale {int} -- exponent corresponding to the prefix of the frequency scale
+
+    Returns:
+        float, float -- lower and upper bound of the interval
+    """
     fr = np.copy(freq)
     sp = np.copy(spec)
     w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge **
@@ -40,6 +58,17 @@ def find_p_line(freq, spec, scale):
 
 
 def plotter(f, Is, plot_func, l=None, plasma=False):
+    """Plot the spectrum using given plot method.
+
+    Arguments:
+        f {np.ndarray} -- sample points in frequency
+        Is {np.ndarray} -- spectrum values at sampled frequency
+        plot_func {function} -- plotting function from matplotlib.pyplot
+
+    Keyword Arguments:
+        l {float or list of floats} -- kappa index (default: {None})
+        plasma {bool} -- wether to plot only the plasma line of the spectrum or not (default: {False})
+    """
     p, freq, exp = scale_f(f)
     plt.figure()
     if plasma:
@@ -50,7 +79,7 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
         mini, maxi = find_p_line(freq, spectrum, exp)
         mask = (freq > mini) & (freq < maxi)
         freq = freq[mask]
-    if plot_func == plt.semilogy:
+    if plot_func == plt.semilogy:  # pylint: disable=W0143
         plt.xlabel(f'Frequency [{p}Hz]')
         plt.ylabel('10*log10(Power) [dB]')
         plot_func = plt.plot
@@ -85,7 +114,20 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
     plt.tight_layout()
 
 
-def saver(f, Is, version, l=None, kappa=None, plasma=False, vdf=None, info=None):
+def saver(f, Is, version, kappa=None, plasma=False, vdf=None, info=None):
+    """Save the generated plots to a single pdf file.
+
+    Arguments:
+        f {np.ndarray} -- sample points in frequency
+        Is {np.ndarray} -- values of the spectrum at the sampled frequencies
+        version {str} -- the version used to calculate the spectrum
+
+    Keyword Arguments:
+        kappa {float or list of floats} -- kappa index (default: {None})
+        plasma {bool} -- wether to plot only the plasma line of the spectrum or not (default: {False})
+        vdf {str} -- the VDF used in the long_calc version (default: {None})
+        info {str} -- extra information for the pdf metadata (default: {None})
+    """
     if info is None:
         I_P = dict(cf.I_P, **{'kappa': kappa, 'vdf': vdf,
                               'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
@@ -103,13 +145,13 @@ def saver(f, Is, version, l=None, kappa=None, plasma=False, vdf=None, info=None)
     metadata['Subject'] = f"IS spectrum made using a {version} distribution and Simpson's integration rule."
     metadata['Keywords'] = f'{I_P}'
     metadata['ModDate'] = datetime.datetime.today()
-    plotter(f, Is, plt.semilogy, l, plasma=plasma)
+    plotter(f, Is, plt.semilogy, kappa, plasma=plasma)
     pdffig.attach_note("Semilog y")
     plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-    plotter(f, Is, plt.plot, l, plasma=plasma)
+    plotter(f, Is, plt.plot, kappa, plasma=plasma)
     pdffig.attach_note("Linear plot")
     plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-    plotter(f, Is, plt.loglog, l, plasma=plasma)
+    plotter(f, Is, plt.loglog, kappa, plasma=plasma)
     pdffig.attach_note("Loglog")
     plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
     # plotter(f, Is, plt.semilogx, l, plasma=plasma)
@@ -117,6 +159,19 @@ def saver(f, Is, version, l=None, kappa=None, plasma=False, vdf=None, info=None)
 
 
 def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, info=None):
+    """Make plots of an IS spectrum based on a variety of VDFs.
+
+    Arguments:
+        version {str} -- chose to the quicker maxwell or kappa version (analytic solution) or
+                         the long_calc for arbitrary isotropic VDF (numerical solution only)
+
+    Keyword Arguments:
+        kappa {int or float} -- kappa index for the kappa VDFs (default: {None})
+        vdf {str} -- when using 'long_calc', set which VDF to use (default: {None})
+        area {bool} -- if the spectrum is small enough around zero frequency, calculate the area (under the ion line) (default: {False})
+        plasma {bool} -- choose to plot only the part of the spectrum where the plasma line is found (default: {False})
+        info {str} -- optional extra info that will be saved to the pdf metadata made for the plots (default: {None})
+    """
     save = input(
         'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
     spectrum = False
@@ -133,7 +188,7 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
         f, Is = tool.isr_spectrum(version, kappa=kappa, area=area, vdf=vdf)
     if spectrum:
         if save in ['y', 'yes']:
-            saver(f, spectrum, 'both', l=kappa, kappa=kappa, plasma=plasma, vdf=vdf)
+            saver(f, spectrum, 'both', kappa=kappa, plasma=plasma, vdf=vdf)
         else:
             plotter(f, spectrum, plt.plot, l=kappa, plasma=plasma)
             plotter(f, spectrum, plt.semilogy, l=kappa, plasma=plasma)
@@ -151,6 +206,4 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
 
 
 if __name__ == '__main__':
-    # TODO: when both functions are run using the same version, we do not need to calculate Fe and Fi twice.
-    plot_IS_spectrum('long_calc', vdf='kappa',  info='kappa', kappa=3)  # , area=True, plasma=False, info='extra info')
-    # tool.H_spectrum('kappa')
+    plot_IS_spectrum('long_calc', vdf='gauss_shell',  kappa=3)
