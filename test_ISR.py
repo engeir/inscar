@@ -1,16 +1,24 @@
+import unittest
+import numpy as np
+
 import tool
 
 
-def test_isr_spectrum1():
-    a, b = tool.isr_spectrum('maxwell', kappa=6)
-    assert isinstance(a, type(b)) and a.shape == b.shape
+class TestISR(unittest.TestCase):
+    def test_ISR(self):
+        a, b = tool.isr_spectrum('maxwell', kappa=6)
+        self.assertIsInstance(a, np.ndarray)
+        self.assertIsInstance(b, np.ndarray)
+        self.assertEqual(a.shape, b.shape, msg='a.shape != b.shape')
+        a, b = tool.isr_spectrum('kappa', kappa=4)
+        self.assertIsInstance(a, np.ndarray)
+        self.assertIsInstance(b, np.ndarray)
+        self.assertEqual(a.shape, b.shape, msg='a.shape != b.shape')
+        a, b = tool.isr_spectrum('long_calc', vdf='kappa', kappa=6)
+        self.assertIsInstance(a, np.ndarray)
+        self.assertIsInstance(b, np.ndarray)
+        self.assertEqual(a.shape, b.shape, msg='a.shape != b.shape')
 
 
-def test_isr_spectrum2():
-    a, b = tool.isr_spectrum('kappa', kappa=4)
-    assert isinstance(a, type(b)) and a.shape == b.shape
-
-
-def test_isr_spectrum3():
-    a, b = tool.isr_spectrum('long_calc', vdf='kappa', kappa=6)
-    assert isinstance(a, type(b)) and a.shape == b.shape
+if __name__ == '__main__':
+    unittest.main()
