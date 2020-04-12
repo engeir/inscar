@@ -9,15 +9,22 @@ import scipy.constants as const
 
 
 # Check if a test is running
-if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest']:
+if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest', 'test_ISR.py', '__main__.py']:
     # DO NOT EDIT
     F_N_POINTS = 1e1
-    N_POINTS = 1e2
+    Y_N_POINTS = 1e1
+    V_N_POINTS = 1e1
 else:
     F_N_POINTS = 1e3  # Number of sample points in frequency
-    N_POINTS = 1e4  # Number of sample points in integral variable
-T_MAX_e = 1.5e-4  # Upper limit to integration (= infinity)
-T_MAX_i = 1.5e-2
+    Y_N_POINTS = 1e5  # Number of sample points in integral variable
+    V_N_POINTS = 5e4  # Number of sample points in velocity integral variable
+# Adds one sample to get an even number of bins, which in
+# turn give better precision in the simpson integration
+Y_N_POINTS += 1
+V_N_POINTS += 1
+V_MAX = 1e7
+Y_MAX_e = 1.5e-4  # Upper limit of integration (= infinity)
+Y_MAX_i = 1.5e-2
 ORDER = 3
 
 # === Input parameters ===
@@ -33,7 +40,7 @@ ORDER = 3
 # THETA -- Pitch angle [1]
 
 # For seeing gyro lines
-# I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 2e3, 'MI': 29, 'NE': 2e10,
+# I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 2e6, 'MI': 29, 'NE': 2e10,
 #        'NU_E': 0, 'NU_I': 0, 'T_E': 200, 'T_I': 200, 'THETA': 45 * np.pi / 180}
 # For same plots as Hagfors
 # I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 1.5e6, 'MI': 16, 'NE': 2e10,
