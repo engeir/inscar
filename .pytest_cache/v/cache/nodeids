@@ -1,5 +1,3 @@
 [
-  "test_ISR.py::test_isr_spectrum1",
-  "test_ISR.py::test_isr_spectrum2",
-  "test_ISR.py::test_isr_spectrum3"
+  "test_ISR.py::TestISR::test_ISR"
 ]
