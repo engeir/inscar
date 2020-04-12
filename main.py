@@ -1,4 +1,4 @@
-"""Main script for calculating the IS spectrum based on realistic parameters.
+"""Main script for calculating the IS spectrum.
 """
 
 import os
@@ -129,11 +129,11 @@ def saver(f, Is, version, kappa=None, plasma=False, vdf=None, info=None):
         info {str} -- extra information for the pdf metadata (default: {None})
     """
     if info is None:
-        I_P = dict(cf.I_P, **{'kappa': kappa, 'vdf': vdf,
-                              'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
+        I_P = dict(cf.I_P, **{'kappa': kappa, 'vdf': vdf, 'F_N_POINTS': cf.F_N_POINTS,
+                              'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
     else:
-        I_P = dict(cf.I_P, **{'info': info, 'kappa': kappa, 'vdf': vdf,
-                              'F_N_POINTS': cf.F_N_POINTS, 'N_POINTS': cf.N_POINTS})
+        I_P = dict(cf.I_P, **{'info': info, 'kappa': kappa, 'vdf': vdf, 'F_N_POINTS': cf.F_N_POINTS,
+                              'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
     tt = time.localtime()
     the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
     pdffig = PdfPages(
@@ -196,7 +196,8 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
             plotter(f, spectrum, plt.loglog, l=kappa, plasma=plasma)
     else:
         if save in ['y', 'yes']:
-            saver(f, Is, version, kappa=kappa, plasma=plasma, info=info, vdf=vdf)
+            saver(f, Is, version, kappa=kappa,
+                  plasma=plasma, info=info, vdf=vdf)
         else:
             plotter(f, Is, plt.plot, plasma=plasma)
             plotter(f, Is, plt.semilogy, plasma=plasma)
@@ -206,4 +207,4 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
 
 
 if __name__ == '__main__':
-    plot_IS_spectrum('long_calc', vdf='gauss_shell',  kappa=3)
+    plot_IS_spectrum('long_calc', vdf='kappa')

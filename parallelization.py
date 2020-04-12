@@ -12,44 +12,43 @@ import integrand_functions as intf
 import tool
 
 
-def integrate(w_c, m, T, Lambda_s, t, function, kappa=None):
-    """Integrate from 0 to T_MAX with an integrand on the form e^{-iwt}f(t),
+def integrate(m, T, nu, y, function, kappa=None):
+    """Integrate from 0 to Y_MAX with an integrand on the form e^{-iwy}f(y),
     for every value in the np.ndarray w.
 
     Arguments:
-        w_c {float} -- gyro frequency [Hz]
         m {float} -- mass [kg]
         T {float} -- temperature [K]
-        Lambda_s {float} -- ratio of collision frequency to gyro frequency [1]
-        t {np.ndarray} -- integration sample points
+        nu {float} -- collision frequency [Hz]
+        y {np.ndarray} -- integration sample points
         function {function} -- a python function / method (def)
 
     Returns:
         np.ndarray -- a scaled version of the result from the integration based on Hagfors [1968]
     """
-    idx = [x for x in enumerate(cf.w)]
-    func = partial(parallel, t)
+    idx = set(enumerate(cf.w))
+    func = partial(parallel, y)
     pool = mp.Pool()
     # tqdm give a neat progress bar for the iterative process
     with tqdm(total=len(cf.w)) as pbar:
         for _ in pool.imap(func, idx):
             pbar.set_description("Calculating spectrum")
             pbar.update(1)
-    if function == intf.kappa_gordeyev:
+    if function == intf.kappa_gordeyev:  # pylint: disable=W0143
         a = array / (2**(kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
-    elif function == intf.long_calc:
+    elif function == intf.long_calc:  # pylint: disable=W0143
         a = 4 * np.pi * T * const.k * array / m
     else:
         a = array
-    if function == intf.long_calc:
+    if function == intf.long_calc:  # pylint: disable=W0143
         F = a
     else:
-        F = 1 - (1j * cf.w + Lambda_s * w_c) * a
+        F = 1 - (1j * cf.w + nu) * a
     return F
 
 
-def parallel(t, index):
-    array[index[0]] = tool.simpson(index[1], t)
+def parallel(y, index):
+    array[index[0]] = tool.simpson(index[1], y)
 
 
 def shared_array(shape):
