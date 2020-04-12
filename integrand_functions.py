@@ -57,7 +57,6 @@ def kappa_gordeyev(y, params):
                      params['T'], params['kappa'])
     Kn = sps.kv(params['kappa'] + 1 / 2, z_value)
     Kn[Kn == np.inf] = 1
-    # * np.exp(- y * (- params['kappa'] - 1 / 2))
     G = z_value**(params['kappa'] + .5) * Kn * np.exp(- y * params['nu'])
     return G
 
@@ -142,23 +141,37 @@ def f_0_gauss_shell(v, params):
 
 
 def v_int(y, params):
-    V_MAX = 1e7
-    v = np.linspace(0, V_MAX**(1 / cf.ORDER), int(cf.N_POINTS))**cf.ORDER
+    v = np.linspace(0, cf.V_MAX**(1 / cf.ORDER), int(cf.V_N_POINTS))**cf.ORDER
     if params['vdf'] == 'maxwell':
-        f = f_0_maxwell(v, params)
+        f = f_0_maxwell
     elif params['vdf'] == 'kappa':
-        f = f_0_kappa(v, params)
+        f = f_0_kappa
     elif params['vdf'] == 'kappa_vol2':
-        f = f_0_kappa_two(v, params)
+        f = f_0_kappa_two
     elif params['vdf'] == 'gauss_shell':
-        f = f_0_gauss_shell(v, params)
+        f = f_0_gauss_shell
 
-    res = para_int.integrand(y, params, v, f)
+    # if convergence:
+    #     res_0 = v_int_integrand(y[-1], params, v, f(v, params))
+    #     cf.V_N_POINTS = (cf.V_N_POINTS - 1) * 2 + 1
+    #     v = np.linspace(0, cf.V_MAX**(1 / cf.ORDER), int(cf.V_N_POINTS))**cf.ORDER
+    #     err = np.inf
+    #     c = 0
+    #     while err > 1e-6:
+    #         res = v_int_integrand(y[-1], params, v, f(v, params))
+    #         cf.V_N_POINTS = (cf.V_N_POINTS - 1) * 2 + 1
+    #         v = np.linspace(0, cf.V_MAX**(1 / cf.ORDER), int(cf.V_N_POINTS))**cf.ORDER
+    #         err = res_0 - res
+    #         res = res_0
+    #         c += 1
+    #         print(err, c, cf.V_N_POINTS, end='\r')
+    #     return err, c
+    res = para_int.integrand(y, params, v, f(v, params))
     return res
 
 
-def v_int_integrand(j, params, v, f):
-    sin = np.sin(p(j, params) * v)
+def v_int_integrand(y, params, v, f):
+    sin = np.sin(p(y, params) * v)
     val = v * sin * f
     res = si.simps(val, v)
     return res
