@@ -1,9 +1,7 @@
 import os
 import sys
 import textwrap as txt
-import time
 
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
@@ -13,10 +11,10 @@ import integrand_functions as intf
 import parallelization as para
 
 
-def simpson(w, t):
-    val = np.exp(- 1j * w * t) * cf.ff
+def simpson(w, y):
+    val = np.exp(- 1j * w * y) * cf.ff
 
-    sint = si.simps(val, t)
+    sint = si.simps(val, y)
     return sint
 
 
@@ -36,27 +34,24 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
     w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
     M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
-    Lambda_e, Lambda_i = cf.I_P['NU_E'] / w_c, cf.I_P['NU_I'] / W_c
-    # dt_e = cf.T_MAX_e / cf.N_POINTS
-    # dt_i = cf.T_MAX_i / cf.N_POINTS
 
     # Time comparison between linear and parallel implementation
     # fe_params = {'w_c': w_c, 'lambda': Lambda_e, 'function': func}
     # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
     # Fe, Fi = compare_linear_parallel(fe_params, fi_params)
     # Simpson integration in parallel
-    t_i = np.linspace(0, cf.T_MAX_i**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
-    params = {'nu': Lambda_i * W_c, 'm': M_i,
+    params = {'nu': cf.I_P['NU_I'], 'm': M_i,
               'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
-    cf.ff = func(t_i, params)
+    y = np.linspace(0, cf.Y_MAX_i**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
+    cf.ff = func(y, params)
     Fi = para.integrate(
-        W_c, M_i, cf.I_P['T_I'], Lambda_i, t_i, function=func, kappa=kappa)
-    t_e = np.linspace(0, cf.T_MAX_e**(1 / cf.ORDER), int(cf.N_POINTS), dtype=np.double)**cf.ORDER
-    params = {'nu': Lambda_e * w_c, 'm': const.m_e,
+        M_i, cf.I_P['T_I'], cf.I_P['NU_I'], y, function=func, kappa=kappa)
+    params = {'nu': cf.I_P['NU_E'], 'm': const.m_e,
               'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa, 'vdf': vdf}
-    cf.ff = func(t_e, params)
+    y = np.linspace(0, cf.Y_MAX_e**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
+    cf.ff = func(y, params)
     Fe = para.integrate(
-        w_c, const.m_e, cf.I_P['T_E'], Lambda_e, t_e, function=func, kappa=kappa)
+        const.m_e, cf.I_P['T_E'], cf.I_P['NU_E'], y, function=func, kappa=kappa)
     # params_e = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'], 'w_c': w_c}
     # params_i = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'], 'w_c': W_c}
     # Fe = intf.two_p_isotropic_kappa(params_e)
@@ -68,8 +63,9 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
         1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
 
     f_scaled = cf.f
-    Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
-        4 * Xp_e**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp_e**2 * Fe + 2 * Xp_i**2 * Fi)**2
+    with np.errstate(divide='ignore', invalid='ignore'):
+        Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
+            4 * Xp_e**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp_e**2 * Fe + 2 * Xp_i**2 * Fi)**2
 
     if area and cf.I_P['F_MAX'] < 1e4:
         area = si.simps(Is, cf.f)
@@ -151,8 +147,8 @@ def version_check(version, vdf, kappa):
         if not version in versions:
             raise SystemError
         print(f'Using version "{version}"', flush=True)
-    except Exception:
-        version_error(version, versions)
+    except SystemError:
+        sys.exit(version_error(version, versions))
     if version == 'hagfors':
         func = intf.F_s_integrand
     elif version == 'kappa':
@@ -167,7 +163,7 @@ def version_check(version, vdf, kappa):
                 raise SystemError
             print(f'Using VDF "{vdf}"', flush=True)
         except Exception:
-            version_error(vdf, vdfs, element='VDF')
+            sys.exit(version_error(vdf, vdfs, element='VDF'))
         if vdf in ['kappa', 'kappa_vol2']:
             kappa_check(kappa)
         func = intf.long_calc
@@ -179,11 +175,13 @@ def version_error(version, versions, element='version'):
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f'{exc_type} error in file {fname}, line {exc_tb.tb_lineno}')
     print(f'The {element} is wrong: "{version}" not found in {versions}')
-    sys.exit()
 
 
 def kappa_check(kappa):
-    if kappa is None:
+    try:
+        if kappa is None:
+            raise SystemError
+    except SystemError:
         print('You forgot to send in the kappa parameter.')
         sys.exit()
     if cf.I_P['NU_E'] != 0 or cf.I_P['NU_I'] != 0:

@@ -22,7 +22,7 @@ def integrand(y, params, v, f):
     Returns:
         np.ndarray -- the value of the velocity integral at every sample of the integration variable
     """
-    idx = [x for x in enumerate(y)]
+    idx = set(enumerate(y))
     func = partial(parallel, params, v, f)
     pool = mp.Pool()
     # tqdm give a neat progress bar for the iterative process
@@ -50,4 +50,4 @@ def shared_array(shape):
     return shared_arr
 
 
-array = shared_array((int(cf.N_POINTS),))
+array = shared_array((int(cf.Y_N_POINTS),))
