@@ -98,7 +98,7 @@ def d_vdf_plots():
 
 def vdf_plots():
     T = 1000
-    w_max = 3e6  # 13e5
+    w_max = 1e6  # 13e5
     w = np.linspace(- w_max, w_max, int(1e4))
     v = w * np.sqrt(const.electron_mass / (T * const.k))
     f = maxwell(w, T, const.electron_mass)
