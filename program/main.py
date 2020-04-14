@@ -12,7 +12,7 @@ import numpy as np
 import scipy.constants as const
 
 from inputs import config as cf
-from utils import tool
+from utils import spectrum_calculation as isr
 
 
 def scale_f(frequency):
@@ -32,7 +32,8 @@ def scale_f(frequency):
 
 
 def find_p_line(freq, spec, scale):
-    """Find the frequency that is most likely the peak of the plasma line and return the lower and upper bounds for an interval around the peak.
+    """Find the frequency that is most likely the peak of the plasma line
+    and return the lower and upper bounds for an interval around the peak.
 
     Arguments:
         freq {np.ndarray} -- sample points of frequency parameter
@@ -177,15 +178,15 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
     spectrum = False
     if isinstance(kappa, list) and version == 'kappa':
         spectrum = []
-        f, Is = tool.isr_spectrum('maxwell', area=area)
+        f, Is = isr.isr_spectrum('maxwell', area=area)
         spectrum.append(Is)
         for k in kappa:
-            f, Is = tool.isr_spectrum('kappa', kappa=k, area=area)
+            f, Is = isr.isr_spectrum('kappa', kappa=k, area=area)
             spectrum.append(Is)
     elif isinstance(kappa, int) and version == 'kappa':
-        f, Is = tool.isr_spectrum('kappa', kappa=kappa, area=area)
+        f, Is = isr.isr_spectrum('kappa', kappa=kappa, area=area)
     else:
-        f, Is = tool.isr_spectrum(version, kappa=kappa, area=area, vdf=vdf)
+        f, Is = isr.isr_spectrum(version, kappa=kappa, area=area, vdf=vdf)
     if spectrum:
         if save in ['y', 'yes']:
             saver(f, spectrum, 'both', kappa=kappa, plasma=plasma, vdf=vdf)
