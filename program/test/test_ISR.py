@@ -38,7 +38,7 @@ class TestVDF(unittest.TestCase):
     def tearDown(self):
         f = self.f * self.v**2 * 4 * np.pi
         res = si.simps(f, self.v)
-        self.assertAlmostEqual(res, 1)
+        self.assertAlmostEqual(res, 1, places=4)
 
     def test_vdf_maxwell(self):
         self.f = vdfs.f_0_maxwell(self.v, self.params)
