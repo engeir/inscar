@@ -8,7 +8,23 @@
 ---
 
 ### Info
-Makes plots of ISR spectrum based on the theory presented in [Hagfors (1961)](https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699).
+Makes plots of an incoherent scatter radar spectrum based on the theory presented in [Hagfors (1961)](https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699).
+
+The available plasma parameters that can be changed within the program are
+```
+=== Input parameters ===
+B -- Magnetic field strength [T]
+F0 -- Radar frequency [Hz]
+F_MAX -- Range of frequency domain
+MI -- Ion mass in atomic mass units [u]
+NE -- Electron number density [m^(-3)]
+NU_E -- Electron collision frequency [Hz]
+NU_I -- Ion collision frequency [Hz]
+T_E -- Electron temperature [K]
+T_I -- Ion temperature [K]
+THETA -- Pitch angle [1]
+```
+which are found in `program/inputs/config.py`.
 
 ### Installing
 Run
