@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from inputs import config as cf
 from utils import integrand_functions as intf
-from utils import tool
+from utils import spectrum_calculation as isr
 
 
 def integrate(m, T, nu, y, function, kappa=None):
@@ -48,7 +48,7 @@ def integrate(m, T, nu, y, function, kappa=None):
 
 
 def parallel(y, index):
-    array[index[0]] = tool.simpson(index[1], y)
+    array[index[0]] = isr.simpson(index[1], y)
 
 
 def shared_array(shape):

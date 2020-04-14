@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import scipy.integrate as si
 
-from utils import tool
+from utils import spectrum_calculation as isr
 from utils import vdfs
 
 
@@ -18,13 +18,13 @@ class TestISR(unittest.TestCase):
         self.assertEqual(self.a.shape, self.b.shape, msg='a.shape != b.shape')
 
     def test_isr_maxwell(self):
-        self.a, self.b = tool.isr_spectrum('maxwell', kappa=6)
+        self.a, self.b = isr.isr_spectrum('maxwell', kappa=6)
 
     def test_isr_kappa(self):
-        self.a, self.b = tool.isr_spectrum('kappa', kappa=4)
+        self.a, self.b = isr.isr_spectrum('kappa', kappa=4)
 
     def test_isr_long_calc(self):
-        self.a, self.b = tool.isr_spectrum('long_calc', vdf='kappa', kappa=6)
+        self.a, self.b = isr.isr_spectrum('long_calc', vdf='kappa', kappa=6)
 
 
 class TestVDF(unittest.TestCase):
