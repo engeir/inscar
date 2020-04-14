@@ -52,7 +52,6 @@ def f_0_kappa_two(v, params):
 
 
 def make_gauss_shell_scaling(v, params, r):
-    vth = np.sqrt(params['T'] * const.k / params['m'])
     A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2)
     func = A * np.exp(- (abs(v) - r)**2 / (2 * params['T'] * const.k / params['m']))
     f = func * v**2 * 4 * np.pi
