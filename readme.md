@@ -12,28 +12,37 @@ to install all needed packages, and then run with command
 ```
 python3 main.py
 ```
+from the `program` folder.
 
 ### File structure
 ```
 /
-├── config.py
 ├── extra/
 │   ├── simple_calculations.py
 │   └── simple_plots.py
-├── integrand_functions.py
-├── main.py
 ├── not_in_use/
 │   ├── chirpz.py
 │   ├── int_cy.pyx
 │   ├── profile.py
 │   ├── pure_cython.pyx
 │   └── setup.py
-├── parallelization.py
-├── path.txt
-├── paths.py
+├── program/
+│   ├── inputs/
+│   │   ├── __init__.py
+│   │   └── config.py
+│   ├── main.py
+│   ├── test/
+│   │   ├── __init__.py
+│   │   └── test_ISR.py
+│   └── utils/
+│       ├── __init__.py
+│       ├── integrand_functions.py
+│       ├── parallelization.py
+│       ├── tool.py
+│       └── v_int_parallel.py
 ├── readme.md
 ├── requirements.txt
-├── test_ISR.py
-├── tool.py
-└── v_int_parallel.py
+└── structure/
+    ├── path.txt
+    └── paths.py
 ```

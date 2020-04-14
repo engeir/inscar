@@ -72,6 +72,6 @@ class DisplayablePath(object):
 
 
 if __name__ == '__main__':
-    paths = DisplayablePath.make_tree(Path('.'))
+    paths = DisplayablePath.make_tree(Path('../'))
     for path in paths:
         print(path.displayable())

@@ -8,15 +8,17 @@ import numpy as np
 import scipy.constants as const
 
 
-# Check if a test is running
-if os.path.basename(os.path.realpath(sys.argv[0])) in ['pytest.py', 'pytest', 'test_ISR.py', '__main__.py']:
+# Check if a test is running. Potential paths are
+# ['pytest.py', 'pytest', 'test_ISR.py', '__main__.py', 'python3.7 -m unittest']
+# or check if 'main.py' was used.
+if os.path.basename(os.path.realpath(sys.argv[0])) != 'main.py':
     # DO NOT EDIT
     F_N_POINTS = 1e1
     Y_N_POINTS = 1e1
     V_N_POINTS = 1e1
 else:
     F_N_POINTS = 1e3  # Number of sample points in frequency
-    Y_N_POINTS = 1e5  # Number of sample points in integral variable
+    Y_N_POINTS = 1e3  # Number of sample points in integral variable
     V_N_POINTS = 5e4  # Number of sample points in velocity integral variable
 # Adds one sample to get an even number of bins, which in
 # turn give better precision in the simpson integration
