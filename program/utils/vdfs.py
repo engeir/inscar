@@ -1,3 +1,8 @@
+"""Velocity distribution function used in the version long_calc, one of the integrands available for use in the Gordeyev integral.
+
+Any new VDF must be added as an option in the long_calc function in integrand_functions.py.
+"""
+
 import numpy as np
 import scipy.constants as const
 import scipy.special as sps
