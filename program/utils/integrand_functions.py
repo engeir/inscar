@@ -5,6 +5,7 @@ import scipy.special as sps
 
 from inputs import config as cf
 from utils import v_int_parallel as para_int
+from utils import vdfs
 
 
 def ziebell_z_func(kappa, m, xi):
@@ -85,71 +86,16 @@ def F_s_integrand(y, params):
     return W
 
 
-def f_0_maxwell(v, params):
-    A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2)
-    func = A * np.exp(- v**2 / (2 * params['T'] * const.k / params['m']))
-    return func
-
-
-def f_0_kappa(v, params):
-    """Return the values along velocity v of a kappa VDF.
-
-    Kappa VDF used in Gordeyev paper by Mace (2003).
-
-    Arguments:
-        v {np.ndarray} -- 1D array with the sampled velocities
-        params {dict} -- a dictionary with all needed plasma parameters
-
-    Returns:
-        np.ndarray -- 1D array with the VDF values at the sampled points
-    """
-    theta_2 = 2 * ((params['kappa'] - 3 / 2) / params['kappa']
-                   ) * params['T'] * const.k / params['m']
-    A = (np.pi * params['kappa'] * theta_2)**(- 3 / 2) * \
-        sps.gamma(params['kappa'] + 1) / sps.gamma(params['kappa'] - 1 / 2)
-    func = A * (1 + v**2 / (params['kappa'] *
-                            theta_2))**(- params['kappa'] - 1)
-    return func
-
-
-def f_0_kappa_two(v, params):
-    """Return the values along velocity v of a kappa VDF.
-
-    Kappa VDF used in dispersion relation paper by Ziebell, Gaelzer and Simoes (2017).
-    Defined by Leubner (2002) (sec 3.2).
-
-    Arguments:
-        v {np.ndarray} -- 1D array with the sampled velocities
-        params {dict} -- a dictionary with all needed plasma parameters
-
-    Returns:
-        np.ndarray -- 1D array with the VDF values at the sampled points
-    """
-    v_th = np.sqrt(params['T'] * const.k / params['m'])
-    A = (np.pi * params['kappa'] * v_th**2)**(- 3 / 2) * \
-        sps.gamma(params['kappa']) / sps.gamma(params['kappa'] - 3 / 2)
-    func = A * (1 + v**2 / (params['kappa'] * v_th**2))**(- params['kappa'])
-    return func
-
-
-def f_0_gauss_shell(v, params):
-    vth = np.sqrt(params['T'] * const.k / params['m'])
-    A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2) / 2
-    func = A * np.exp(- (np.sqrt(v**2) - 5 * vth)**2 / (2 * params['T'] * const.k / params['m'])) + \
-        10 * f_0_maxwell(v, params)
-    return func / 11
-
-
 def v_int(y, params):
     v = np.linspace(0, cf.V_MAX**(1 / cf.ORDER), int(cf.V_N_POINTS))**cf.ORDER
     if params['vdf'] == 'maxwell':
-        f = f_0_maxwell
+        f = vdfs.f_0_maxwell
     elif params['vdf'] == 'kappa':
-        f = f_0_kappa
+        f = vdfs.f_0_kappa
     elif params['vdf'] == 'kappa_vol2':
-        f = f_0_kappa_two
+        f = vdfs.f_0_kappa_two
     elif params['vdf'] == 'gauss_shell':
-        f = f_0_gauss_shell
+        f = vdfs.f_0_gauss_shell
 
     # if convergence:
     #     res_0 = v_int_integrand(y[-1], params, v, f(v, params))
