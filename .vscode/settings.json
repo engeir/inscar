@@ -41,6 +41,7 @@
         "mpmath",
         "nargin",
         "ndarray",
+        "ndarrays",
         "neials",
         "nodeids",
         "pbar",
