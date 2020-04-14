@@ -11,8 +11,8 @@ from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import scipy.constants as const
 
-import config as cf
-import tool
+from inputs import config as cf
+from utils import tool
 
 
 def scale_f(frequency):
@@ -136,9 +136,9 @@ def saver(f, Is, version, kappa=None, plasma=False, vdf=None, info=None):
                               'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
     tt = time.localtime()
     the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
+    os.makedirs('../../../report/master-thesis/figures', exist_ok=True)
     pdffig = PdfPages(
-        f'../../report/master-thesis/figures/{the_time}_{version}.pdf')
-    os.makedirs('../../report/master-thesis/figures', exist_ok=True)
+        f'../../../report/master-thesis/figures/{the_time}_{version}.pdf')
     metadata = pdffig.infodict()
     metadata['Title'] = f'ISR Spectrum w/ {version}'
     metadata['Author'] = 'Eirik R. Enger'
@@ -207,4 +207,4 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
 
 
 if __name__ == '__main__':
-    plot_IS_spectrum('long_calc', vdf='kappa')
+    plot_IS_spectrum('long_calc', vdf='kappa', kappa=3)

@@ -7,9 +7,9 @@ import scipy.special as sps
 import scipy.constants as const
 from tqdm import tqdm
 
-import config as cf
-import integrand_functions as intf
-import tool
+from inputs import config as cf
+from utils import integrand_functions as intf
+from utils import tool
 
 
 def integrate(m, T, nu, y, function, kappa=None):

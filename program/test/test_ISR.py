@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-import tool
+from utils import tool
 
 
 class TestISR(unittest.TestCase):

@@ -5,8 +5,8 @@ from functools import partial
 import numpy as np
 from tqdm import tqdm
 
-import config as cf
-import integrand_functions as intf
+from inputs import config as cf
+from utils import integrand_functions as intf
 
 
 def integrand(y, params, v, f):

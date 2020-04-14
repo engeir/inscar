@@ -3,8 +3,8 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-import config as cf
-import v_int_parallel as para_int
+from inputs import config as cf
+from utils import v_int_parallel as para_int
 
 
 def ziebell_z_func(kappa, m, xi):
