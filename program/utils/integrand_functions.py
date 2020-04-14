@@ -1,3 +1,6 @@
+"""Script containing the integrands used in Gordeyev integrals.
+"""
+
 import numpy as np
 import scipy.constants as const
 import scipy.integrate as si

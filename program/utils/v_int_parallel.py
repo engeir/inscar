@@ -1,3 +1,6 @@
+"""Implementation of parallel computation of the velocity integrals for the integral variable y.
+"""
+
 import ctypes
 import multiprocessing as mp
 from functools import partial
@@ -10,7 +13,7 @@ from utils import integrand_functions as intf
 
 
 def integrand(y, params, v, f):
-    """Integrate from 0 to T_MAX with an integrand on the form e^{-iwt}f(t),
+    """Integrate from 0 to V_MAX with an integrand on the form e^{-iwt}f(t),
     for every value in the np.ndarray w.
 
     Arguments:

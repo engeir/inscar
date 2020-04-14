@@ -1,3 +1,6 @@
+"""This script implements test for the functions used throughout the program.
+"""
+
 import unittest
 import numpy as np
 import scipy.integrate as si
@@ -7,6 +10,13 @@ from utils import vdfs
 
 
 class TestISR(unittest.TestCase):
+    """Check if the output from isr_spectrum is as expected.
+
+    Should return two numpy.ndarrays of equal shape.
+
+    Arguments:
+        unittest {class} -- inherits from unittest to make it a TestCase
+    """
 
     @classmethod
     def SetUpClass(cls):
@@ -28,6 +38,11 @@ class TestISR(unittest.TestCase):
 
 
 class TestVDF(unittest.TestCase):
+    """Class which test if the VDFs are normalized.
+
+    Arguments:
+        unittest {class} -- inherits from unittest to make it a TestCase
+    """
 
     @classmethod
     def setUpClass(cls):

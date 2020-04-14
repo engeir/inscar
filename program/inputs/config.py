@@ -1,4 +1,7 @@
 """Constants used system wide.
+
+The physical properties of the plasma is changed here, described below 'Input parameters'.
+Only one dictionary containing plasma parameters should be uncommented at any instance in time.
 """
 
 import os
@@ -21,12 +24,12 @@ else:
     Y_N_POINTS = 1e3  # Number of sample points in integral variable
     V_N_POINTS = 5e4  # Number of sample points in velocity integral variable
 # Adds one sample to get an even number of bins, which in
-# turn give better precision in the simpson integration
+# turn give better precision in the Simpson integration.
 Y_N_POINTS += 1
 V_N_POINTS += 1
-V_MAX = 1e7
 Y_MAX_e = 1.5e-4  # Upper limit of integration (= infinity)
 Y_MAX_i = 1.5e-2
+V_MAX = 1e7
 ORDER = 3
 
 # === Input parameters ===
@@ -34,7 +37,7 @@ ORDER = 3
 # F0 -- Radar frequency [Hz]
 # F_MAX -- Range of frequency domain
 # MI -- Ion mass in atomic mass units [u]
-# NE -- Electron number density [m^(-3)]  (1.5e6)^2/(8.98^2)
+# NE -- Electron number density [m^(-3)]
 # NU_E -- Electron collision frequency [Hz]
 # NU_I -- Ion collision frequency [Hz]
 # T_E -- Electron temperature [K]

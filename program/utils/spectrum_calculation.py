@@ -1,3 +1,11 @@
+"""Script containing the calculation of the power density function and other plasma parameters.
+
+Raises:
+    SystemError: if no known version of particle distribution is given
+    SystemError: if, with the long_calc version, no known VDF is given
+    SystemError: if, given a kappa particle distribution, no kappa index is given
+"""
+
 import os
 import sys
 import textwrap as txt

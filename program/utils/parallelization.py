@@ -1,3 +1,6 @@
+"""Implementation of parallel computation of the integrals for the frequency spectrum.
+"""
+
 import ctypes
 import multiprocessing as mp
 from functools import partial
@@ -22,6 +25,9 @@ def integrate(m, T, nu, y, function, kappa=None):
         nu {float} -- collision frequency [Hz]
         y {np.ndarray} -- integration sample points
         function {function} -- a python function / method (def)
+
+    Keyword Arguments:
+        kappa {int or float} -- index determining the order of the kappa VDFs (default: {None})
 
     Returns:
         np.ndarray -- a scaled version of the result from the integration based on Hagfors [1968]
