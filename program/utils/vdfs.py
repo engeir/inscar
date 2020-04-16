@@ -67,7 +67,9 @@ def make_gauss_shell_scaling(v, params, r):
 def f_0_gauss_shell(v, params):
     vth = np.sqrt(params['T'] * const.k / params['m'])
     r = 5 * vth
-    scaling = make_gauss_shell_scaling(v, params, r)  # 51.87353390551461
+    # The radius of the shell will modify the area under
+    # the curve to some extent and need proper scaling.
+    scaling = make_gauss_shell_scaling(v, params, r)
     A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2) / scaling
     func = A * np.exp(- (abs(v) - r)**2 / (2 * params['T'] * const.k / params['m'])) + \
         10 * f_0_maxwell(v, params)

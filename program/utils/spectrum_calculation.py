@@ -174,6 +174,8 @@ def version_check(version, vdf, kappa):
             sys.exit(version_error(vdf, vdfs, element='VDF'))
         if vdf in ['kappa', 'kappa_vol2']:
             kappa_check(kappa)
+            if isinstance(kappa, list):
+                sys.exit(print('kappa as a list is not accepted for the long_calc version.'))
         func = intf.long_calc
     return func
 

@@ -144,7 +144,7 @@ def p_d(y, params):
                  2 * np.cos(w_c * y) + 2 * sin_t**2)**.5
     # np.sign(y[-1]) takes care of weather the limit should be considered taken from above or below,
     # where the last element of the np.ndarray is chosen since it is assumed y runs from 0 to some finite real number.
-    first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / np.sqrt(w_c**2)
+    first = np.sign(y[-1]) * abs(cf.K_RADAR) * abs(w_c) / abs(w_c)
     with np.errstate(divide='ignore', invalid='ignore'):
         out = num / den
     out[np.where(den == 0.)[0]] = first
