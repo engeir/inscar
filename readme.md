@@ -15,7 +15,7 @@ The available plasma parameters that can be changed within the program are
 === Input parameters ===
 B -- Magnetic field strength [T]
 F0 -- Radar frequency [Hz]
-F_MAX -- Range of frequency domain
+F_MAX -- Range of frequency domain [Hz]
 MI -- Ion mass in atomic mass units [u]
 NE -- Electron number density [m^(-3)]
 NU_E -- Electron collision frequency [Hz]
