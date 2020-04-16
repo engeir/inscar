@@ -70,6 +70,15 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
         l {float or list of floats} -- kappa index (default: {None})
         plasma {bool} -- wether to plot only the plasma line of the spectrum or not (default: {False})
     """
+    Is = Is.copy()
+    if plot_func == plt.plot:  # pylint: disable=W0143
+        idx = np.argwhere(abs(f) < 4e4)
+        f = f[idx].reshape((-1,))
+        if isinstance(Is, list):
+            for i, _ in enumerate(Is):
+                Is[i] = Is[i][idx].reshape((-1,))
+        else:
+            Is = Is[idx].reshape((-1,))
     p, freq, exp = scale_f(f)
     plt.figure()
     if plasma:
@@ -129,12 +138,13 @@ def saver(f, Is, version, kappa=None, plasma=False, vdf=None, info=None):
         vdf {str} -- the VDF used in the long_calc version (default: {None})
         info {str} -- extra information for the pdf metadata (default: {None})
     """
+    cf.I_P['THETA'] = round(cf.I_P['THETA'] * 180 / np.pi, 1)
     if info is None:
-        I_P = dict(cf.I_P, **{'kappa': kappa, 'vdf': vdf, 'F_N_POINTS': cf.F_N_POINTS,
-                              'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
+        I_P = dict({'vdf': vdf, 'kappa': kappa, 'F_N_POINTS': cf.F_N_POINTS,
+                    'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS}, **cf.I_P)
     else:
-        I_P = dict(cf.I_P, **{'info': info, 'kappa': kappa, 'vdf': vdf, 'F_N_POINTS': cf.F_N_POINTS,
-                              'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
+        I_P = dict({'vdf': vdf, 'kappa': kappa, 'info': info, 'F_N_POINTS': cf.F_N_POINTS,
+                    'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS}, **cf.I_P)
     tt = time.localtime()
     the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
     os.makedirs('../../../report/master-thesis/figures', exist_ok=True)
@@ -208,4 +218,4 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
 
 
 if __name__ == '__main__':
-    plot_IS_spectrum('long_calc', vdf='kappa', kappa=3)
+    plot_IS_spectrum('long_calc', vdf='kappa_vol2', kappa=[3, 5])
