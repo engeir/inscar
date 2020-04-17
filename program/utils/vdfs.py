@@ -8,6 +8,8 @@ import scipy.constants as const
 import scipy.special as sps
 import scipy.integrate as si
 
+from inputs import config as cf
+
 
 def f_0_maxwell(v, params):
     A = (2 * np.pi * params['T'] * const.k / params['m'])**(- 3 / 2)
@@ -66,7 +68,8 @@ def make_gauss_shell_scaling(v, params, r):
 
 def f_0_gauss_shell(v, params):
     vth = np.sqrt(params['T'] * const.k / params['m'])
-    r = 5 * vth
+    r = (cf.I_P['T_ES'] * const.k / params['m'])**.5
+    print(f'Gauss shell at v = {round(r / vth,3)} v_th')
     # The radius of the shell will modify the area under
     # the curve to some extent and need proper scaling.
     scaling = make_gauss_shell_scaling(v, params, r)
