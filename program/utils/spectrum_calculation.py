@@ -51,9 +51,9 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
     params = {'nu': cf.I_P['NU_I'], 'm': M_i,
               'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
     y = np.linspace(0, cf.Y_MAX_i**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
-    cf.ff = func(y, params)
+    cf.ff = intf.maxwell_gordeyev(y, params)
     Fi = para.integrate(
-        M_i, cf.I_P['T_I'], cf.I_P['NU_I'], y, function=func, kappa=kappa)
+        M_i, cf.I_P['T_I'], cf.I_P['NU_I'], y, function=intf.maxwell_gordeyev, kappa=kappa)
     params = {'nu': cf.I_P['NU_E'], 'm': const.m_e,
               'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa, 'vdf': vdf}
     y = np.linspace(0, cf.Y_MAX_e**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
