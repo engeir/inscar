@@ -22,6 +22,7 @@ NU_E -- Electron collision frequency [Hz]
 NU_I -- Ion collision frequency [Hz]
 T_E -- Electron temperature [K]
 T_I -- Ion temperature [K]
+# T_ES -- Temperature of suprathermal electrons in the gauss_shell VDF [K]
 THETA -- Pitch angle [1]
 ```
 which are found in `program/inputs/config.py`.
