@@ -218,4 +218,4 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
 
 
 if __name__ == '__main__':
-    plot_IS_spectrum('long_calc', vdf='kappa_vol2', kappa=[3, 5])
+    plot_IS_spectrum('long_calc', vdf='gauss_shell', info='with Maxwellian ions')
