@@ -62,11 +62,9 @@ from the `program` folder.
 │       ├── __init__.py
 │       ├── integrand_functions.py
 │       ├── parallelization.py
-│       ├── tool.py
-│       └── v_int_parallel.py
+│       ├── spectrum_calculation.py
+│       ├── v_int_parallel.py
+│       └── vdfs.py
 ├── readme.md
-├── requirements.txt
-└── structure/
-    ├── path.txt
-    └── paths.py
+└── requirements.txt
 ```
