@@ -65,3 +65,5 @@ w = 2 * np.pi * f  # Angular frequency
 
 # Global variable used as the integrand in the Simpson integral for the spectrum
 ff = None
+
+SCALING = None
