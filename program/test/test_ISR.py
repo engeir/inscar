@@ -1,9 +1,13 @@
 """This script implements test for the functions used throughout the program.
+
+Run from directory `program` with command
+python -m unittest test.test_ISR -b
 """
 
 import unittest
 import numpy as np
 import scipy.integrate as si
+import mpmath
 
 from utils import spectrum_calculation as isr
 from utils import vdfs
@@ -46,14 +50,17 @@ class TestVDF(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.v = np.linspace(0, (1e7)**(1 / 3), int(1e6))**3
+        cls.v = np.linspace(0, (1e8)**(1 / 3), int(1e7))**3
         cls.params = {'m': 9.1093837015e-31, 'T': 1000, 'kappa': 3}
         cls.f = None
 
     def tearDown(self):
+        # The function f is scaled with the Jacobian of cartesian to spherical
         f = self.f * self.v**2 * 4 * np.pi
         res = si.simps(f, self.v)
-        self.assertAlmostEqual(res, 1, places=4)
+        # f = lambda x: self.f(x, self.params, module=mpmath) * x**2 * 4 * mpmath.pi
+        # res = mpmath.quad(f, [0, mpmath.inf])
+        self.assertAlmostEqual(res, 1, places=7)
 
     def test_vdf_maxwell(self):
         self.f = vdfs.f_0_maxwell(self.v, self.params)

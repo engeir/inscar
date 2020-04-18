@@ -184,7 +184,8 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
         info {str} -- optional extra info that will be saved to the pdf metadata made for the plots (default: {None})
     """
     save = input(
-        'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
+        'Press "y/yes" to save plot, any other key to dismiss.\t'
+    ).lower()
     spectrum = False
     if isinstance(kappa, list) and version == 'kappa':
         spectrum = []
@@ -218,4 +219,5 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
 
 
 if __name__ == '__main__':
-    plot_IS_spectrum('long_calc', vdf='gauss_shell', info='with Maxwellian ions')
+    plot_IS_spectrum('long_calc', vdf='gauss_shell',
+                     info='with Maxwellian ions')
