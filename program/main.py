@@ -4,6 +4,12 @@
 import os
 import time
 import datetime
+# The start method of the multiprocessing module was changed from python3.7 to python3.8.
+# Instead of using 'fork', 'spawn' is the new default. To be able to use global
+# variables across all parallel processes, the start method must be reset to 'fork'.
+# See https://docs.python.org/3/library/multiprocessing.html for more info.
+import multiprocessing as mp
+mp.set_start_method('fork')
 
 import si_prefix as sip
 import matplotlib.pyplot as plt
@@ -13,6 +19,7 @@ import scipy.constants as const
 
 from inputs import config as cf
 from utils import spectrum_calculation as isr
+
 
 
 def scale_f(frequency):
