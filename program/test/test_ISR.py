@@ -4,6 +4,9 @@ Run from directory `program` with command
 python -m unittest test.test_ISR -b
 """
 
+import multiprocessing as mp
+mp.set_start_method('fork')
+
 import unittest
 import numpy as np
 import scipy.integrate as si
