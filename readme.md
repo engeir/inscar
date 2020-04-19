@@ -22,7 +22,7 @@ NU_E -- Electron collision frequency [Hz]
 NU_I -- Ion collision frequency [Hz]
 T_E -- Electron temperature [K]
 T_I -- Ion temperature [K]
-# T_ES -- Temperature of suprathermal electrons in the gauss_shell VDF [K]
+T_ES -- Temperature of suprathermal electrons in the gauss_shell VDF [K]
 THETA -- Pitch angle [1]
 ```
 which are found in `program/inputs/config.py`.
@@ -40,7 +40,7 @@ from the `program` folder.
 
 ### File structure
 ```
-/
+isr_spectrum/
 ├── extra/
 │   ├── simple_calculations.py
 │   └── simple_plots.py
