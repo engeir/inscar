@@ -54,7 +54,7 @@ ORDER = 3
 # High frequency plasma lines
 # I_P = {'B': 5e-4, 'F0': 933e6, 'F_MAX': 1.25e7, 'MI': 16, 'NE': 2e11, 'NU_E': 1000, 'NU_I': 0,
 #        'T_E': 10000, 'T_I': 2000, 'T_ES': 90000, 'THETA': 45 * np.pi / 180}
-I_P = {'B': 5e-4, 'F0': 430e6, 'F_MAX': 7e6, 'MI': 16, 'NE': 2e11, 'NU_E': 1000, 'NU_I': 0,
+I_P = {'B': 5e-4, 'F0': 430e6, 'F_MAX': 1e4, 'MI': 16, 'NE': 2e11, 'NU_E': 1000, 'NU_I': 0,
        'T_E': 2000, 'T_I': 1000, 'T_ES': 90000, 'THETA': 40 * np.pi / 180}
 
 # DO NOT EDIT
