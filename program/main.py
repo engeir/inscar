@@ -1,6 +1,7 @@
 """Main script for calculating the IS spectrum.
 """
 
+import pandas as pd
 import os
 import time
 import datetime
@@ -11,14 +12,17 @@ import datetime
 import multiprocessing as mp
 mp.set_start_method('fork')
 
-import si_prefix as sip
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-import numpy as np
-import scipy.constants as const
+import si_prefix as sip  # pylint: disable=C0413
+import matplotlib.pyplot as plt  # pylint: disable=C0413
+from matplotlib.backends.backend_pdf import PdfPages  # pylint: disable=C0413
+import matplotlib.gridspec as grid_spec
+import seaborn as sns
+import numpy as np  # pylint: disable=C0413
+import scipy.constants as const  # pylint: disable=C0413
+import joypy
 
-from inputs import config as cf
-from utils import spectrum_calculation as isr
+from inputs import config as cf  # pylint: disable=C0413
+from utils import spectrum_calculation as isr  # pylint: disable=C0413
 
 
 
@@ -63,6 +67,44 @@ def find_p_line(freq, spec, scale):
     av = fr_n[np.argmax(sp)]
     lower, upper = av - 2e6 / 10**scale, av + 2e6 / 10**scale
     return lower, upper
+
+
+def ridge_plot(f, spectrum):  # (version, kappa=None, vdf=None, area=False, plasma=False, info=None):  # f, spectrum
+    # joypy.joyplot()
+    # TEMPS = cf.I_P['T_E']
+    gs = grid_spec.GridSpec(len(spectrum), 1)
+    fig = plt.figure()
+    i = 0
+    ax_objs = []
+    for s in spectrum:
+        # plt.subplot(len(spectrum), 1, i)
+        ax_objs.append(fig.add_subplot(gs[i:i+1, 0:]))
+        ax_objs[-1].plot(f, s, color='w', linewidth=1)
+        ax_objs[-1].fill_between(f, s, alpha=1, color='r')
+
+        # make background transparent
+        rect = ax_objs[-1].patch
+        rect.set_alpha(0)
+
+        # remove borders, axis ticks, and labels
+        ax_objs[-1].set_yticklabels([])
+        plt.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
+        if i == len(spectrum) - 1:
+            pass
+        else:
+            plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+
+        spines = ["top","right","left","bottom"]
+        for sp in spines:
+            ax_objs[-1].spines[sp].set_visible(False)
+        # ax_objs[-1].text(-0.02, 0, 'country', fontweight="bold",
+        #                  fontsize=14, ha="center")
+
+        i += 1
+
+    gs.update(hspace=-0.4)
+    # plt.tight_layout()
+    plt.show()
 
 
 def plotter(f, Is, plot_func, l=None, plasma=False):
@@ -205,26 +247,32 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
         f, Is = isr.isr_spectrum('kappa', kappa=kappa, area=area)
     else:
         f, Is = isr.isr_spectrum(version, kappa=kappa, area=area, vdf=vdf)
-    if spectrum:
-        if save in ['y', 'yes']:
-            saver(f, spectrum, 'both', kappa=kappa, plasma=plasma, vdf=vdf)
-        else:
-            plotter(f, spectrum, plt.plot, l=kappa, plasma=plasma)
-            plotter(f, spectrum, plt.semilogy, l=kappa, plasma=plasma)
-            # plotter(f, spectrum, plt.semilogx, l=kappa, plasma=plasma)
-            plotter(f, spectrum, plt.loglog, l=kappa, plasma=plasma)
-    else:
-        if save in ['y', 'yes']:
-            saver(f, Is, version, kappa=kappa,
-                  plasma=plasma, info=info, vdf=vdf)
-        else:
-            plotter(f, Is, plt.plot, plasma=plasma)
-            plotter(f, Is, plt.semilogy, plasma=plasma)
-            # plotter(f, Is, plt.semilogx, plasma=plasma)
-            plotter(f, Is, plt.loglog, plasma=plasma)
+    ridge_plot(f, spectrum)
+    # fig, axes = joypy.joyplot(spectrum, fill=False)
+    # if spectrum:
+    #     if save in ['y', 'yes']:
+    #         saver(f, spectrum, 'both', kappa=kappa, plasma=plasma, vdf=vdf)
+    #     else:
+    #         plotter(f, spectrum, plt.plot, l=kappa, plasma=plasma)
+    #         plotter(f, spectrum, plt.semilogy, l=kappa, plasma=plasma)
+    #         # plotter(f, spectrum, plt.semilogx, l=kappa, plasma=plasma)
+    #         plotter(f, spectrum, plt.loglog, l=kappa, plasma=plasma)
+    # else:
+    #     if save in ['y', 'yes']:
+    #         saver(f, Is, version, kappa=kappa,
+    #               plasma=plasma, info=info, vdf=vdf)
+    #     else:
+    #         plotter(f, Is, plt.plot, plasma=plasma)
+    #         plotter(f, Is, plt.semilogy, plasma=plasma)
+    #         # plotter(f, Is, plt.semilogx, plasma=plasma)
+    #         plotter(f, Is, plt.loglog, plasma=plasma)
     plt.show()
 
 
 if __name__ == '__main__':
-    plot_IS_spectrum('long_calc', vdf='gauss_shell',
-                     info='with Maxwellian ions')
+    v = 'kappa'
+    kwargs = {'vdf': 'gauss_shell', 'info': 'with Maxwellian ions', 'kappa': [5, 6, 8, 10, 20]}
+    if isinstance(cf.I_P['T_E'], list):
+        ridge_plot(v, **kwargs)
+    else:
+        plot_IS_spectrum(v, **kwargs)
