@@ -33,6 +33,7 @@ def integrand(y, params, v, f):
         for _ in pool.imap(func, idx):
             pbar.set_description("Calculating velocity integral")
             pbar.update(1)
+    pool.close()
     return array
 
 
