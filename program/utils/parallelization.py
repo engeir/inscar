@@ -40,6 +40,7 @@ def integrate(m, T, nu, y, function, kappa=None):
         for _ in pool.imap(func, idx):
             pbar.set_description("Calculating spectrum")
             pbar.update(1)
+    pool.close()
     if function == intf.kappa_gordeyev:  # pylint: disable=W0143
         a = array / (2**(kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
     elif function == intf.long_calc:  # pylint: disable=W0143
