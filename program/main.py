@@ -1,7 +1,9 @@
 """Main script for calculating the IS spectrum.
 """
 
+import matplotlib  # pylint: disable=C0413
 import os
+import warnings
 import time
 import datetime
 # The start method of the multiprocessing module was changed from python3.7 to python3.8.
@@ -22,7 +24,6 @@ import scipy.constants as const  # pylint: disable=C0413
 
 from inputs import config as cf  # pylint: disable=C0413
 from utils import spectrum_calculation as isr  # pylint: disable=C0413
-
 
 
 def scale_f(frequency):
@@ -68,12 +69,12 @@ def find_p_line(freq, spec, scale):
     return lower, upper
 
 
-def ridge_plot(version, kappa=None, vdf=None, area=False, plasma=False, info=None):  # f, spectrum
-    # joypy.joyplot()
+def ridge_plot(version, kappa=None, vdf=None, area=False, plasma=False, info=None):
+    # Inspired by https://matplotlib.org/matplotblog/posts/create-ridgeplots-in-matplotlib/
     TEMPS = cf.I_P['T_E'].copy()
     TEMPS.reverse()
     gs = grid_spec.GridSpec(len(TEMPS), 1)
-    fig = plt.figure()
+    fig = plt.figure(figsize=(7, 9))
     i = 0
     ax_objs = []
     Rgb, rGb, rgB = 0.0, 0.0, 1.0
@@ -81,10 +82,11 @@ def ridge_plot(version, kappa=None, vdf=None, area=False, plasma=False, info=Non
     for TEMP in TEMPS:
         cf.I_P['T_E'] = TEMP
         f, s = isr.isr_spectrum(version, kappa=kappa, area=area, vdf=vdf)
+        p, freq, _ = scale_f(f)
         # plt.subplot(len(spectrum), 1, i)
         ax_objs.append(fig.add_subplot(gs[i:i+1, 0:]))
-        ax_objs[-1].plot(f, s, color='w', linewidth=1)
-        ax_objs[-1].fill_between(f, s, alpha=1, color=(Rgb, rGb, rgB))
+        ax_objs[-1].plot(freq, s, color='w', linewidth=1)
+        ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb, rGb, rgB))
         Rgb += gradient
         rgB -= gradient
 
@@ -96,19 +98,25 @@ def ridge_plot(version, kappa=None, vdf=None, area=False, plasma=False, info=Non
         ax_objs[-1].set_yticklabels([])
         plt.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
         if i == len(TEMPS) - 1:
-            pass
+            plt.xlabel(f'Frequency -[{p}Hz]')  # , fontname='Ovo')
         else:
             plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 
         spines = ["top","right","left","bottom"]
         for sp in spines:
             ax_objs[-1].spines[sp].set_visible(False)
-        ax_objs[-1].text(f[0], np.max(s) * .2, r'$T_e$=' + f'{TEMP}',
-                         fontsize=14, ha="right")
+        ax_objs[-1].text(freq[0], np.max(s) * .2, r'$T_e$ = ' + f'{TEMP} K',
+                         fontsize=14, ha="right")  # , fontname='Ovo')
 
+        # with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        plt.rcParams['font.family'] = 'Ovo'
+        plt.rcParams['font.sans-serif'] = 'Ovo'
+        # try:
+        # except RuntimeWarning:
         i += 1
 
-    gs.update(hspace=-0.4)
+    gs.update(hspace=-0.6)
     # plt.tight_layout()
     plt.show()
 
@@ -126,6 +134,7 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
         plasma {bool} -- wether to plot only the plasma line of the spectrum or not (default: {False})
     """
     Is = Is.copy()
+    # Linear plot show only ion line (kHz range).
     if plot_func == plt.plot:  # pylint: disable=W0143
         idx = np.argwhere(abs(f) < 4e4)
         f = f[idx].reshape((-1,))
@@ -146,7 +155,8 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
         freq = freq[mask]
     if plot_func == plt.semilogy:  # pylint: disable=W0143
         plt.xlabel(f'Frequency [{p}Hz]')
-        plt.ylabel('10*log10(Power) [dB]')
+        plt.ylabel(
+            '10*log10(Power) [dB]')
         plot_func = plt.plot
         if isinstance(Is, list):
             for s in Is:
