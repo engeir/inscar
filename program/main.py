@@ -82,11 +82,21 @@ def ridge_plot(version, kappa=None, vdf=None, area=False, plasma=False, info=Non
     for TEMP in TEMPS:
         cf.I_P['T_E'] = TEMP
         f, s = isr.isr_spectrum(version, kappa=kappa, area=area, vdf=vdf)
-        p, freq, _ = scale_f(f)
+        p, freq, exp = scale_f(f)
+        if plasma:
+            if isinstance(s, list):
+                spectrum = s[0]
+            else:
+                spectrum = s
+            mini, maxi = find_p_line(freq, spectrum, exp)
+            mask = (freq > mini) & (freq < maxi)
+            freq = freq[mask]
         # plt.subplot(len(spectrum), 1, i)
         ax_objs.append(fig.add_subplot(gs[i:i+1, 0:]))
-        ax_objs[-1].plot(freq, s, color='w', linewidth=1)
-        ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb, rGb, rgB))
+        if plasma:
+            s = s[mask]
+        ax_objs[-1].plot(freq, s, color=(Rgb, rGb, rgB), linewidth=1)
+        # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb, rGb, rgB))
         Rgb += gradient
         rgB -= gradient
 
@@ -98,7 +108,7 @@ def ridge_plot(version, kappa=None, vdf=None, area=False, plasma=False, info=Non
         ax_objs[-1].set_yticklabels([])
         plt.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
         if i == len(TEMPS) - 1:
-            plt.xlabel(f'Frequency -[{p}Hz]')  # , fontname='Ovo')
+            plt.xlabel(f'Frequency [{p}Hz]')  # , fontname='Ovo')
         else:
             plt.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 
@@ -145,7 +155,7 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
             Is = Is[idx].reshape((-1,))
     p, freq, exp = scale_f(f)
     plt.figure()
-    if plasma:
+    if plasma and not plot_func == plt.plot:  # pylint: disable=W0143
         if isinstance(Is, list):
             spectrum = Is[0]
         else:
@@ -157,7 +167,7 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
         plt.xlabel(f'Frequency [{p}Hz]')
         plt.ylabel(
             '10*log10(Power) [dB]')
-        plot_func = plt.plot
+        # plot_func = plt.plot
         if isinstance(Is, list):
             for s in Is:
                 s = 10 * np.log10(s)
@@ -178,12 +188,18 @@ def plotter(f, Is, plot_func, l=None, plasma=False):
         for st, s, lab in zip(style, Is, l):
             if plasma:
                 s = s[mask]
-            plot_func(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
+            if plot_func == plt.semilogy:  # pylint: disable=W0143
+                plt.plot(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
+            else:
+                plot_func(freq, s, 'r', linestyle=st, linewidth=.8, label=lab)
         plt.legend()
     else:
-        if plasma:
+        if plasma and not plot_func == plt.plot:  # pylint: disable=W0143
             Is = Is[mask]
-        plot_func(freq, Is, 'r')
+        if plot_func == plt.semilogy:  # pylint: disable=W0143
+            plt.plot(freq, Is, 'r')
+        else:
+            plot_func(freq, Is, 'r')
     plt.minorticks_on()
     plt.grid(True, which="both", ls="-", alpha=0.4)
     plt.tight_layout()
@@ -286,9 +302,9 @@ def plot_IS_spectrum(version, kappa=None, vdf=None, area=False, plasma=False, in
 
 
 if __name__ == '__main__':
-    version = 'kappa'
-    kwargs = {'vdf': 'gauss_shell', 'info': 'with Maxwellian ions', 'kappa': 5}
+    ver = 'kappa'
+    kwargs = {'plasma': True, 'kappa': 3}
     if isinstance(cf.I_P['T_E'], list):
-        ridge_plot(version, **kwargs)
+        ridge_plot(ver, **kwargs)
     else:
-        plot_IS_spectrum(version, **kwargs)
+        plot_IS_spectrum(ver, **kwargs)
