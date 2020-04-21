@@ -54,12 +54,12 @@ ORDER = 3
 # High frequency plasma lines
 # I_P = {'B': 5e-4, 'F0': 933e6, 'F_MAX': 1.25e7, 'MI': 16, 'NE': 2e11, 'NU_E': 1000, 'NU_I': 0,
 #        'T_E': 10000, 'T_I': 2000, 'T_ES': 90000, 'THETA': 45 * np.pi / 180}
-el_temp = []
-e_t = 1000
-for i in range(20):
-    el_temp.append(e_t * (i + 1))
+# el_temp = []
+# e_t = 10000
+# for i in range(2):
+#     el_temp.append(e_t * (i + 1))
 I_P = {'B': 5e-4, 'F0': 430e6, 'F_MAX': 1e4, 'MI': 16, 'NE': 2e11, 'NU_E': 1000, 'NU_I': 0,
-       'T_E': el_temp, 'T_I': 1000, 'T_ES': 90000, 'THETA': 40 * np.pi / 180}
+       'T_E': 2000, 'T_I': 1000, 'T_ES': 90000, 'THETA': 40 * np.pi / 180}
 
 # DO NOT EDIT
 K_RADAR = - 2 * I_P['F0'] * 2 * np.pi / const.c  # Radar wavenumber
