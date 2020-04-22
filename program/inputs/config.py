@@ -48,7 +48,7 @@ ORDER = 3
 el_temp = []
 e_t_0 = 2000
 e_t = 1000
-for i in range(9):
+for i in range(2):
     el_temp.append(e_t_0 + e_t * i)
 # For seeing gyro lines
 # I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 2e6, 'MI': 29, 'NE': 2e10,
