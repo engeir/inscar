@@ -33,7 +33,7 @@ python3 main.py
 ```
 
 ## Usage <a name = "usage"></a>
-#### Physical environment
+### Physical environment
 The available plasma parameters that can be changed within the program are
 ```
 === Input parameters ===
@@ -51,7 +51,7 @@ THETA -- Pitch angle [1]
 ```
 which are found in `program/inputs/config.py`.
 
-#### Calculation method
+### Calculation method
 The program support different methods of calculating the spectrum, based on how you assume the particles to be distributed. This includes a Maxwellian distribution and a kappa distribution, in addition to any other arbitrary isotropic distribution.
 
 The version that determine the calculation method is given in `main.py`, with additional keyword arguments that decide how to plot the result from the calculation.
