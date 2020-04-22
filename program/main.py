@@ -2,9 +2,11 @@
 """
 
 import os
+import sys
 import warnings
 import time
 import datetime
+import textwrap as txt
 # The start method of the multiprocessing module was changed from python3.7 to python3.8.
 # Instead of using 'fork', 'spawn' is the new default. To be able to use global
 # variables across all parallel processes, the start method must be reset to 'fork'.
@@ -130,11 +132,16 @@ class PlotClass:
         self.vdf = vdf
         self.plasma = plasma
         self.info = info
+        self.correct_inputs()
         self.create_data = CreateData(self.version, self.kappa, self.vdf, area)
         save = input(
             'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
         self.setup()
         self.final(save)
+
+    def correct_inputs(self):
+        if not self.version == 'kappa' and not (self.version == 'long_calc' and self.vdf in ['kappa', 'kappa_vol2']):
+            self.kappa = None
 
     def setup(self):
         if isinstance(cf.I_P['T_E'], list):
@@ -184,12 +191,25 @@ class PlotClass:
         pdffig.close()
 
     def plot(self, func_type):
+        try:
+            getattr(plt, func_type)
+        except Exception:
+            sys.exit(print(f'{func_type} is not an attribute of the matplotlib.pyplot object.'))
         if self.plot_type == 'ridge':
             self.plot_ridge(self.f, self.data, func_type)
         else:
             self.plot_normal(self.f, self.data, func_type)
 
     def plot_normal(self, f, Is, func_type):
+        """Make a plot using f as x-axis scale and Is as values.
+
+        Is may be either a (N,) or (N,1) np.ndarray or a list of such arrays.
+
+        Arguments:
+            f {np.ndarray} -- variable along x-axis
+            Is {np.ndarray or list} -- y-axis values along x-axis
+            func_type {str} -- attribute of the matplotlib.pyplot object
+        """
         Is = Is.copy()
         # Linear plot show only ion line (kHz range).
         if func_type == 'plot':
@@ -281,7 +301,7 @@ class PlotClass:
                 for first, s in enumerate(params):
                     if self.plasma:
                         s = s[mask]
-                    plot_object = getattr(ax_objs[-1], str(func_type))
+                    plot_object = getattr(ax_objs[-1], func_type)
                     plot_object(freq, s, color=(Rgb, rGb, rgB), linewidth=1)
                     if first == 0:
                         ax_objs[-1].text(freq[0], np.max(s) * .2, r'$T_e$ = ' + f'{TEMPS[j]} K',
@@ -290,7 +310,7 @@ class PlotClass:
             else:
                 if self.plasma:
                     params = params[mask]
-                plot_object = getattr(ax_objs[-1], str(func_type))
+                plot_object = getattr(ax_objs[-1], func_type)
                 plot_object(freq, params, color=(Rgb, rGb, rgB), linewidth=1)
                 ax_objs[-1].text(freq[0], np.max(params) * .2, r'$T_e$ = ' + f'{TEMPS[j]} K',
                                  fontsize=14, ha="right")  # , fontname='Ovo')
@@ -316,16 +336,13 @@ class PlotClass:
             for sp in spines:
                 ax_objs[-1].spines[sp].set_visible(False)
 
-            # with warnings.catch_warnings():
+            # with warnings.catch_warnings(): did not work since the warning is raised at some other point
             warnings.filterwarnings("ignore", category=RuntimeWarning)
             plt.rcParams['font.family'] = 'Ovo'
             plt.rcParams['font.sans-serif'] = 'Ovo'
-            # try:
-            # except RuntimeWarning:
             i += 1
 
         gs.update(hspace=-0.6)
-        # plt.tight_layout()
 
     @staticmethod
     def scale_f(frequency):
@@ -372,6 +389,6 @@ class PlotClass:
 
 
 if __name__ == '__main__':
-    ver = 'kappa'
-    kwargs = {'plasma': True, 'kappa': [3, 20]}
-    PlotClass(ver, **kwargs)
+    ver = 'maxwell'
+    kwargs = {'vdf': 'kappa_vol2', 'kappa': [3]}
+    PlotClass(ver,  **kwargs)
