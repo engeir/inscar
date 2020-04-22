@@ -7,9 +7,27 @@
 
 ---
 
-### Info
+# Info
 Makes plots of an incoherent scatter radar spectrum based on the theory presented in [Hagfors (1961)](https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699).
 
+# Installing
+The program is built using `python3.8` and tested against `python3.8` on *macOS*.
+
+Before trying the program, run
+```
+pip install -r requirements.txt
+```
+to install all needed packages, and then navigate to the `program` folder
+```
+cd program
+```
+Start the program with command
+```
+python3 main.py
+```
+
+# Usage
+### Physical environment
 The available plasma parameters that can be changed within the program are
 ```
 === Input parameters ===
@@ -27,18 +45,12 @@ THETA -- Pitch angle [1]
 ```
 which are found in `program/inputs/config.py`.
 
-### Installing
-Run
-```
-pip install -r requirements.txt
-```
-to install all needed packages, and then run with command
-```
-python3 main.py
-```
-from the `program` folder.
+### Calculation method
+The program support different methods of calculating the spectrum, based on how you assume the particles to be distributed. This includes a Maxwellian distribution and a kappa distribution, in addition to any other arbitrary isotropic distribution.
 
-### File structure
+The version that determine the calculation method is given in `main.py`, with additional keyword arguments that decide how to plot the result from the calculation.
+
+# File structure
 ```
 isr_spectrum/
 ├── extra/
