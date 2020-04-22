@@ -6,7 +6,6 @@ import sys
 import warnings
 import time
 import datetime
-import textwrap as txt
 # The start method of the multiprocessing module was changed from python3.7 to python3.8.
 # Instead of using 'fork', 'spawn' is the new default. To be able to use global
 # variables across all parallel processes, the start method must be reset to 'fork'.
@@ -369,14 +368,15 @@ class PlotClass:
             freq {np.ndarray} -- sample points of frequency parameter
             spec {np.ndarray} -- values of spectrum at the sampled frequencies
             scale {int} -- exponent corresponding to the prefix of the frequency scale
+            temp {int} -- electron temperature
 
         Returns:
             float, float -- lower and upper bound of the interval
         """
         fr = np.copy(freq)
         sp = np.copy(spec)
-        w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge **
-                      2 / (const.m_e * const.epsilon_0))
+        w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge**2
+                      / (const.m_e * const.epsilon_0))
         f = w_p * (1 + 3 * cf.K_RADAR**2 *
                    temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
         lower, upper = (f - 1e6) / 10**scale, (f + 1e6) / 10**scale
