@@ -14,6 +14,7 @@ import scipy.integrate as si
 
 from utils import spectrum_calculation as isr
 from utils import vdfs
+from inputs import config as cf
 
 
 class TestISR(unittest.TestCase):
@@ -28,6 +29,10 @@ class TestISR(unittest.TestCase):
     @classmethod
     def SetUpClass(cls):
         cls.a, cls.b = None, None
+
+    def setUp(self):
+        if isinstance(cf.I_P['T_E'], list):
+            cf.I_P['T_E'] = int(cf.I_P['T_E'][0])
 
     def tearDown(self):
         self.assertIsInstance(self.a, np.ndarray)
@@ -53,6 +58,8 @@ class TestVDF(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        if isinstance(cf.I_P['T_E'], list):
+            cf.I_P['T_E'] = int(cf.I_P['T_E'][0])
         cls.v = np.linspace(0, (1e8)**(1 / 3), int(1e7))**3
         cls.params = {'m': 9.1093837015e-31, 'T': 1000, 'kappa': 3}
         cls.f = None

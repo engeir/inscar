@@ -21,8 +21,8 @@ if os.path.basename(os.path.realpath(sys.argv[0])) != 'main.py':
     V_N_POINTS = 1e1
 else:
     F_N_POINTS = 1e3  # Number of sample points in frequency
-    Y_N_POINTS = 5e4  # Number of sample points in integral variable
-    V_N_POINTS = 6e4  # Number of sample points in velocity integral variable
+    Y_N_POINTS = 5e3  # Number of sample points in integral variable
+    V_N_POINTS = 6e3  # Number of sample points in velocity integral variable
 # Adds one sample to get an even number of bins, which in
 # turn give better precision in the Simpson integration.
 Y_N_POINTS += 1
@@ -48,7 +48,7 @@ ORDER = 3
 el_temp = []
 e_t_0 = 2000
 e_t = 1000
-for i in range(9):
+for i in range(2):
     el_temp.append(e_t_0 + e_t * i)
 # For seeing gyro lines
 # I_P = {'B': 35000e-9, 'F0': 430e6, 'F_MAX': 2e6, 'MI': 29, 'NE': 2e10,
