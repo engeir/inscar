@@ -1,4 +1,4 @@
-"""Main script for calculating the IS spectrum.
+"""Main script for  controlling the calculation method of the IS spectrum.
 """
 
 import os
@@ -13,15 +13,29 @@ import datetime
 import multiprocessing as mp
 mp.set_start_method('fork')
 
+import matplotlib
 import matplotlib.gridspec as grid_spec  # pylint: disable=C0413
 import matplotlib.pyplot as plt  # pylint: disable=C0413
 from matplotlib.backends.backend_pdf import PdfPages  # pylint: disable=C0413
+from matplotlib.mathtext import MathTextWarning  # pylint: disable=C0413
 import numpy as np  # pylint: disable=C0413
 import scipy.constants as const  # pylint: disable=C0413
 import si_prefix as sip  # pylint: disable=C0413
 
 from inputs import config as cf  # pylint: disable=C0413
 from utils import spectrum_calculation as isr  # pylint: disable=C0413
+
+# From https://stackoverflow.com/questions/47253462/matplotlib-2-mathtext-glyph-errors-in-tick-labels
+# Customize matplotlib
+matplotlib.rcParams.update({  # Use mathtext, not LaTeX
+    'text.usetex': False,
+    # Use the Computer modern font
+    'font.family': 'Ovo',
+    'font.serif': 'Ovo',
+    'mathtext.fontset': 'cm',
+    # Use ASCII minus
+    'axes.unicode_minus': False,
+})
 
 
 class CreateData:
@@ -139,10 +153,20 @@ class PlotClass:
         self.final(save)
 
     def correct_inputs(self):
+        """Extra check suppressing the parameters that was given but is not necessary.
+        """
         if not self.version == 'kappa' and not (self.version == 'long_calc' and self.vdf in ['kappa', 'kappa_vol2']):
             self.kappa = None
+        if not self.version == 'long_calc':
+            self.vdf = None
+        if not self.vdf == 'gauss_shell':
+            cf.I_P['T_ES'] = None
 
     def setup(self):
+        """Do initial tasks. Decide on what kind of plot and create correct data.
+        """
+        if isinstance(self.kappa, list):
+            self.version = 'both'
         if isinstance(cf.I_P['T_E'], list):
             self.plot_type = 'ridge'
             self.f, self.data = self.create_data.create_multi_params()
@@ -151,6 +175,11 @@ class PlotClass:
             self.f, self.data = self.create_data.create_single_or_multi()
 
     def final(self, save):
+        """Make the plots from the created data and save if needed.
+
+        Arguments:
+            save {str} -- if 'y' or 'yes', the figure is saved to a predefined directory
+        """
         if save in ['y', 'yes']:
             self.save_me()
         else:
@@ -160,6 +189,11 @@ class PlotClass:
         plt.show()
 
     def save_me(self):
+        """Save the figure as a multi page pdf with all parameters saved in the meta data.
+
+        The date and time is used in the figure name, in addition to it ending with which method was used.
+        The settings that was used in config as as inputs to the plot object is saved in the metadata of the figure.
+        """
         cf.I_P['THETA'] = round(cf.I_P['THETA'] * 180 / np.pi, 1)
         if self.info is None:
             I_P = dict({'vdf': self.vdf, 'kappa': self.kappa, 'F_N_POINTS': cf.F_N_POINTS,
@@ -190,14 +224,20 @@ class PlotClass:
         pdffig.close()
 
     def plot(self, func_type):
+        """Make a plot independent of what kind of data is used, and with any given plotting method.
+
+        Arguments:
+            func_type {str} -- any attribute of the matplotlib.pyplot object is accepted and is used to do the plotting
+        """
         try:
             getattr(plt, func_type)
         except Exception:
-            sys.exit(print(f'{func_type} is not an attribute of the matplotlib.pyplot object.'))
-        if self.plot_type == 'ridge':
-            self.plot_ridge(self.f, self.data, func_type)
+            print(f'{func_type} is not an attribute of the matplotlib.pyplot object. Skips to next.')
         else:
-            self.plot_normal(self.f, self.data, func_type)
+            if self.plot_type == 'ridge':
+                self.plot_ridge(self.f, self.data, func_type)
+            else:
+                self.plot_normal(self.f, self.data, func_type)
 
     def plot_normal(self, f, Is, func_type):
         """Make a plot using f as x-axis scale and Is as values.
@@ -211,17 +251,12 @@ class PlotClass:
         """
         Is = Is.copy()
         # Linear plot show only ion line (kHz range).
-        if func_type == 'plot':
-            idx = np.argwhere(abs(f) < 4e4)
-            f = f[idx].reshape((-1,))
-            if isinstance(Is, list):
-                for i, _ in enumerate(Is):
-                    Is[i] = Is[i][idx].reshape((-1,))
-            else:
-                Is = Is[idx].reshape((-1,))
+        if func_type == 'plot' and not self.plasma:
+            f, Is = self.only_ionline(f, Is)
         p, freq, exp = self.scale_f(f)
-        plt.figure()
-        if self.plasma and not func_type == 'plot':
+        plt.figure(figsize=(6, 3))
+        if self.plasma:
+            # Clip the frequency line around the plasma frequency.
             if isinstance(Is, list):
                 spectrum = Is[0]
             else:
@@ -230,10 +265,10 @@ class PlotClass:
             mask = (freq > mini) & (freq < maxi)
             freq = freq[mask]
         if func_type == 'semilogy':
+            # Rescale the y-axis to a dB scale.
             plt.xlabel(f'Frequency [{p}Hz]')
             plt.ylabel(
                 '10*log10(Power) [dB]')
-            # func_type = plt.plot
             if isinstance(Is, list):
                 for s in Is:
                     s = 10 * np.log10(s)
@@ -252,7 +287,7 @@ class PlotClass:
                      (0, (3, 5, 1, 5, 1, 5)),
                      (0, (3, 1, 1, 1, 1, 1))]
             for st, s, lab in zip(style, Is, self.kappa):
-                if self.plasma and not func_type == 'plot':
+                if self.plasma:
                     s = s[mask]
                 if func_type == 'semilogy':
                     plt.plot(freq, s, 'r', linestyle=st,
@@ -263,7 +298,7 @@ class PlotClass:
                                 linewidth=.8, label=lab)
             plt.legend()
         else:
-            if self.plasma and not func_type == 'plot':
+            if self.plasma:
                 Is = Is[mask]
             if func_type == 'semilogy':
                 plt.plot(freq, Is, 'r')
@@ -284,8 +319,14 @@ class PlotClass:
         i = 0
         ax_objs = []
         Rgb, rGb, rgB = 0.0, 0.0, 1.0
-        gradient = 1 / len(multi_params)
+        gradient = 1 / (len(multi_params) - .95)
+        f_original = f.copy()
         for j, params in enumerate(multi_params):
+            # f is reset due to the scaling immediately below.
+            f = f_original
+            # Linear plot show only ion line (kHz range).
+            if func_type == 'plot' and not self.plasma:
+                f, params = self.only_ionline(f, params)
             p, freq, exp = self.scale_f(f)
             if self.plasma:
                 if isinstance(params, list):
@@ -303,16 +344,20 @@ class PlotClass:
                     plot_object = getattr(ax_objs[-1], func_type)
                     plot_object(freq, s, color=(Rgb, rGb, rgB), linewidth=1)
                     if first == 0:
-                        ax_objs[-1].text(freq[0], np.max(s) * .2, r'$T_e$ = ' + f'{TEMPS[j]} K',
-                                         fontsize=14, ha="right")  # , fontname='Ovo')
+                        x_0 = ax_objs[-1].viewLim.x0
+                        idx = np.argwhere(freq > x_0)[0]
+                        ax_objs[-1].text(freq[idx], s[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
+                                         fontsize=14, ha="right", va='bottom')
                     # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb, rGb, rgB))
             else:
                 if self.plasma:
                     params = params[mask]
                 plot_object = getattr(ax_objs[-1], func_type)
                 plot_object(freq, params, color=(Rgb, rGb, rgB), linewidth=1)
-                ax_objs[-1].text(freq[0], np.max(params) * .2, r'$T_e$ = ' + f'{TEMPS[j]} K',
-                                 fontsize=14, ha="right")  # , fontname='Ovo')
+                x_0 = ax_objs[-1].viewLim.x0
+                idx = np.argwhere(freq > x_0)[0]
+                ax_objs[-1].text(freq[idx], params[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
+                                 fontsize=14, ha="right", va='bottom')
                 # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb, rGb, rgB))
             Rgb += gradient
             rgB -= gradient
@@ -321,12 +366,12 @@ class PlotClass:
             rect = ax_objs[-1].patch
             rect.set_alpha(0)
 
-            # remove borders, axis ticks, and labels
+            # remove borders, axis ticks and labels
             ax_objs[-1].set_yticklabels([])
             plt.tick_params(axis='y', which='both', left=False,
                             right=False, labelleft=False)
             if i == len(multi_params) - 1:
-                plt.xlabel(f'Frequency [{p}Hz]')  # , fontname='Ovo')
+                plt.xlabel(f'Frequency [{p}Hz]')
             else:
                 plt.tick_params(axis='x', which='both', bottom=False,
                                 top=False, labelbottom=False)
@@ -334,11 +379,6 @@ class PlotClass:
             spines = ["top", "right", "left", "bottom"]
             for sp in spines:
                 ax_objs[-1].spines[sp].set_visible(False)
-
-            # with warnings.catch_warnings(): did not work since the warning is raised at some other point
-            warnings.filterwarnings("ignore", category=RuntimeWarning)
-            plt.rcParams['font.family'] = 'Ovo'
-            plt.rcParams['font.sans-serif'] = 'Ovo'
             i += 1
 
         gs.update(hspace=-0.6)
@@ -387,8 +427,18 @@ class PlotClass:
         lower, upper = av - 2e6 / 10**scale, av + 2e6 / 10**scale
         return lower, upper
 
+    @staticmethod
+    def only_ionline(f, Is):
+        idx = np.argwhere(abs(f) < 4e4)
+        f = f[idx].reshape((-1,))
+        if isinstance(Is, list):
+            for i, _ in enumerate(Is):
+                Is[i] = Is[i][idx].reshape((-1,))
+        else:
+            Is = Is[idx].reshape((-1,))
+        return f, Is
 
 if __name__ == '__main__':
-    ver = 'maxwell'
-    kwargs = {'vdf': 'kappa_vol2', 'kappa': [3]}
+    ver = 'kappa'
+    kwargs = {'kappa': [3, 5, 8, 20]}
     PlotClass(ver,  **kwargs)
