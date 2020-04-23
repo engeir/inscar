@@ -270,8 +270,8 @@ class PlotClass:
             plt.ylabel(
                 '10*log10(Power) [dB]')
             if isinstance(Is, list):
-                for s in Is:
-                    s = 10 * np.log10(s)
+                for i, _ in enumerate(Is):
+                    Is[i] = 10 * np.log10(Is[i])
             else:
                 Is = 10 * np.log10(Is)
         else:
@@ -440,5 +440,5 @@ class PlotClass:
 
 if __name__ == '__main__':
     ver = 'kappa'
-    kwargs = {'kappa': [3, 5, 8, 20]}
+    kwargs = {'kappa': [3, 5, 8, 20], 'plasma': True}
     PlotClass(ver,  **kwargs)
