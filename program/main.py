@@ -3,7 +3,6 @@
 
 import os
 import sys
-import warnings
 import time
 import datetime
 # The start method of the multiprocessing module was changed from python3.7 to python3.8.
@@ -13,11 +12,10 @@ import datetime
 import multiprocessing as mp
 mp.set_start_method('fork')
 
-import matplotlib
+import matplotlib  # pylint: disable=C0413
 import matplotlib.gridspec as grid_spec  # pylint: disable=C0413
 import matplotlib.pyplot as plt  # pylint: disable=C0413
 from matplotlib.backends.backend_pdf import PdfPages  # pylint: disable=C0413
-from matplotlib.mathtext import MathTextWarning  # pylint: disable=C0413
 import numpy as np  # pylint: disable=C0413
 import scipy.constants as const  # pylint: disable=C0413
 import si_prefix as sip  # pylint: disable=C0413
@@ -29,7 +27,6 @@ from utils import spectrum_calculation as isr  # pylint: disable=C0413
 # Customize matplotlib
 matplotlib.rcParams.update({  # Use mathtext, not LaTeX
     'text.usetex': False,
-    # Use the Computer modern font
     'font.family': 'Ovo',
     'font.serif': 'Ovo',
     'mathtext.fontset': 'cm',
@@ -161,6 +158,13 @@ class PlotClass:
             self.vdf = None
         if not self.vdf == 'gauss_shell':
             cf.I_P['T_ES'] = None
+        if self.plasma:
+            if isinstance(cf.I_P['T_E'], list):
+                T_0 = cf.I_P['T_E'][0]
+            else:
+                T_0 = cf.I_P['T_E']
+            if self.find_p_line(None, None, None, T_0, check=True):
+                sys.exit(print(f"F_MAX (= {cf.I_P['F_MAX']}) is not high enough to look at the plasma line."))
 
     def setup(self):
         """Do initial tasks. Decide on what kind of plot and create correct data.
@@ -309,18 +313,22 @@ class PlotClass:
         plt.grid(True, which="both", ls="-", alpha=0.4)
         plt.tight_layout()
 
-    def plot_ridge(self, f, multi_params, func_type):
+    def plot_ridge(self, f, multi_parameters, func_type):
         # Inspired by https://matplotlib.org/matplotblog/posts/create-ridgeplots-in-matplotlib/
+        # To make sure not to alter the object in the config file, it is copied.
+        multi_params = multi_parameters.copy()
+        multi_params.reverse()
         TEMPS = cf.I_P['T_E'].copy()
         TEMP_0 = TEMPS[0]
         TEMPS.reverse()
         gs = grid_spec.GridSpec(len(multi_params), 1)
         fig = plt.figure(figsize=(7, 9))
-        i = 0
         ax_objs = []
         Rgb, rGb, rgB = 0.0, 0.0, 1.0
         gradient = 1 / (len(multi_params) - .95)
         f_original = f.copy()
+        # If you want equal scaling of the y axis as well
+        # y_min, y_max = self.scaling_y(multi_params)
         for j, params in enumerate(multi_params):
             # f is reset due to the scaling immediately below.
             f = f_original
@@ -336,19 +344,32 @@ class PlotClass:
                 mini, maxi = self.find_p_line(freq, spectrum, exp, temp=TEMP_0)
                 mask = (freq > mini) & (freq < maxi)
                 freq = freq[mask]
-            ax_objs.append(fig.add_subplot(gs[i:i+1, 0:]))
+            ax_objs.append(fig.add_subplot(gs[j:j + 1, 0:]))
             if isinstance(params, list):
-                for first, s in enumerate(params):
+                if any([isinstance(kappa_i, int) for kappa_i in self.kappa]):
+                    for v, kappa_i in enumerate(self.kappa):
+                        self.kappa[v] = r'$\kappa =$' + f'{kappa_i}'
+                if 'Maxwellian' not in self.kappa:
+                    self.kappa.insert(0, 'Maxwellian')
+                style = ['-', '--', ':', '-.',
+                         (0, (3, 5, 1, 5, 1, 5)),
+                         (0, (3, 1, 1, 1, 1, 1))]
+                first = 0
+                for st, s, lab in zip(style, params, self.kappa):
                     if self.plasma:
                         s = s[mask]
                     plot_object = getattr(ax_objs[-1], func_type)
-                    plot_object(freq, s, color=(Rgb, rGb, rgB), linewidth=1)
+                    plot_object(freq, s, color=(Rgb, rGb, rgB), linewidth=1, label=lab, linestyle=st)
                     if first == 0:
                         x_0 = ax_objs[-1].viewLim.x0
                         idx = np.argwhere(freq > x_0)[0]
+                        x1, y1 = ax_objs[-1].viewLim.x1, np.max(s)
                         ax_objs[-1].text(freq[idx], s[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
                                          fontsize=14, ha="right", va='bottom')
                     # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb, rGb, rgB))
+                    if j == 0:
+                        plt.legend(loc='upper right', bbox_to_anchor=(x1, y1), bbox_transform=ax_objs[-1].transData)
+                    first += 1
             else:
                 if self.plasma:
                     params = params[mask]
@@ -367,10 +388,11 @@ class PlotClass:
             rect.set_alpha(0)
 
             # remove borders, axis ticks and labels
+            # plt.ylim([y_min, y_max])
             ax_objs[-1].set_yticklabels([])
             plt.tick_params(axis='y', which='both', left=False,
                             right=False, labelleft=False)
-            if i == len(multi_params) - 1:
+            if j == len(multi_params) - 1:
                 plt.xlabel(f'Frequency [{p}Hz]')
             else:
                 plt.tick_params(axis='x', which='both', bottom=False,
@@ -379,7 +401,6 @@ class PlotClass:
             spines = ["top", "right", "left", "bottom"]
             for sp in spines:
                 ax_objs[-1].spines[sp].set_visible(False)
-            i += 1
 
         gs.update(hspace=-0.6)
 
@@ -400,7 +421,7 @@ class PlotClass:
         return pre, freq, exp
 
     @staticmethod
-    def find_p_line(freq, spec, scale, temp):
+    def find_p_line(freq, spec, scale, temp, check=False):
         """Find the frequency that is most likely the peak of the plasma line
         and return the lower and upper bounds for an interval around the peak.
 
@@ -413,6 +434,13 @@ class PlotClass:
         Returns:
             float, float -- lower and upper bound of the interval
         """
+        if check:
+            w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge**2
+                          / (const.m_e * const.epsilon_0))
+            f = w_p * (1 + 3 * cf.K_RADAR**2 *
+                       temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
+            upper = f + 1e6
+            return bool(upper > cf.I_P['F_MAX'])
         fr = np.copy(freq)
         sp = np.copy(spec)
         w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge**2
@@ -438,7 +466,24 @@ class PlotClass:
             Is = Is[idx].reshape((-1,))
         return f, Is
 
+    @staticmethod
+    def scaling_y(multi_params):
+        y_min, y_max = np.inf, - np.inf
+        for params in multi_params:
+            if isinstance(params, list):
+                for s in params:
+                    if y_min > np.min(s):
+                        y_min = np.min(s)
+                    if y_max < np.max(s):
+                        y_max = np.max(s)
+            else:
+                if y_min > np.min(params):
+                    y_min = np.min(params)
+                if y_max < np.max(params):
+                    y_max = np.max(params)
+        return y_min, y_max
+
 if __name__ == '__main__':
     ver = 'kappa'
-    kwargs = {'kappa': [3, 5, 8, 20], 'plasma': True}
+    kwargs = {'kappa': [3, 20], 'plasma': True}
     PlotClass(ver,  **kwargs)
