@@ -1,9 +1,22 @@
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from labellines import labelLines
 import scipy.constants as const
 import scipy.special as sps
+
+
+# From https://stackoverflow.com/questions/47253462/matplotlib-2-mathtext-glyph-errors-in-tick-labels
+# Customize matplotlib
+matplotlib.rcParams.update({  # Use mathtext, not LaTeX
+    'text.usetex': False,
+    'font.family': 'Ovo',
+    'font.serif': 'Ovo',
+    'mathtext.fontset': 'cm',
+    # Use ASCII minus
+    'axes.unicode_minus': False,
+})
 
 
 def chirp_sampling():
@@ -20,7 +33,7 @@ def chirp_sampling():
     plt.ylabel('Sampled variable')
     plt.xlabel('Number of sample points')
     labelLines(plt.gca().get_lines(), fontsize=9, zorder=2.5)
-    # plt.savefig(f'../../report/master-thesis/figures/simpson_int_sampling.pdf',
+    # plt.savefig(f'../../../report/master-thesis/figures/simpson_int_sampling.pdf',
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.tight_layout()
     plt.show()
@@ -64,7 +77,7 @@ def d_kappa(x, T, m, k):
 
 def d_vdf_plots():
     # n = 5
-    w = np.linspace(- 8e5, 8e5, 1e4)
+    w = np.linspace(- 8e5, 8e5, int(1e4))
     v = w * np.sqrt(const.electron_mass / (1000 * const.k))
     f = d_maxwell(w, 1000, const.electron_mass)
     norm = np.max(f)
@@ -91,7 +104,7 @@ def d_vdf_plots():
     plt.ylim([1e-5, 3e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
     plt.ylabel(r'$f_0/\max(f_{0,M})$')
-    # plt.savefig(f'../../report/master-thesis/figures/d_vdf.pdf',
+    # plt.savefig(f'../../../report/master-thesis/figures/d_vdf.pdf',
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
@@ -122,10 +135,10 @@ def vdf_plots():
         plot(v, f, 'k', label=r'$\kappa = $' +
              f'{k}', linestyle=s, linewidth=.8)
     plt.legend()
-    # plt.ylim([1e-5, 1e1])
+    plt.ylim([1e-5, 1e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
     plt.ylabel(r'$f_0/\max(f_{0,M})$')
-    # plt.savefig(f'../../report/master-thesis/figures/vdf.pdf',
+    # plt.savefig(f'../../../report/master-thesis/figures/vdf.pdf',
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
@@ -133,14 +146,14 @@ def vdf_plots():
 def chirp_z_fail():
     # This give a clear indication that the sampling is too low.
     # y1, y2, y3 represent the peaks of the electron, gyro and ion lines.
-    # x = np.array([5e6, 1e7, 2e7, 3e7, 4e7, 5e7, 1e8])
-    # y1 = np.array([2.078, 2.692, 3.322, 3.620, 3.7787, 3.8703, 3.8536])
-    # y2 = np.array([.679, .6812, .6819, .6820, .6820, .6820, .6821])
-    # y3 = np.array([6.288, 6.35, 6.384, 6.392, 6.390, 6.393, 6.403]) * 1e-4
-    x = np.array([5e6, 1e7, 2e7, 4e7, 1e8])
-    y1 = np.array([1.51449, 1.51601, 1.51639, 1.51649, 1.51651])
-    y2 = np.array([.606318, .606359, .606369, .606372, .606373])
-    y3 = np.array([9.42397, 9.43598, 9.438, 9.441, 9.442]) * 1e-4
+    x = np.array([5e6, 1e7, 2e7, 3e7, 4e7, 5e7, 1e8])
+    y1 = np.array([2.078, 2.692, 3.322, 3.620, 3.7787, 3.8703, 3.8536])
+    y2 = np.array([.679, .6812, .6819, .6820, .6820, .6820, .6821])
+    y3 = np.array([6.288, 6.35, 6.384, 6.392, 6.390, 6.393, 6.403]) * 1e-4
+    # x = np.array([5e6, 1e7, 2e7, 4e7, 1e8])
+    # y1 = np.array([1.51449, 1.51601, 1.51639, 1.51649, 1.51651])
+    # y2 = np.array([.606318, .606359, .606369, .606372, .606373])
+    # y3 = np.array([9.42397, 9.43598, 9.438, 9.441, 9.442]) * 1e-4
     y1 -= np.min(y1)
     y2 -= np.min(y2)
     y3 -= np.min(y3)
@@ -155,7 +168,7 @@ def chirp_z_fail():
     plt.xlabel(r'$N$')
     plt.ylabel(r'$(f-f_\min)/(f_\max-f_\min)$')
     plt.legend()
-    # plt.savefig(f'../../report/master-thesis/figures/chirp-z_artefact.pdf',
+    # plt.savefig(f'../../../report/master-thesis/figures/chirp-z_artefact.pdf',
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
