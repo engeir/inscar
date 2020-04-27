@@ -313,24 +313,24 @@ class PlotClass:
         plt.grid(True, which="both", ls="-", alpha=0.4)
         plt.tight_layout()
 
-    def plot_ridge(self, f, multi_parameters, func_type):
+    def plot_ridge(self, frequency, multi_parameters, func_type):
         # Inspired by https://matplotlib.org/matplotblog/posts/create-ridgeplots-in-matplotlib/
-        # To make sure not to alter the object in the config file, it is copied.
+        # To make sure not to alter any list objects, they are copied.
+        f_original = frequency.copy()
         multi_params = multi_parameters.copy()
         multi_params.reverse()
+        length = len(multi_params)
         TEMPS = cf.I_P['T_E'].copy()
         TEMP_0 = TEMPS[0]
         TEMPS.reverse()
-        gs = grid_spec.GridSpec(len(multi_params), 1)
+        gs = grid_spec.GridSpec(length, 1)
         fig = plt.figure(figsize=(7, 9))
         ax_objs = []
-        Rgb, rGb, rgB = 0.0, 0.0, 1.0
-        gradient = 1 / (len(multi_params) - .95)
-        f_original = f.copy()
+        Rgb, rGb, rgB = np.linspace(0, 1, length), 0.0, np.linspace(1, 0, length)
         # If you want equal scaling of the y axis as well
         # y_min, y_max = self.scaling_y(multi_params)
         for j, params in enumerate(multi_params):
-            # f is reset due to the scaling immediately below.
+            # f is reset due to the scaling of 'plot' immediately below.
             f = f_original
             # Linear plot show only ion line (kHz range).
             if func_type == 'plot' and not self.plasma:
@@ -359,14 +359,14 @@ class PlotClass:
                     if self.plasma:
                         s = s[mask]
                     plot_object = getattr(ax_objs[-1], func_type)
-                    plot_object(freq, s, color=(Rgb, rGb, rgB), linewidth=1, label=lab, linestyle=st)
+                    plot_object(freq, s, color=(Rgb[j], rGb, rgB[j]), linewidth=1, label=lab, linestyle=st)
                     if first == 0:
                         x_0 = ax_objs[-1].viewLim.x0
                         idx = np.argwhere(freq > x_0)[0]
                         x1, y1 = ax_objs[-1].viewLim.x1, np.max(s)
                         ax_objs[-1].text(freq[idx], s[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
                                          fontsize=14, ha="right", va='bottom')
-                    # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb, rGb, rgB))
+                    # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], rGb, rgB[j]))
                     if j == 0:
                         plt.legend(loc='upper right', bbox_to_anchor=(x1, y1), bbox_transform=ax_objs[-1].transData)
                     first += 1
@@ -374,14 +374,12 @@ class PlotClass:
                 if self.plasma:
                     params = params[mask]
                 plot_object = getattr(ax_objs[-1], func_type)
-                plot_object(freq, params, color=(Rgb, rGb, rgB), linewidth=1)
+                plot_object(freq, params, color=(Rgb[j], rGb, rgB[j]), linewidth=1)
                 x_0 = ax_objs[-1].viewLim.x0
                 idx = np.argwhere(freq > x_0)[0]
                 ax_objs[-1].text(freq[idx], params[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
                                  fontsize=14, ha="right", va='bottom')
-                # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb, rGb, rgB))
-            Rgb += gradient
-            rgB -= gradient
+                # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb[j], rGb, rgB[j]))
 
             # make background transparent
             rect = ax_objs[-1].patch
@@ -484,6 +482,6 @@ class PlotClass:
         return y_min, y_max
 
 if __name__ == '__main__':
-    ver = 'kappa'
-    kwargs = {'kappa': [3, 20], 'plasma': True}
+    ver = 'maxwell'
+    kwargs = {'kappa': 3}
     PlotClass(ver,  **kwargs)
