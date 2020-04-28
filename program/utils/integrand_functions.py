@@ -99,6 +99,8 @@ def v_int(y, params):
         f = vdfs.f_0_kappa_two
     elif params['vdf'] == 'gauss_shell':
         f = vdfs.f_0_gauss_shell
+    elif params['vdf'] == 'real_data':
+        f = vdfs.f_0_real_data
 
     # if convergence:
     #     res_0 = v_int_integrand(y[-1], params, v, f(v, params))
