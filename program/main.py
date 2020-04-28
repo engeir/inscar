@@ -33,6 +33,7 @@ matplotlib.rcParams.update({  # Use mathtext, not LaTeX
     # Use ASCII minus
     'axes.unicode_minus': False,
 })
+matplotlib.rcParams.update({"pgf.texsystem": "pdflatex"})
 
 
 class CreateData:
@@ -208,8 +209,8 @@ class PlotClass:
         tt = time.localtime()
         the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
         os.makedirs('../../../report/master-thesis/figures', exist_ok=True)
-        pdffig = PdfPages(
-            f'../../../report/master-thesis/figures/{the_time}_{self.version}.pdf')
+        save_path = f'../../../report/master-thesis/figures/{the_time}_{self.version}'
+        pdffig = PdfPages(str(save_path) + '.pdf')
         metadata = pdffig.infodict()
         metadata['Title'] = f'ISR Spectrum w/ {self.version}'
         metadata['Author'] = 'Eirik R. Enger'
@@ -219,12 +220,15 @@ class PlotClass:
         self.plot('semilogy')
         pdffig.attach_note("Semilog y")
         plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
+        plt.savefig(str(save_path) + '_page_1.pgf')
         self.plot('plot')
         pdffig.attach_note("Linear plot")
         plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
+        plt.savefig(str(save_path) + '_page_2.pgf')
         self.plot('loglog')
         pdffig.attach_note("Loglog")
         plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
+        plt.savefig(str(save_path) + '_page_3.pgf')
         pdffig.close()
 
     def plot(self, func_type):
@@ -329,6 +333,9 @@ class PlotClass:
         Rgb, rGb, rgB = np.linspace(0, 1, length), 0.0, np.linspace(1, 0, length)
         # If you want equal scaling of the y axis as well
         # y_min, y_max = self.scaling_y(multi_params)
+        # Helpful to make a v-line of comparable size in all plots.
+        v_line_x = np.linspace(.05, .2, length)
+        match = self.match_box(multi_params)
         for j, params in enumerate(multi_params):
             # f is reset due to the scaling of 'plot' immediately below.
             f = f_original
@@ -364,6 +371,7 @@ class PlotClass:
                         x_0 = ax_objs[-1].viewLim.x0
                         idx = np.argwhere(freq > x_0)[0]
                         x1, y1 = ax_objs[-1].viewLim.x1, np.max(s)
+                        y0 = s[idx]
                         ax_objs[-1].text(freq[idx], s[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
                                          fontsize=14, ha="right", va='bottom')
                     # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], rGb, rgB[j]))
@@ -377,6 +385,7 @@ class PlotClass:
                 plot_object(freq, params, color=(Rgb[j], rGb, rgB[j]), linewidth=1)
                 x_0 = ax_objs[-1].viewLim.x0
                 idx = np.argwhere(freq > x_0)[0]
+                y0 = params[idx]
                 ax_objs[-1].text(freq[idx], params[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
                                  fontsize=14, ha="right", va='bottom')
                 # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb[j], rGb, rgB[j]))
@@ -387,6 +396,14 @@ class PlotClass:
 
             # remove borders, axis ticks and labels
             # plt.ylim([y_min, y_max])
+            if func_type == 'plot':
+                f_min, f_max = np.min(freq), np.max(freq)
+                f_diff = f_max - f_min
+                x0 = f_min + f_diff * v_line_x[j]
+                plt.vlines(x=x0, ymin=y0,
+                           ymax=y0 + match, color='k', linewidth=3)
+                plt.text(x0, y0 + match / 2,
+                        f'{int(match)}', rotation=90, ha='right', va='center')
             ax_objs[-1].set_yticklabels([])
             plt.tick_params(axis='y', which='both', left=False,
                             right=False, labelleft=False)
@@ -481,7 +498,22 @@ class PlotClass:
                     y_max = np.max(params)
         return y_min, y_max
 
+    @staticmethod
+    def match_box(multi_params):
+        diff = np.inf
+        for params in multi_params:
+            if isinstance(params, list):
+                for s in params:
+                    difference = np.max(s) - np.min(s)
+                    if difference < diff:
+                        diff = difference
+            else:
+                difference = np.max(params) - np.min(params)
+                if difference < diff:
+                    diff = difference
+        return int(np.ceil(diff / 10) * 5)
+
 if __name__ == '__main__':
     ver = 'maxwell'
-    kwargs = {'kappa': 3}
+    kwargs = {'kappa': [3, 20]}
     PlotClass(ver,  **kwargs)
