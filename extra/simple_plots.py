@@ -6,7 +6,6 @@ from labellines import labelLines
 import scipy.constants as const
 import scipy.special as sps
 
-
 # From https://stackoverflow.com/questions/47253462/matplotlib-2-mathtext-glyph-errors-in-tick-labels
 # Customize matplotlib
 matplotlib.rcParams.update({  # Use mathtext, not LaTeX
@@ -18,6 +17,7 @@ matplotlib.rcParams.update({  # Use mathtext, not LaTeX
     'axes.unicode_minus': False,
 })
 
+matplotlib.rcParams.update({"pgf.texsystem": "pdflatex"})
 
 def chirp_sampling():
     order = [1, 2, 3, 5, 7, 10]
@@ -33,7 +33,7 @@ def chirp_sampling():
     plt.ylabel('Sampled variable')
     plt.xlabel('Number of sample points')
     labelLines(plt.gca().get_lines(), fontsize=9, zorder=2.5)
-    # plt.savefig(f'../../../report/master-thesis/figures/simpson_int_sampling.pdf',
+    # plt.savefig(f'../../../report/master-thesis/figures/simpson_int_sampling.pgf')  #,
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.tight_layout()
     plt.show()
@@ -104,7 +104,7 @@ def d_vdf_plots():
     plt.ylim([1e-5, 3e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
     plt.ylabel(r'$f_0/\max(f_{0,M})$')
-    # plt.savefig(f'../../../report/master-thesis/figures/d_vdf.pdf',
+    # plt.savefig(f'../../../report/master-thesis/figures/d_vdf.pgf')  #,
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
@@ -138,8 +138,8 @@ def vdf_plots():
     plt.ylim([1e-5, 1e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
     plt.ylabel(r'$f_0/\max(f_{0,M})$')
-    # plt.savefig(f'../../../report/master-thesis/figures/vdf.pdf',
-    #             bbox_inches='tight', format='pdf', dpi=600)
+    # plt.savefig(f'../../../report/master-thesis/figures/vdf.pgf')  #,
+                # bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
 
@@ -166,9 +166,9 @@ def chirp_z_fail():
     plot(x, y2, 'k', linestyle=':', label='Gyro line')
     plot(x, y3, 'k', linestyle='--', label='Ion line')
     plt.xlabel(r'$N$')
-    plt.ylabel(r'$(f-f_\min)/(f_\max-f_\min)$')
+    plt.ylabel(r'$(f-f_{\min})/(f_{\max}-f_{\min})$')
     plt.legend()
-    # plt.savefig(f'../../../report/master-thesis/figures/chirp-z_artefact.pdf',
+    # plt.savefig(f'../../../report/master-thesis/figures/chirp-z_artefact.pgf')  #,
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
