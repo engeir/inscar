@@ -79,3 +79,7 @@ def f_0_gauss_shell(v, params, module=np):
     func = A * module.exp(- (abs(v) - r)**2 / (2 * params['T'] * const.k / params['m'])) + \
         10 * f_0_maxwell(v, params, module=module)
     return func / 11
+
+
+def f_0_real_data(v, params, module=np):
+    pass
