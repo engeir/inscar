@@ -51,6 +51,7 @@
         "objs",
         "pbar",
         "pdffig",
+        "pdflatex",
         "perp",
         "pylint",
         "pyplot",
