@@ -5,5 +5,6 @@
   "program/test/test_ISR.py::TestVDF::test_vdf_gauss_shell",
   "program/test/test_ISR.py::TestVDF::test_vdf_kappa",
   "program/test/test_ISR.py::TestVDF::test_vdf_kappa_vol2",
-  "program/test/test_ISR.py::TestVDF::test_vdf_maxwell"
+  "program/test/test_ISR.py::TestVDF::test_vdf_maxwell",
+  "program/test/test_ISR.py::TestVDF::test_vdf_real_data"
 ]
