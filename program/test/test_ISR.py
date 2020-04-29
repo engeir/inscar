@@ -60,9 +60,12 @@ class TestVDF(unittest.TestCase):
     def setUpClass(cls):
         if isinstance(cf.I_P['T_E'], list):
             cf.I_P['T_E'] = int(cf.I_P['T_E'][0])
-        cls.v = np.linspace(0, (1e8)**(1 / 3), int(1e7))**3
+        cls.v = np.linspace(0, (14e6)**(1 / 3), int(1e7))**3
         cls.params = {'m': 9.1093837015e-31, 'T': 1000, 'kappa': 3}
         cls.f = None
+
+    def setUp(self):
+        cf.SCALING = None
 
     def tearDown(self):
         # The function f is scaled with the Jacobian of cartesian to spherical
@@ -83,6 +86,9 @@ class TestVDF(unittest.TestCase):
 
     def test_vdf_gauss_shell(self):
         self.f = vdfs.f_0_gauss_shell(self.v, self.params)
+
+    def test_vdf_real_data(self):
+        self.f = vdfs.f_0_real_data(self.v, self.params)
 
 
 if __name__ == '__main__':
