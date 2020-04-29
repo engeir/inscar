@@ -258,9 +258,11 @@ class PlotClass:
             func_type {str} -- attribute of the matplotlib.pyplot object
         """
         Is = Is.copy()
+        # print(f)
         # Linear plot show only ion line (kHz range).
         if func_type == 'plot' and not self.plasma:
             f, Is = self.only_ionline(f, Is)
+        # print(f)
         p, freq, exp = self.scale_f(f)
         plt.figure(figsize=(6, 3))
         if self.plasma:
@@ -430,6 +432,7 @@ class PlotClass:
             str, np.ndarray, int -- the prefix, the scaled variables, the exponent corresponding to the prefix
         """
         freq = np.copy(frequency)
+        # print(freq, sip.split(np.max(freq)))
         exp = sip.split(np.max(freq))[1]
         freq /= 10**exp
         pre = sip.prefix(exp)
@@ -472,6 +475,7 @@ class PlotClass:
 
     @staticmethod
     def only_ionline(f, Is):
+        # f = freq.copy()
         idx = np.argwhere(abs(f) < 4e4)
         f = f[idx].reshape((-1,))
         if isinstance(Is, list):
@@ -514,6 +518,6 @@ class PlotClass:
         return int(np.ceil(diff / 10) * 5)
 
 if __name__ == '__main__':
-    ver = 'maxwell'
-    kwargs = {'kappa': [3, 20]}
+    ver = 'long_calc'
+    kwargs = {'vdf': 'real_data'}
     PlotClass(ver,  **kwargs)
