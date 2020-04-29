@@ -168,7 +168,7 @@ def version_check(version, vdf, kappa):
     elif version == 'maxwell':
         func = intf.maxwell_gordeyev
     elif version == 'long_calc':
-        vdfs = ['maxwell', 'kappa', 'kappa_vol2', 'gauss_shell']
+        vdfs = ['maxwell', 'kappa', 'kappa_vol2', 'gauss_shell', 'real_data']
         try:
             if not vdf in vdfs:
                 raise SystemError
