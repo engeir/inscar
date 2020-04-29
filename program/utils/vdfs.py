@@ -10,6 +10,7 @@ import scipy.integrate as si
 # import mpmath
 
 from inputs import config as cf
+from data import read
 
 
 def f_0_maxwell(v, params, module=np):
@@ -81,5 +82,15 @@ def f_0_gauss_shell(v, params, module=np):
     return func / 11
 
 
+def scale_real_data(v, params):
+    func = read.interpolate_data(v, params)
+    f = func * v**2 * 4 * np.pi
+    res = si.simps(f, v)
+    return res
+
+
 def f_0_real_data(v, params, module=np):
-    pass
+    if cf.SCALING is None:
+        cf.SCALING = scale_real_data(v, params)
+    func = read.interpolate_data(v, params) / cf.SCALING
+    return func

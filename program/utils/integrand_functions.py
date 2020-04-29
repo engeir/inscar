@@ -90,6 +90,7 @@ def F_s_integrand(y, params):
 
 
 def v_int(y, params):
+    cf.SCALING = None
     v = np.linspace(0, cf.V_MAX**(1 / cf.ORDER), int(cf.V_N_POINTS))**cf.ORDER
     if params['vdf'] == 'maxwell':
         f = vdfs.f_0_maxwell
