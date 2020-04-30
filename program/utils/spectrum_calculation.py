@@ -26,7 +26,7 @@ def simpson(w, y):
     return sint
 
 
-def isr_spectrum(version, kappa=None, area=False, vdf=None):
+def isr_spectrum(version, kappa=None, area=False, vdf=None, mat_file='fe_zmuE-01.mat'):
     """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
 
     Arguments:
@@ -48,14 +48,14 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
     # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
     # Fe, Fi = compare_linear_parallel(fe_params, fi_params)
     # Simpson integration in parallel
-    params = {'nu': cf.I_P['NU_I'], 'm': M_i,
-              'T': cf.I_P['T_I'], 'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
+    params = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'],
+              'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
     y = np.linspace(0, cf.Y_MAX_i**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
     cf.ff = intf.maxwell_gordeyev(y, params)
     Fi = para.integrate(
         M_i, cf.I_P['T_I'], cf.I_P['NU_I'], y, function=intf.maxwell_gordeyev, kappa=kappa)
-    params = {'nu': cf.I_P['NU_E'], 'm': const.m_e,
-              'T': cf.I_P['T_E'], 'w_c': w_c, 'kappa': kappa, 'vdf': vdf}
+    params = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'],
+              'w_c': w_c, 'kappa': kappa, 'vdf': vdf, 'mat_file': mat_file}
     y = np.linspace(0, cf.Y_MAX_e**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
     cf.ff = func(y, params)
     Fe = para.integrate(

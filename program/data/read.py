@@ -4,8 +4,9 @@ import sys
 import ast
 import numpy as np
 from scipy.io import loadmat
-import matplotlib.pyplot as plt
 import scipy.constants as const
+
+from inputs import config as cf
 
 
 def f_0_maxwell(v, params):
@@ -16,8 +17,6 @@ def f_0_maxwell(v, params):
 
 
 def interpolate_data(v, params):
-    # TODO: allow the .mat file to be chosen in main.py
-    # TODO: choose height / z-value in main.py / config.py
     if os.path.basename(os.path.realpath(sys.argv[0])) != 'main.py':
         f_1 = np.linspace(1, 600, 600)
         energies = np.linspace(1, 110, 600)  # electronvolt
@@ -26,11 +25,12 @@ def interpolate_data(v, params):
             path = 'Arecibo-photo-electrons/'
         else:
             path = 'data/Arecibo-photo-electrons/'
-        x = loadmat(path + 'fe_zmuE-01.mat')
+        x = loadmat(path + params['mat_file'])
         data = x['fe_zmuE']
-        sum_over_pitch = np.einsum('ijk->ik', data)  # removes j-dimansion through dot-product
-        count = np.argmax(sum_over_pitch, 0)
-        idx = np.argmax(np.bincount(count))
+        sum_over_pitch = np.einsum('ijk->ik', data) / 19  # removes j-dimansion through dot-product
+        # count = np.argmax(sum_over_pitch, 0)
+        # IDX = np.argmax(np.bincount(count))
+        idx = int(np.argwhere(read_dat_file('z4fe.dat')==cf.I_P['Z']))
         f_1 = sum_over_pitch[idx, :]
         energies = read_dat_file('E4fe.dat')
 
@@ -70,5 +70,6 @@ def read_dat_file(file):
 
 if __name__ == '__main__':
     # theta_lims, E4fe, SzeN, timeOfDayUT, z4fe
-    dat_file = read_dat_file('theta_lims.dat')
-    print(dat_file)
+    # Arecibo is 4 hours behind UT, [9, 16] UT = [5, 12] local time
+    dat_file = read_dat_file('SzeN.dat')
+    print(dat_file.shape)
