@@ -7,14 +7,13 @@ python -m unittest test.test_ISR -b
 import multiprocessing as mp
 mp.set_start_method('fork')
 
-import unittest
-import numpy as np
-import scipy.integrate as si
-# import mpmath
+import unittest  # pylint: disable=C0413
+import numpy as np  # pylint: disable=C0413
+import scipy.integrate as si  # pylint: disable=C0413
 
-from utils import spectrum_calculation as isr
-from utils import vdfs
-from inputs import config as cf
+from utils import spectrum_calculation as isr  # pylint: disable=C0413
+from utils import vdfs  # pylint: disable=C0413
+from inputs import config as cf  # pylint: disable=C0413
 
 
 class TestISR(unittest.TestCase):
@@ -31,8 +30,15 @@ class TestISR(unittest.TestCase):
         cls.a, cls.b = None, None
 
     def setUp(self):
-        if isinstance(cf.I_P['T_E'], list):
-            cf.I_P['T_E'] = int(cf.I_P['T_E'][0])
+        I_P_copy = cf.I_P.copy()
+        items = []
+        for item in I_P_copy:
+            if isinstance(I_P_copy[item], list):
+                items.append(item)
+        for item in items:
+            cf.I_P[item] = I_P_copy[item][0]
+        # if isinstance(cf.I_P['T_E'], list):
+        #     cf.I_P['T_E'] = int(cf.I_P['T_E'][0])
 
     def tearDown(self):
         self.assertIsInstance(self.a, np.ndarray)
@@ -60,7 +66,7 @@ class TestVDF(unittest.TestCase):
     def setUpClass(cls):
         if isinstance(cf.I_P['T_E'], list):
             cf.I_P['T_E'] = int(cf.I_P['T_E'][0])
-        cls.v = np.linspace(0, (14e6)**(1 / 3), int(1e7))**3
+        cls.v = np.linspace(0, (6e6)**(1 / 3), int(1e7))**3
         cls.params = {'m': 9.1093837015e-31, 'T': 1000, 'kappa': 3}
         cls.f = None
 
@@ -73,7 +79,7 @@ class TestVDF(unittest.TestCase):
         res = si.simps(f, self.v)
         # f = lambda x: self.f(x, self.params, module=mpmath) * x**2 * 4 * mpmath.pi
         # res = mpmath.quad(f, [0, mpmath.inf])
-        self.assertAlmostEqual(res, 1, places=7)
+        self.assertAlmostEqual(res, 1, places=3)
 
     def test_vdf_maxwell(self):
         self.f = vdfs.f_0_maxwell(self.v, self.params)
