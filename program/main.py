@@ -23,7 +23,6 @@ import si_prefix as sip  # pylint: disable=C0413
 from inputs import config as cf  # pylint: disable=C0413
 from utils import spectrum_calculation as isr  # pylint: disable=C0413
 
-# From https://stackoverflow.com/questions/47253462/matplotlib-2-mathtext-glyph-errors-in-tick-labels
 # Customize matplotlib
 matplotlib.rcParams.update({  # Use mathtext, not LaTeX
     'text.usetex': False,
@@ -40,7 +39,7 @@ class CreateData:
     """Creation class with methods that return frequency range and spectra.
     """
 
-    def __init__(self, version, kappa=None, vdf=None, area=False):
+    def __init__(self, version, kappa=None, vdf=None, area=False, mat_file='fe_zmuE-01.mat'):
         """Initialize the class with correct variables.
 
         Arguments:
@@ -56,6 +55,7 @@ class CreateData:
         self.kappa = kappa
         self.vdf = vdf
         self.area = area
+        self.mat_file = mat_file
 
     def create_single_spectrum(self):
         """Create one spectrum only.
@@ -64,7 +64,7 @@ class CreateData:
             np.ndarray -- two arrays, one for frequency and one for the corresponding power
         """
         f, s = isr.isr_spectrum(
-            self.version, vdf=self.vdf, kappa=self.kappa, area=self.area)
+            self.version, vdf=self.vdf, kappa=self.kappa, area=self.area, mat_file=self.mat_file)
         return f, s
 
     def create_multi_spectrum(self):
@@ -106,14 +106,16 @@ class CreateData:
         """
         I_P_original = cf.I_P.copy()
         I_P_copy = cf.I_P.copy()
+        items = []
         for item in I_P_copy:
-            try:
-                item.reverse()
-            except Exception:
-                pass
+            if isinstance(I_P_copy[item], list):
+                items.append(item)
         multi_params = []
-        for temp in I_P_copy['T_E']:
-            cf.I_P['T_E'] = temp
+        for i in range(cf.RIDGES):
+            for item in items:
+                cf.I_P[item] = I_P_copy[item][i]
+                # for temp in I_P_copy['T_E']:
+                #     cf.I_P['T_E'] = temp
             f, s = self.create_single_or_multi()
             multi_params.append(s)
         cf.I_P = I_P_original
@@ -124,7 +126,7 @@ class PlotClass:
     """Create a plot object that automatically will show the data created.
     """
 
-    def __init__(self, version, kappa=None, vdf=None, area=False, plasma=False, info=None):
+    def __init__(self, version, kappa=None, vdf=None, area=False, plasma=False, info=None, mat_file='fe_zmuE-01.mat'):
         """Make plots of an IS spectrum based on a variety of VDFs.
 
         Arguments:
@@ -136,7 +138,8 @@ class PlotClass:
             vdf {str} -- when using 'long_calc', set which VDF to use (default: {None})
             area {bool} -- if the spectrum is small enough around zero frequency, calculate the area (under the ion line) (default: {False})
             plasma {bool} -- choose to plot only the part of the spectrum where the plasma line is found (default: {False})
-            info {str} -- optional extra info that will be saved to the pdf metadata made for the plots (default: {None})
+            info {str} -- optional: info that will be saved to the pdf metadata made for the plots (default: {None})
+            mat_file {str} -- optional: decide which .mat file to use (default: {'fe_zmuE-01.mat'})
         """
         self.version = version
         self.kappa = kappa
@@ -144,7 +147,7 @@ class PlotClass:
         self.plasma = plasma
         self.info = info
         self.correct_inputs()
-        self.create_data = CreateData(self.version, self.kappa, self.vdf, area)
+        self.create_data = CreateData(self.version, self.kappa, self.vdf, area, mat_file)
         save = input(
             'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
         self.setup()
@@ -153,11 +156,11 @@ class PlotClass:
     def correct_inputs(self):
         """Extra check suppressing the parameters that was given but is not necessary.
         """
-        if not self.version == 'kappa' and not (self.version == 'long_calc' and self.vdf in ['kappa', 'kappa_vol2']):
+        if self.version != 'kappa' and not (self.version == 'long_calc' and self.vdf in ['kappa', 'kappa_vol2']):
             self.kappa = None
-        if not self.version == 'long_calc':
+        if self.version != 'long_calc':
             self.vdf = None
-        if not self.vdf == 'gauss_shell':
+        if self.vdf != 'gauss_shell':
             cf.I_P['T_ES'] = None
         if self.plasma:
             if isinstance(cf.I_P['T_E'], list):
@@ -172,7 +175,7 @@ class PlotClass:
         """
         if isinstance(self.kappa, list):
             self.version = 'both'
-        if isinstance(cf.I_P['T_E'], list):
+        if any([isinstance(cf.I_P[e], list) for e in cf.I_P]):
             self.plot_type = 'ridge'
             self.f, self.data = self.create_data.create_multi_params()
         else:
@@ -243,7 +246,10 @@ class PlotClass:
             print(f'{func_type} is not an attribute of the matplotlib.pyplot object. Skips to next.')
         else:
             if self.plot_type == 'ridge':
-                self.plot_ridge(self.f, self.data, func_type)
+                # msg = [r'$T_e$ = ' + f'{j} K' for j in cf.I_P['T_E']]
+                msg = ['Height = ' + f'{j} km' for j in cf.I_P['Z']]
+                msg.reverse()
+                self.plot_ridge(self.f, self.data, func_type, msg=msg)
             else:
                 self.plot_normal(self.f, self.data, func_type)
 
@@ -258,11 +264,9 @@ class PlotClass:
             func_type {str} -- attribute of the matplotlib.pyplot object
         """
         Is = Is.copy()
-        # print(f)
         # Linear plot show only ion line (kHz range).
         if func_type == 'plot' and not self.plasma:
             f, Is = self.only_ionline(f, Is)
-        # print(f)
         p, freq, exp = self.scale_f(f)
         plt.figure(figsize=(6, 3))
         if self.plasma:
@@ -319,16 +323,24 @@ class PlotClass:
         plt.grid(True, which="both", ls="-", alpha=0.4)
         plt.tight_layout()
 
-    def plot_ridge(self, frequency, multi_parameters, func_type):
+    def plot_ridge(self, frequency, multi_parameters, func_type, msg=None):
         # Inspired by https://matplotlib.org/matplotblog/posts/create-ridgeplots-in-matplotlib/
         # To make sure not to alter any list objects, they are copied.
         f_original = frequency.copy()
         multi_params = multi_parameters.copy()
         multi_params.reverse()
         length = len(multi_params)
-        TEMPS = cf.I_P['T_E'].copy()
-        TEMP_0 = TEMPS[0]
-        TEMPS.reverse()
+        if msg is None:
+            msg = ['' for _ in range(length)]
+        # if variable is None:
+        #     variable = cf.I_P['T_E']
+        # TEMPS = variable.copy()
+        # TEMPS.reverse()
+        # msg = [r'$T_e$ = ' + f'{TEMPS[j]} K' for j in range(length)]
+        if isinstance(cf.I_P['T_E'], list):
+            TEMP_0 = cf.I_P['T_E'][0]
+        else:
+            TEMP_0 = cf.I_P['T_E']
         gs = grid_spec.GridSpec(length, 1)
         fig = plt.figure(figsize=(7, 9))
         ax_objs = []
@@ -337,7 +349,7 @@ class PlotClass:
         # y_min, y_max = self.scaling_y(multi_params)
         # Helpful to make a v-line of comparable size in all plots.
         v_line_x = np.linspace(.05, .2, length)
-        match = self.match_box(multi_params)
+        match = self.match_box(f_original, multi_params, TEMP_0)
         for j, params in enumerate(multi_params):
             # f is reset due to the scaling of 'plot' immediately below.
             f = f_original
@@ -350,14 +362,15 @@ class PlotClass:
                     spectrum = params[0]
                 else:
                     spectrum = params
-                mini, maxi = self.find_p_line(freq, spectrum, exp, temp=TEMP_0)
+                mini, maxi = self.find_p_line(
+                    freq, spectrum, exp, temp=TEMP_0)
                 mask = (freq > mini) & (freq < maxi)
                 freq = freq[mask]
             ax_objs.append(fig.add_subplot(gs[j:j + 1, 0:]))
             if isinstance(params, list):
                 if any([isinstance(kappa_i, int) for kappa_i in self.kappa]):
                     for v, kappa_i in enumerate(self.kappa):
-                        self.kappa[v] = r'$\kappa =$' + f'{kappa_i}'
+                        self.kappa[v] = r'$\kappa = $' + f'{kappa_i}'
                 if 'Maxwellian' not in self.kappa:
                     self.kappa.insert(0, 'Maxwellian')
                 style = ['-', '--', ':', '-.',
@@ -374,7 +387,7 @@ class PlotClass:
                         idx = np.argwhere(freq > x_0)[0]
                         x1, y1 = ax_objs[-1].viewLim.x1, np.max(s)
                         y0 = s[idx]
-                        ax_objs[-1].text(freq[idx], s[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
+                        ax_objs[-1].text(freq[idx], s[idx], msg[j],
                                          fontsize=14, ha="right", va='bottom')
                     # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], rGb, rgB[j]))
                     if j == 0:
@@ -388,7 +401,7 @@ class PlotClass:
                 x_0 = ax_objs[-1].viewLim.x0
                 idx = np.argwhere(freq > x_0)[0]
                 y0 = params[idx]
-                ax_objs[-1].text(freq[idx], params[idx], r'$T_e$ = ' + f'{TEMPS[j]} K',
+                ax_objs[-1].text(freq[idx], params[idx], msg[j],
                                  fontsize=14, ha="right", va='bottom')
                 # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb[j], rGb, rgB[j]))
 
@@ -405,7 +418,7 @@ class PlotClass:
                 plt.vlines(x=x0, ymin=y0,
                            ymax=y0 + match, color='k', linewidth=3)
                 plt.text(x0, y0 + match / 2,
-                        f'{int(match)}', rotation=90, ha='right', va='center')
+                         f'{int(match)}', rotation=90, ha='right', va='center')
             ax_objs[-1].set_yticklabels([])
             plt.tick_params(axis='y', which='both', left=False,
                             right=False, labelleft=False)
@@ -432,7 +445,6 @@ class PlotClass:
             str, np.ndarray, int -- the prefix, the scaled variables, the exponent corresponding to the prefix
         """
         freq = np.copy(frequency)
-        # print(freq, sip.split(np.max(freq)))
         exp = sip.split(np.max(freq))[1]
         freq /= 10**exp
         pre = sip.prefix(exp)
@@ -452,8 +464,12 @@ class PlotClass:
         Returns:
             float, float -- lower and upper bound of the interval
         """
+        if isinstance(cf.I_P['NE'], list):
+            n_e = cf.I_P['NE'][0]
+        else:
+            n_e = cf.I_P['NE']
         if check:
-            w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge**2
+            w_p = np.sqrt(n_e * const.elementary_charge**2
                           / (const.m_e * const.epsilon_0))
             f = w_p * (1 + 3 * cf.K_RADAR**2 *
                        temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
@@ -461,7 +477,7 @@ class PlotClass:
             return bool(upper > cf.I_P['F_MAX'])
         fr = np.copy(freq)
         sp = np.copy(spec)
-        w_p = np.sqrt(cf.I_P['NE'] * const.elementary_charge**2
+        w_p = np.sqrt(n_e * const.elementary_charge**2
                       / (const.m_e * const.epsilon_0))
         f = w_p * (1 + 3 * cf.K_RADAR**2 *
                    temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
@@ -471,11 +487,13 @@ class PlotClass:
         sp = sp[m]
         av = fr_n[np.argmax(sp)]
         lower, upper = av - 2e6 / 10**scale, av + 2e6 / 10**scale
+        # Don't want the ion line to ruin the scaling
+        if lower < 1e5 / 10**scale:
+            lower = 1e5 / 10**scale
         return lower, upper
 
     @staticmethod
     def only_ionline(f, Is):
-        # f = freq.copy()
         idx = np.argwhere(abs(f) < 4e4)
         f = f[idx].reshape((-1,))
         if isinstance(Is, list):
@@ -502,16 +520,28 @@ class PlotClass:
                     y_max = np.max(params)
         return y_min, y_max
 
-    @staticmethod
-    def match_box(multi_params):
+    def match_box(self, freq, multi_parameters, T_0):
+        multi_params = multi_parameters.copy()
+        if self.plasma:
+            f = freq.copy()
+            if isinstance(multi_params, list):
+                spec = multi_params[0]
+            else:
+                spec = multi_params
+            mini, maxi = self.find_p_line(f, spec, 0, T_0)
+            mask = (f > mini) & (f < maxi)
         diff = np.inf
         for params in multi_params:
             if isinstance(params, list):
                 for s in params:
+                    if self.plasma:
+                        s = s[mask]
                     difference = np.max(s) - np.min(s)
                     if difference < diff:
                         diff = difference
             else:
+                if self.plasma:
+                    params = params[mask]
                 difference = np.max(params) - np.min(params)
                 if difference < diff:
                     diff = difference
@@ -519,5 +549,5 @@ class PlotClass:
 
 if __name__ == '__main__':
     ver = 'long_calc'
-    kwargs = {'vdf': 'real_data'}
+    kwargs = {'vdf': 'real_data', 'plasma': False, 'mat_file': 'fe_zmuE-03.mat', 'info': 'ToD=03'}
     PlotClass(ver,  **kwargs)
