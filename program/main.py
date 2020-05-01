@@ -25,10 +25,10 @@ from utils import spectrum_calculation as isr  # pylint: disable=C0413
 
 # Customize matplotlib
 matplotlib.rcParams.update({  # Use mathtext, not LaTeX
-    'text.usetex': False,
-    'font.family': 'Ovo',
-    'font.serif': 'Ovo',
-    'mathtext.fontset': 'cm',
+    'text.usetex': True,
+    # 'font.family': 'Ovo',
+    # 'font.serif': 'Ovo',
+    # 'mathtext.fontset': 'cm',
     # Use ASCII minus
     'axes.unicode_minus': False,
 })
@@ -114,8 +114,6 @@ class CreateData:
         for i in range(cf.RIDGES):
             for item in items:
                 cf.I_P[item] = I_P_copy[item][i]
-                # for temp in I_P_copy['T_E']:
-                #     cf.I_P['T_E'] = temp
             f, s = self.create_single_or_multi()
             multi_params.append(s)
         cf.I_P = I_P_original
@@ -173,6 +171,9 @@ class PlotClass:
     def setup(self):
         """Do initial tasks. Decide on what kind of plot and create correct data.
         """
+        self.line_styles = ['-', '--', ':', '-.',
+                            (0, (3, 5, 1, 5, 1, 5)),
+                            (0, (3, 1, 1, 1, 1, 1))]
         if isinstance(self.kappa, list):
             self.version = 'both'
         if any([isinstance(cf.I_P[e], list) for e in cf.I_P]):
@@ -192,8 +193,8 @@ class PlotClass:
             self.save_me()
         else:
             self.plot('semilogy')
-            self.plot('loglog')
             self.plot('plot')
+            self.plot('loglog')
         plt.show()
 
     def save_me(self):
@@ -223,15 +224,15 @@ class PlotClass:
         self.plot('semilogy')
         pdffig.attach_note("Semilog y")
         plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-        plt.savefig(str(save_path) + '_page_1.pgf')
+        plt.savefig(str(save_path) + '_page_1.pgf', bbox_inches='tight')
         self.plot('plot')
         pdffig.attach_note("Linear plot")
         plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-        plt.savefig(str(save_path) + '_page_2.pgf')
+        plt.savefig(str(save_path) + '_page_2.pgf', bbox_inches='tight')
         self.plot('loglog')
         pdffig.attach_note("Loglog")
         plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-        plt.savefig(str(save_path) + '_page_3.pgf')
+        plt.savefig(str(save_path) + '_page_3.pgf', bbox_inches='tight')
         pdffig.close()
 
     def plot(self, func_type):
@@ -246,8 +247,8 @@ class PlotClass:
             print(f'{func_type} is not an attribute of the matplotlib.pyplot object. Skips to next.')
         else:
             if self.plot_type == 'ridge':
-                # msg = [r'$T_e$ = ' + f'{j} K' for j in cf.I_P['T_E']]
-                msg = ['Height = ' + f'{j} km' for j in cf.I_P['Z']]
+                # msg = [r'$T_e = {}$'.format(j) + ' K' for j in cf.I_P['T_E']]
+                msg = [r'${}$'.format(j) + ' km' for j in cf.I_P['Z']]
                 msg.reverse()
                 self.plot_ridge(self.f, self.data, func_type, msg=msg)
             else:
@@ -270,13 +271,8 @@ class PlotClass:
         p, freq, exp = self.scale_f(f)
         plt.figure(figsize=(6, 3))
         if self.plasma:
-            # Clip the frequency line around the plasma frequency.
-            if isinstance(Is, list):
-                spectrum = Is[0]
-            else:
-                spectrum = Is
-            mini, maxi = self.find_p_line(freq, spectrum, exp, cf.I_P['T_E'])
-            mask = (freq > mini) & (freq < maxi)
+            # Clip the frequency axis around the plasma frequency.
+            mask = self.find_p_line(freq, Is, exp, cf.I_P['T_E'])
             freq = freq[mask]
         if func_type == 'semilogy':
             # Rescale the y-axis to a dB scale.
@@ -292,15 +288,8 @@ class PlotClass:
             plt.xlabel(f'Frequency [{p}Hz]')
             plt.ylabel('Power')
         if isinstance(Is, list):
-            if any([isinstance(i, int) for i in self.kappa]):
-                for v, i in enumerate(self.kappa):
-                    self.kappa[v] = r'$\kappa =$' + f'{i}'
-            if 'Maxwellian' not in self.kappa:
-                self.kappa.insert(0, 'Maxwellian')
-            style = ['-', '--', ':', '-.',
-                     (0, (3, 5, 1, 5, 1, 5)),
-                     (0, (3, 1, 1, 1, 1, 1))]
-            for st, s, lab in zip(style, Is, self.kappa):
+            self.rename_labels()
+            for st, s, lab in zip(self.line_styles, Is, self.kappa):
                 if self.plasma:
                     s = s[mask]
                 if func_type == 'semilogy':
@@ -329,27 +318,18 @@ class PlotClass:
         f_original = frequency.copy()
         multi_params = multi_parameters.copy()
         multi_params.reverse()
-        length = len(multi_params)
         if msg is None:
-            msg = ['' for _ in range(length)]
-        # if variable is None:
-        #     variable = cf.I_P['T_E']
-        # TEMPS = variable.copy()
-        # TEMPS.reverse()
-        # msg = [r'$T_e$ = ' + f'{TEMPS[j]} K' for j in range(length)]
+            msg = ['' for _ in multi_params]
         if isinstance(cf.I_P['T_E'], list):
             TEMP_0 = cf.I_P['T_E'][0]
         else:
             TEMP_0 = cf.I_P['T_E']
-        gs = grid_spec.GridSpec(length, 1)
+        gs = grid_spec.GridSpec(len(multi_params), 1)
         fig = plt.figure(figsize=(7, 9))
         ax_objs = []
-        Rgb, rGb, rgB = np.linspace(0, 1, length), 0.0, np.linspace(1, 0, length)
+        Rgb = np.linspace(0, 1, len(multi_params))
         # If you want equal scaling of the y axis as well
         # y_min, y_max = self.scaling_y(multi_params)
-        # Helpful to make a v-line of comparable size in all plots.
-        v_line_x = np.linspace(.05, .2, length)
-        match = self.match_box(f_original, multi_params, TEMP_0)
         for j, params in enumerate(multi_params):
             # f is reset due to the scaling of 'plot' immediately below.
             f = f_original
@@ -358,81 +338,73 @@ class PlotClass:
                 f, params = self.only_ionline(f, params)
             p, freq, exp = self.scale_f(f)
             if self.plasma:
-                if isinstance(params, list):
-                    spectrum = params[0]
-                else:
-                    spectrum = params
-                mini, maxi = self.find_p_line(
-                    freq, spectrum, exp, temp=TEMP_0)
-                mask = (freq > mini) & (freq < maxi)
+                mask = self.find_p_line(freq, params, exp, temp=TEMP_0)
                 freq = freq[mask]
             ax_objs.append(fig.add_subplot(gs[j:j + 1, 0:]))
             if isinstance(params, list):
-                if any([isinstance(kappa_i, int) for kappa_i in self.kappa]):
-                    for v, kappa_i in enumerate(self.kappa):
-                        self.kappa[v] = r'$\kappa = $' + f'{kappa_i}'
-                if 'Maxwellian' not in self.kappa:
-                    self.kappa.insert(0, 'Maxwellian')
-                style = ['-', '--', ':', '-.',
-                         (0, (3, 5, 1, 5, 1, 5)),
-                         (0, (3, 1, 1, 1, 1, 1))]
+                self.rename_labels()
                 first = 0
-                for st, s, lab in zip(style, params, self.kappa):
+                for st, s, lab in zip(self.line_styles, params, self.kappa):
                     if self.plasma:
                         s = s[mask]
                     plot_object = getattr(ax_objs[-1], func_type)
-                    plot_object(freq, s, color=(Rgb[j], rGb, rgB[j]), linewidth=1, label=lab, linestyle=st)
+                    plot_object(freq, s, color=(Rgb[j], 0., 1 - Rgb[j]), linewidth=1, label=lab, linestyle=st)
                     if first == 0:
-                        x_0 = ax_objs[-1].viewLim.x0
-                        idx = np.argwhere(freq > x_0)[0]
-                        x1, y1 = ax_objs[-1].viewLim.x1, np.max(s)
+                        idx = np.argwhere(freq > ax_objs[-1].viewLim.x0)[0]
+                        legend_pos = (ax_objs[-1].viewLim.x1, np.max(s))
                         y0 = s[idx]
                         ax_objs[-1].text(freq[idx], s[idx], msg[j],
                                          fontsize=14, ha="right", va='bottom')
-                    # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], rGb, rgB[j]))
-                    if j == 0:
-                        plt.legend(loc='upper right', bbox_to_anchor=(x1, y1), bbox_transform=ax_objs[-1].transData)
                     first += 1
+                    # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
+                    if j == 0:
+                        plt.legend(loc='upper right', bbox_to_anchor=legend_pos, bbox_transform=ax_objs[-1].transData)
             else:
                 if self.plasma:
                     params = params[mask]
                 plot_object = getattr(ax_objs[-1], func_type)
-                plot_object(freq, params, color=(Rgb[j], rGb, rgB[j]), linewidth=1)
-                x_0 = ax_objs[-1].viewLim.x0
-                idx = np.argwhere(freq > x_0)[0]
+                plot_object(freq, params, color=(Rgb[j], 0., 1 - Rgb[j]), linewidth=1)
+                idx = np.argwhere(freq > ax_objs[-1].viewLim.x0)[0]
                 y0 = params[idx]
                 ax_objs[-1].text(freq[idx], params[idx], msg[j],
                                  fontsize=14, ha="right", va='bottom')
-                # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb[j], rGb, rgB[j]))
+                # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
 
-            # make background transparent
-            rect = ax_objs[-1].patch
-            rect.set_alpha(0)
-
-            # remove borders, axis ticks and labels
             # plt.ylim([y_min, y_max])
             if func_type == 'plot':
-                f_min, f_max = np.min(freq), np.max(freq)
-                f_diff = f_max - f_min
-                x0 = f_min + f_diff * v_line_x[j]
-                plt.vlines(x=x0, ymin=y0,
-                           ymax=y0 + match, color='k', linewidth=3)
-                plt.text(x0, y0 + match / 2,
-                         f'{int(match)}', rotation=90, ha='right', va='center')
-            ax_objs[-1].set_yticklabels([])
-            plt.tick_params(axis='y', which='both', left=False,
-                            right=False, labelleft=False)
-            if j == len(multi_params) - 1:
-                plt.xlabel(f'Frequency [{p}Hz]')
-            else:
-                plt.tick_params(axis='x', which='both', bottom=False,
-                                top=False, labelbottom=False)
+                # Make a vertical line of comparable size in all plots.
+                self.match_box(f_original, freq, multi_params, [TEMP_0, y0, j])
 
-            spines = ["top", "right", "left", "bottom"]
-            for sp in spines:
-                ax_objs[-1].spines[sp].set_visible(False)
+            self.remove_background(ax_objs[-1], multi_params, j, p)
 
         gs.update(hspace=-0.6)
+        # plt.tight_layout()
+
+    @staticmethod
+    def remove_background(plt_obj, multi_params, j, p):
+        # make background transparent
+        rect = plt_obj.patch
+        rect.set_alpha(0)
+        # remove borders, axis ticks and labels
+        plt_obj.set_yticklabels([])
+        plt.tick_params(axis='y', which='both', left=False,
+                        right=False, labelleft=False)
+        if j == len(multi_params) - 1:
+            plt.xlabel(f'Frequency [{p}Hz]')
+        else:
+            plt.tick_params(axis='x', which='both', bottom=False,
+                            top=False, labelbottom=False)
+
+        spines = ["top", "right", "left", "bottom"]
+        for sp in spines:
+            plt_obj.spines[sp].set_visible(False)
+
+    def rename_labels(self):
+        if any([isinstance(kappa_i, int) for kappa_i in self.kappa]):
+            for v, kappa_i in enumerate(self.kappa):
+                self.kappa[v] = r'$\kappa = {}$'.format(kappa_i)
+        if 'Maxwellian' not in self.kappa:
+            self.kappa.insert(0, 'Maxwellian')
 
     @staticmethod
     def scale_f(frequency):
@@ -451,19 +423,23 @@ class PlotClass:
         return pre, freq, exp
 
     @staticmethod
-    def find_p_line(freq, spec, scale, temp, check=False):
+    def find_p_line(freq, spectrum, scale, temp, check=False):
         """Find the frequency that is most likely the peak of the plasma line
         and return the lower and upper bounds for an interval around the peak.
 
         Arguments:
             freq {np.ndarray} -- sample points of frequency parameter
-            spec {np.ndarray} -- values of spectrum at the sampled frequencies
+            spectrum {np.ndarray} -- values of spectrum at the sampled frequencies
             scale {int} -- exponent corresponding to the prefix of the frequency scale
             temp {int} -- electron temperature
 
         Returns:
             float, float -- lower and upper bound of the interval
         """
+        if isinstance(spectrum, list):
+            spec = spectrum[0]
+        else:
+            spec = spectrum
         if isinstance(cf.I_P['NE'], list):
             n_e = cf.I_P['NE'][0]
         else:
@@ -490,10 +466,11 @@ class PlotClass:
         # Don't want the ion line to ruin the scaling
         if lower < 1e5 / 10**scale:
             lower = 1e5 / 10**scale
-        return lower, upper
+        return (freq > lower) & (freq < upper)
 
     @staticmethod
     def only_ionline(f, Is):
+        Is = Is.copy()
         idx = np.argwhere(abs(f) < 4e4)
         f = f[idx].reshape((-1,))
         if isinstance(Is, list):
@@ -520,16 +497,16 @@ class PlotClass:
                     y_max = np.max(params)
         return y_min, y_max
 
-    def match_box(self, freq, multi_parameters, T_0):
+    def match_box(self, freq_original, freq, multi_parameters, args):
         multi_params = multi_parameters.copy()
+        v_line_x = np.linspace(.05, .2, len(multi_params))
         if self.plasma:
-            f = freq.copy()
+            f = freq_original.copy()
             if isinstance(multi_params, list):
                 spec = multi_params[0]
             else:
                 spec = multi_params
-            mini, maxi = self.find_p_line(f, spec, 0, T_0)
-            mask = (f > mini) & (f < maxi)
+            mask = self.find_p_line(f, spec, 0, args[0])
         diff = np.inf
         for params in multi_params:
             if isinstance(params, list):
@@ -545,9 +522,16 @@ class PlotClass:
                 difference = np.max(params) - np.min(params)
                 if difference < diff:
                     diff = difference
-        return int(np.ceil(diff / 10) * 5)
+        match = int(np.ceil(diff / 10) * 5)
+
+        f_diff = np.max(freq) - np.min(freq)
+        x0 = np.min(freq) + f_diff * v_line_x[args[2]]
+        plt.vlines(x=x0, ymin=args[1],
+                   ymax=args[1] + match, color='k', linewidth=3)
+        plt.text(x0, args[1] + match / 2,
+                 r'${}$'.format(int(match)), rotation=90, ha='right', va='center')
 
 if __name__ == '__main__':
     ver = 'long_calc'
-    kwargs = {'vdf': 'real_data', 'plasma': False, 'mat_file': 'fe_zmuE-03.mat', 'info': 'ToD=03'}
+    kwargs = {'vdf': 'real_data', 'plasma': True, 'mat_file': 'fe_zmuE-15.mat', 'info': 'ToD=15'}
     PlotClass(ver,  **kwargs)

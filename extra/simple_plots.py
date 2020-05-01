@@ -9,10 +9,10 @@ import scipy.special as sps
 # From https://stackoverflow.com/questions/47253462/matplotlib-2-mathtext-glyph-errors-in-tick-labels
 # Customize matplotlib
 matplotlib.rcParams.update({  # Use mathtext, not LaTeX
-    'text.usetex': False,
-    'font.family': 'Ovo',
-    'font.serif': 'Ovo',
-    'mathtext.fontset': 'cm',
+    'text.usetex': True,
+    # 'font.family': 'Ovo',
+    # 'font.serif': 'Ovo',
+    # 'mathtext.fontset': 'cm',
     # Use ASCII minus
     'axes.unicode_minus': False,
 })
@@ -29,11 +29,11 @@ def chirp_sampling():
     plt.figure(figsize=(8, 6))
     for o, _ in zip(order, style):
         t = np.linspace(0, t_max**(1 / o), int(n))**o
-        plt.plot(t, 'k', label=f'n = {o}')  # , linestyle=s)
+        plt.plot(t, 'k', label=r'$n = {}$'.format(o))  # , linestyle=s)
     plt.ylabel('Sampled variable')
     plt.xlabel('Number of sample points')
     labelLines(plt.gca().get_lines(), fontsize=9, zorder=2.5)
-    # plt.savefig(f'../../../report/master-thesis/figures/simpson_int_sampling.pgf')  #,
+    # plt.savefig(f'../../../report/master-thesis/figures/simpson_int_sampling.pgf', bbox_inches='tight')
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.tight_layout()
     plt.show()
@@ -98,13 +98,12 @@ def d_vdf_plots():
         f /= norm
         f = abs(f)
         # f = f**(1 / n)
-        plot(v, f, 'k', label=r'$\kappa = $' +
-             f'{k}', linestyle=s, linewidth=.8)
+        plot(v, f, 'k', label=r'$\kappa = {}$'.format(k), linestyle=s, linewidth=.8)
     plt.legend()
     plt.ylim([1e-5, 3e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
     plt.ylabel(r'$f_0/\max(f_{0,M})$')
-    # plt.savefig(f'../../../report/master-thesis/figures/d_vdf.pgf')  #,
+    # plt.savefig(f'../../../report/master-thesis/figures/d_vdf.pgf', bbox_inches='tight')
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
@@ -132,13 +131,12 @@ def vdf_plots():
     for k, s in zip(K, style):
         f = kappa(w, T, const.electron_mass, k)
         f /= norm
-        plot(v, f, 'k', label=r'$\kappa = $' +
-             f'{k}', linestyle=s, linewidth=.8)
+        plot(v, f, 'k', label=r'$\kappa = {}$'.format(k), linestyle=s, linewidth=.8)
     plt.legend()
     plt.ylim([1e-5, 1e1])
     plt.xlabel(r'$v/v_{\mathrm{th}}$')
     plt.ylabel(r'$f_0/\max(f_{0,M})$')
-    # plt.savefig(f'../../../report/master-thesis/figures/vdf.pgf')  #,
+    # plt.savefig(f'../../../report/master-thesis/figures/vdf.pgf', bbox_inches='tight')
                 # bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
@@ -168,7 +166,7 @@ def chirp_z_fail():
     plt.xlabel(r'$N$')
     plt.ylabel(r'$(f-f_{\min})/(f_{\max}-f_{\min})$')
     plt.legend()
-    # plt.savefig(f'../../../report/master-thesis/figures/chirp-z_artefact.pgf')  #,
+    # plt.savefig(f'../../../report/master-thesis/figures/chirp-z_artefact.pgf', bbox_inches='tight')
     #             bbox_inches='tight', format='pdf', dpi=600)
     plt.show()
 
