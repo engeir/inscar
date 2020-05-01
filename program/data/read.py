@@ -27,7 +27,7 @@ def interpolate_data(v, params):
             path = 'data/Arecibo-photo-electrons/'
         x = loadmat(path + params['mat_file'])
         data = x['fe_zmuE']
-        sum_over_pitch = np.einsum('ijk->ik', data) / 19  # removes j-dimansion through dot-product
+        sum_over_pitch = np.einsum('ijk->ik', data) / 18  # removes j-dimansion through dot-product
         # count = np.argmax(sum_over_pitch, 0)
         # IDX = np.argmax(np.bincount(count))
         idx = int(np.argwhere(read_dat_file('z4fe.dat')==cf.I_P['Z']))
@@ -71,5 +71,8 @@ def read_dat_file(file):
 if __name__ == '__main__':
     # theta_lims, E4fe, SzeN, timeOfDayUT, z4fe
     # Arecibo is 4 hours behind UT, [9, 16] UT = [5, 12] local time
+    x = loadmat('Arecibo-photo-electrons/' + 'fe_zmuE-15.mat')
+    data = x['fe_zmuE']
+    print(data.shape)
     dat_file = read_dat_file('SzeN.dat')
     print(dat_file.shape)
