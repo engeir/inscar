@@ -20,20 +20,20 @@ def ziebell_z_func(kappa, m, xi):
     return Z
 
 
-def two_p_isotropic_kappa(params):
-    w_bk = (2 * (params['kappa'] - 3 / 2) / params['kappa']
-            * params['T'] * const.k / params['m'])**.5
-    # (\zeta_\beta^0)
-    zbn = cf.w / (cf.K_RADAR * np.cos(cf.I_P['THETA']) * w_bk)
-    D = 2 * params['w_c']**2 / cf.w**2 * zbn**2 * \
-        ((params['kappa'] - .5) / params['kappa'] +
-         zbn * ziebell_z_func(params['kappa'], 1, zbn))
-    l_D2 = const.epsilon_0 * params['T'] / (cf.I_P['NE'] * const.elementary_charge**2) * (
-        params['kappa'] - 3 / 2) / (params['kappa'] - 1 / 2)
-    A = 1 / (cf.K_RADAR**2 * l_D2)
-    G = 1j * (1 - A * D) / cf.w
-    F = 1 - (1j * cf.w + params['nu']) * G
-    return F
+# def two_p_isotropic_kappa(params):
+#     w_bk = (2 * (params['kappa'] - 3 / 2) / params['kappa']
+#             * params['T'] * const.k / params['m'])**.5
+#     # (\zeta_\beta^0)
+#     zbn = cf.w / (cf.K_RADAR * np.cos(cf.I_P['THETA']) * w_bk)
+#     D = 2 * params['w_c']**2 / cf.w**2 * zbn**2 * \
+#         ((params['kappa'] - .5) / params['kappa'] +
+#          zbn * ziebell_z_func(params['kappa'], 1, zbn))
+#     l_D2 = const.epsilon_0 * params['T'] / (cf.I_P['NE'] * const.elementary_charge**2) * (
+#         params['kappa'] - 3 / 2) / (params['kappa'] - 1 / 2)
+#     A = 1 / (cf.K_RADAR**2 * l_D2)
+#     G = 1j * (1 - A * D) / cf.w
+#     F = 1 - (1j * cf.w + params['nu']) * G
+#     return F
 
 
 def z_func(y, w_c, m, T, kappa):
@@ -103,21 +103,6 @@ def v_int(y, params):
     elif params['vdf'] == 'real_data':
         f = vdfs.f_0_real_data
 
-    # if convergence:
-    #     res_0 = v_int_integrand(y[-1], params, v, f(v, params))
-    #     cf.V_N_POINTS = (cf.V_N_POINTS - 1) * 2 + 1
-    #     v = np.linspace(0, cf.V_MAX**(1 / cf.ORDER), int(cf.V_N_POINTS))**cf.ORDER
-    #     err = np.inf
-    #     c = 0
-    #     while err > 1e-6:
-    #         res = v_int_integrand(y[-1], params, v, f(v, params))
-    #         cf.V_N_POINTS = (cf.V_N_POINTS - 1) * 2 + 1
-    #         v = np.linspace(0, cf.V_MAX**(1 / cf.ORDER), int(cf.V_N_POINTS))**cf.ORDER
-    #         err = res_0 - res
-    #         res = res_0
-    #         c += 1
-    #         print(err, c, cf.V_N_POINTS, end='\r')
-    #     return err, c
     res = para_int.integrand(y, params, v, f(v, params))
     return res
 
