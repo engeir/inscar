@@ -43,34 +43,30 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None, mat_file='fe_zmuE-01
     M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
 
-    # Time comparison between linear and parallel implementation
-    # fe_params = {'w_c': w_c, 'lambda': Lambda_e, 'function': func}
-    # fi_params = {'w_c': W_c, 'm': M_i, 'lambda': Lambda_i, 'function': func}
-    # Fe, Fi = compare_linear_parallel(fe_params, fi_params)
     # Simpson integration in parallel
+    # Ions
     params = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'],
               'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
     y = np.linspace(0, cf.Y_MAX_i**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
     cf.ff = intf.maxwell_gordeyev(y, params)
     Fi = para.integrate(
         M_i, cf.I_P['T_I'], cf.I_P['NU_I'], y, function=intf.maxwell_gordeyev, kappa=kappa)
+
+    # Electrons
     params = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'],
               'w_c': w_c, 'kappa': kappa, 'vdf': vdf, 'mat_file': mat_file}
     y = np.linspace(0, cf.Y_MAX_e**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
     cf.ff = func(y, params)
     Fe = para.integrate(
         const.m_e, cf.I_P['T_E'], cf.I_P['NU_E'], y, function=func, kappa=kappa)
-    # params_e = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'], 'w_c': w_c}
-    # params_i = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'], 'w_c': W_c}
-    # Fe = intf.two_p_isotropic_kappa(params_e)
-    # Fi = intf.two_p_isotropic_kappa(params_i)
 
-    Xp_e = np.sqrt(
-        1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
     Xp_i = np.sqrt(
+        1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
+    Xp_e = np.sqrt(
         1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
 
     f_scaled = cf.f
+    # In case we have \omega = 0 in our frequency array, we just ignore this warning message
     with np.errstate(divide='ignore', invalid='ignore'):
         Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
             4 * Xp_e**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp_e**2 * Fe + 2 * Xp_i**2 * Fi)**2
@@ -82,7 +78,7 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None, mat_file='fe_zmuE-01
         else:
             print('F_MAX is set too high. The area was not calculated.')
 
-    return f_scaled, abs(Is)
+    return f_scaled, Is
 
 
 def L_Debye(*args, kappa=None):
