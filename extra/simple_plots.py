@@ -6,11 +6,10 @@ from labellines import labelLines
 import scipy.constants as const
 import scipy.special as sps
 
-# From https://stackoverflow.com/questions/47253462/matplotlib-2-mathtext-glyph-errors-in-tick-labels
 # Customize matplotlib
-matplotlib.rcParams.update({  # Use mathtext, not LaTeX
+matplotlib.rcParams.update({
     'text.usetex': True,
-    # 'font.family': 'Ovo',
+    'font.family': 'Ovo',
     # 'font.serif': 'Ovo',
     # 'mathtext.fontset': 'cm',
     # Use ASCII minus
@@ -231,9 +230,9 @@ def gauss_3d():
 
 if __name__ == '__main__':
     # chirp_sampling()
-    vdf_plots()
+    # vdf_plots()
     # d_vdf_plots()
-    # chirp_z_fail()
+    chirp_z_fail()
     # l_Debye()
     # twoD_gauss()
     # gauss_3d()
