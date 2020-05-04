@@ -24,9 +24,9 @@ from inputs import config as cf  # pylint: disable=C0413
 from utils import spectrum_calculation as isr  # pylint: disable=C0413
 
 # Customize matplotlib
-matplotlib.rcParams.update({  # Use mathtext, not LaTeX
+matplotlib.rcParams.update({
     'text.usetex': True,
-    # 'font.family': 'Ovo',
+    'font.family': 'Ovo',
     # 'font.serif': 'Ovo',
     # 'mathtext.fontset': 'cm',
     # Use ASCII minus
@@ -434,7 +434,7 @@ class PlotClass:
             temp {int} -- electron temperature
 
         Returns:
-            float, float -- lower and upper bound of the interval
+            np.ndarray -- array with boolean elements
         """
         if isinstance(spectrum, list):
             spec = spectrum[0]
@@ -444,19 +444,15 @@ class PlotClass:
             n_e = cf.I_P['NE'][0]
         else:
             n_e = cf.I_P['NE']
-        if check:
-            w_p = np.sqrt(n_e * const.elementary_charge**2
-                          / (const.m_e * const.epsilon_0))
-            f = w_p * (1 + 3 * cf.K_RADAR**2 *
-                       temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
-            upper = f + 1e6
-            return bool(upper > cf.I_P['F_MAX'])
-        fr = np.copy(freq)
-        sp = np.copy(spec)
         w_p = np.sqrt(n_e * const.elementary_charge**2
                       / (const.m_e * const.epsilon_0))
         f = w_p * (1 + 3 * cf.K_RADAR**2 *
                    temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
+        if check:
+            upper = f + 1e6
+            return bool(upper > cf.I_P['F_MAX'])
+        fr = np.copy(freq)
+        sp = np.copy(spec)
         lower, upper = (f - 1e6) / 10**scale, (f + 1e6) / 10**scale
         m = (fr > lower) & (fr < upper)
         fr_n = fr[m]
@@ -499,7 +495,7 @@ class PlotClass:
 
     def match_box(self, freq_original, freq, multi_parameters, args):
         multi_params = multi_parameters.copy()
-        v_line_x = np.linspace(.05, .2, len(multi_params))
+        v_line_x = np.linspace(.04, .2, len(multi_params))
         if self.plasma:
             f = freq_original.copy()
             if isinstance(multi_params, list):
@@ -522,14 +518,12 @@ class PlotClass:
                 difference = np.max(params) - np.min(params)
                 if difference < diff:
                     diff = difference
-        match = int(np.ceil(diff / 10) * 5)
 
-        f_diff = np.max(freq) - np.min(freq)
-        x0 = np.min(freq) + f_diff * v_line_x[args[2]]
+        x0 = np.min(freq) + (np.max(freq) - np.min(freq)) * v_line_x[args[2]]
         plt.vlines(x=x0, ymin=args[1],
-                   ymax=args[1] + match, color='k', linewidth=3)
-        plt.text(x0, args[1] + match / 2,
-                 r'${}$'.format(int(match)), rotation=90, ha='right', va='center')
+                   ymax=args[1] + int(np.ceil(diff / 10) * 5), color='k', linewidth=3)
+        plt.text(x0, args[1] + int(np.ceil(diff / 10) * 5) / 2,
+                 r'${}$'.format(int(np.ceil(diff / 10) * 5)), rotation=90, ha='right', va='center')
 
 if __name__ == '__main__':
     ver = 'long_calc'
