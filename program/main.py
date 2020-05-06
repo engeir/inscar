@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import datetime
+import itertools
 # The start method of the multiprocessing module was changed from python3.7 to python3.8.
 # Instead of using 'fork', 'spawn' is the new default. To be able to use global
 # variables across all parallel processes, the start method must be reset to 'fork'.
@@ -39,7 +40,7 @@ class CreateData:
     """Creation class with methods that return frequency range and spectra.
     """
 
-    def __init__(self, version, kappa=None, vdf=None, area=False, mat_file='fe_zmuE-01.mat'):
+    def __init__(self, version, kappa=None, vdf=None, area=False):
         """Initialize the class with correct variables.
 
         Arguments:
@@ -55,7 +56,6 @@ class CreateData:
         self.kappa = kappa
         self.vdf = vdf
         self.area = area
-        self.mat_file = mat_file
 
     def create_single_spectrum(self):
         """Create one spectrum only.
@@ -64,7 +64,7 @@ class CreateData:
             np.ndarray -- two arrays, one for frequency and one for the corresponding power
         """
         f, s = isr.isr_spectrum(
-            self.version, vdf=self.vdf, kappa=self.kappa, area=self.area, mat_file=self.mat_file)
+            self.version, vdf=self.vdf, kappa=self.kappa, area=self.area)
         return f, s
 
     def create_multi_spectrum(self):
@@ -124,7 +124,7 @@ class PlotClass:
     """Create a plot object that automatically will show the data created.
     """
 
-    def __init__(self, version, kappa=None, vdf=None, area=False, plasma=False, info=None, mat_file='fe_zmuE-01.mat'):
+    def __init__(self, version, kappa=None, vdf=None, area=False, plasma=False, info=None):
         """Make plots of an IS spectrum based on a variety of VDFs.
 
         Arguments:
@@ -145,7 +145,7 @@ class PlotClass:
         self.plasma = plasma
         self.info = info
         self.correct_inputs()
-        self.create_data = CreateData(self.version, self.kappa, self.vdf, area, mat_file)
+        self.create_data = CreateData(self.version, self.kappa, self.vdf, area)
         save = input(
             'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
         self.setup()
@@ -158,8 +158,11 @@ class PlotClass:
             self.kappa = None
         if self.version != 'long_calc':
             self.vdf = None
-        if self.vdf != 'gauss_shell':
+        if self.version != 'long_calc' or self.vdf != 'gauss_shell':
             cf.I_P['T_ES'] = None
+        if self.version != 'long_calc' or self.vdf != 'real_data':
+            cf.I_P['Z'] = None
+            cf.I_P['mat_file'] = None
         if self.plasma:
             if isinstance(cf.I_P['T_E'], list):
                 T_0 = cf.I_P['T_E'][0]
@@ -171,9 +174,9 @@ class PlotClass:
     def setup(self):
         """Do initial tasks. Decide on what kind of plot and create correct data.
         """
-        self.line_styles = ['-', '--', ':', '-.',
-                            (0, (3, 5, 1, 5, 1, 5)),
-                            (0, (3, 1, 1, 1, 1, 1))]
+        self.line_styles = itertools.cycle(['-', '--', ':', '-.',
+                                            (0, (3, 5, 1, 5, 1, 5)),
+                                            (0, (3, 1, 1, 1, 1, 1))])
         if isinstance(self.kappa, list):
             self.version = 'both'
         if any([isinstance(cf.I_P[e], list) for e in cf.I_P]):
@@ -248,7 +251,9 @@ class PlotClass:
         else:
             if self.plot_type == 'ridge':
                 # msg = [r'$T_e = {}$'.format(j) + ' K' for j in cf.I_P['T_E']]
-                msg = [r'${}$'.format(j) + ' km' for j in cf.I_P['Z']]
+                # msg = [r'${}$'.format(j) + ' km' for j in cf.I_P['Z']]
+                the_time = [8 + (int(j.split('-')[-1].split('.')[0]) + 1) / 2 for j in cf.I_P['mat_file']]
+                msg = [f"ToD: {int(j):02d}:{int(j * 60 % 60):02d} UT" for j in the_time]
                 msg.reverse()
                 self.plot_ridge(self.f, self.data, func_type, msg=msg)
             else:
@@ -526,6 +531,6 @@ class PlotClass:
                  r'${}$'.format(int(np.ceil(diff / 10) * 5)), rotation=90, ha='right', va='center')
 
 if __name__ == '__main__':
-    ver = 'long_calc'
-    kwargs = {'vdf': 'real_data', 'plasma': True, 'mat_file': 'fe_zmuE-15.mat', 'info': 'ToD=15'}
+    ver = 'maxwell'
+    kwargs = {'vdf': 'real_data', 'plasma': True}
     PlotClass(ver,  **kwargs)
