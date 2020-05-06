@@ -38,7 +38,7 @@ def interpolate_data(v, params):
             path = 'Arecibo-photo-electrons/'
         else:
             path = 'data/Arecibo-photo-electrons/'
-        x = loadmat(path + params['mat_file'])
+        x = loadmat(path + cf.I_P['mat_file'])
         data = x['fe_zmuE']
         sum_over_pitch = np.einsum('ijk->ik', data) / 18  # removes j-dimansion through dot-product
         # count = np.argmax(sum_over_pitch, 0)
