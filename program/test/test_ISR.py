@@ -75,26 +75,24 @@ class TestVDF(unittest.TestCase):
 
     def tearDown(self):
         # The function f is scaled with the Jacobian of cartesian to spherical
-        f = self.f * self.v**2 * 4 * np.pi
+        f = self.f.f_0() * self.v**2 * 4 * np.pi
         res = si.simps(f, self.v)
-        # f = lambda x: self.f(x, self.params, module=mpmath) * x**2 * 4 * mpmath.pi
-        # res = mpmath.quad(f, [0, mpmath.inf])
         self.assertAlmostEqual(res, 1, places=3)
 
     def test_vdf_maxwell(self):
-        self.f = vdfs.f_0_maxwell(self.v, self.params)
+        self.f = vdfs.F_MAXWELL(self.v, self.params)
 
     def test_vdf_kappa(self):
-        self.f = vdfs.f_0_kappa(self.v, self.params)
+        self.f = vdfs.F_KAPPA(self.v, self.params)
 
     def test_vdf_kappa_vol2(self):
-        self.f = vdfs.f_0_kappa_two(self.v, self.params)
+        self.f = vdfs.F_KAPPA_2(self.v, self.params)
 
     def test_vdf_gauss_shell(self):
-        self.f = vdfs.f_0_gauss_shell(self.v, self.params)
+        self.f = vdfs.F_GAUSS_SHELL(self.v, self.params)
 
     def test_vdf_real_data(self):
-        self.f = vdfs.f_0_real_data(self.v, self.params)
+        self.f = vdfs.F_REAL_DATA(self.v, self.params)
 
 
 if __name__ == '__main__':
