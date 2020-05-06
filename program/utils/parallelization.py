@@ -8,6 +8,7 @@ from functools import partial
 import numpy as np
 import scipy.special as sps
 import scipy.constants as const
+import scipy.integrate as si
 from tqdm import tqdm
 
 from inputs import config as cf
@@ -33,7 +34,8 @@ def integrate(m, T, nu, y, function, kappa=None):
         np.ndarray -- a scaled version of the result from the integration based on Hagfors [1968]
     """
     idx = set(enumerate(cf.w))
-    func = partial(parallel, y)
+    f = function.integrand()
+    func = partial(parallel, y, f)
     pool = mp.Pool()
     # tqdm give a neat progress bar for the iterative process
     with tqdm(total=len(cf.w)) as pbar:
@@ -41,21 +43,28 @@ def integrate(m, T, nu, y, function, kappa=None):
             pbar.set_description("Calculating spectrum")
             pbar.update(1)
     pool.close()
-    if function == intf.kappa_gordeyev:  # pylint: disable=W0143
+    if function.type == 'kappa':
         a = array / (2**(kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
-    elif function == intf.long_calc:  # pylint: disable=W0143
+    elif function.type == 'long_calc':
         a = 4 * np.pi * T * const.k * array / m
     else:
         a = array
-    if function == intf.long_calc:  # pylint: disable=W0143
+    if function.type == 'long_calc':
         F = a
     else:
         F = 1 - (1j * cf.w + nu) * a
     return F
 
 
-def parallel(y, index):
-    array[index[0]] = isr.simpson(index[1], y)
+def parallel(y, f, index):
+    array[index[0]] = simpson(index[1], y, f)
+
+
+def simpson(w, y, f):
+    val = np.exp(- 1j * w * y) * f
+
+    sint = si.simps(val, y)
+    return sint
 
 
 def shared_array(shape):
