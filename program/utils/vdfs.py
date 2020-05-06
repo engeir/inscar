@@ -22,14 +22,21 @@ class VDF(ABC):
     """
     @abstractmethod
     def normalize(self):
-        pass
+        """Calculate the normalization for the VDF.
+        """
 
     @abstractmethod
     def f_0(self):
-        pass
+        """Return the values along the velocity axis of a VDF.
+        """
 
 
 class F_MAXWELL(VDF):
+    """Create an object to make Maxwellian distribution functions.
+
+    Arguments:
+        VDF {ABC} -- abstract base class to make sure crucial methods are included
+    """
     def __init__(self, v, params):
         self.v = v
         self.params = params

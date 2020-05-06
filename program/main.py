@@ -531,6 +531,6 @@ class PlotClass:
                  r'${}$'.format(int(np.ceil(diff / 10) * 5)), rotation=90, ha='right', va='center')
 
 if __name__ == '__main__':
-    ver = 'maxwell'
-    kwargs = {'vdf': 'real_data', 'plasma': True}
+    ver = 'kappa'
+    kwargs = {'kappa': 3, 'vdf': 'gauss_shell', 'plasma': True}
     PlotClass(ver,  **kwargs)
