@@ -12,8 +12,6 @@ import scipy.integrate as si
 from tqdm import tqdm
 
 from inputs import config as cf
-from utils import integrand_functions as intf
-from utils import spectrum_calculation as isr
 
 
 def integrate(m, T, nu, y, function, kappa=None):
@@ -25,7 +23,7 @@ def integrate(m, T, nu, y, function, kappa=None):
         T {float} -- temperature [K]
         nu {float} -- collision frequency [Hz]
         y {np.ndarray} -- integration sample points
-        function {function} -- a python function / method (def)
+        function {class object} -- object from an integrand class
 
     Keyword Arguments:
         kappa {int or float} -- index determining the order of the kappa VDFs (default: {None})
@@ -43,13 +41,13 @@ def integrate(m, T, nu, y, function, kappa=None):
             pbar.set_description("Calculating spectrum")
             pbar.update(1)
     pool.close()
-    if function.type == 'kappa':
+    if function.the_type == 'kappa':
         a = array / (2**(kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
-    elif function.type == 'long_calc':
+    elif function.the_type == 'long_calc':
         a = 4 * np.pi * T * const.k * array / m
     else:
         a = array
-    if function.type == 'long_calc':
+    if function.the_type == 'long_calc':
         F = a
     else:
         F = 1 - (1j * cf.w + nu) * a
