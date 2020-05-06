@@ -19,14 +19,7 @@ from utils import integrand_functions as intf
 from utils import parallelization as para
 
 
-def simpson(w, y):
-    val = np.exp(- 1j * w * y) * cf.ff
-
-    sint = si.simps(val, y)
-    return sint
-
-
-def isr_spectrum(version, kappa=None, area=False, vdf=None, mat_file='fe_zmuE-01.mat'):
+def isr_spectrum(version, kappa=None, area=False, vdf=None):
     """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
 
     Arguments:
@@ -48,15 +41,15 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None, mat_file='fe_zmuE-01
     params = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'],
               'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
     y = np.linspace(0, cf.Y_MAX_i**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
-    cf.ff = intf.maxwell_gordeyev(y, params)
-    Fi = para.integrate(
-        M_i, cf.I_P['T_I'], cf.I_P['NU_I'], y, function=intf.maxwell_gordeyev, kappa=kappa)
+    f_ion = intf.INT_MAXWELL()
+    f_ion.initialize(y, params)
+    Fi = para.integrate(M_i, cf.I_P['T_I'], cf.I_P['NU_I'], y, function=f_ion, kappa=kappa)
 
     # Electrons
     params = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'],
-              'w_c': w_c, 'kappa': kappa, 'vdf': vdf, 'mat_file': mat_file}
+              'w_c': w_c, 'kappa': kappa, 'vdf': vdf}
     y = np.linspace(0, cf.Y_MAX_e**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
-    cf.ff = func(y, params)
+    func.initialize(y, params)
     Fe = para.integrate(
         const.m_e, cf.I_P['T_E'], cf.I_P['NU_E'], y, function=func, kappa=kappa)
 
@@ -149,20 +142,18 @@ def w_e_gyro(B):
 
 
 def version_check(version, vdf, kappa):
-    versions = ['hagfors', 'kappa', 'maxwell', 'long_calc']
+    versions = ['kappa', 'maxwell', 'long_calc']
     try:
         if not version in versions:
             raise SystemError
         print(f'Using version "{version}"', flush=True)
     except SystemError:
         sys.exit(version_error(version, versions))
-    if version == 'hagfors':
-        func = intf.F_s_integrand
+    if version == 'maxwell':
+        func = intf.INT_MAXWELL()
     elif version == 'kappa':
         kappa_check(kappa)
-        func = intf.kappa_gordeyev
-    elif version == 'maxwell':
-        func = intf.maxwell_gordeyev
+        func = intf.INT_KAPPA()
     elif version == 'long_calc':
         vdfs = ['maxwell', 'kappa', 'kappa_vol2', 'gauss_shell', 'real_data']
         try:
@@ -175,7 +166,7 @@ def version_check(version, vdf, kappa):
             kappa_check(kappa)
             if isinstance(kappa, list):
                 sys.exit(print('kappa as a list is not accepted for the long_calc version.'))
-        func = intf.long_calc
+        func = intf.INT_LONG()
     return func
 
 
