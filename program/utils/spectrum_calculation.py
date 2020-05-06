@@ -16,7 +16,7 @@ import scipy.integrate as si
 
 from inputs import config as cf
 from utils import integrand_functions as intf
-from utils import parallelization as para
+from utils.parallel import parallelization as para
 
 
 def isr_spectrum(version, kappa=None, area=False, vdf=None):
