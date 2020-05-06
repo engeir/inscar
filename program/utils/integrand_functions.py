@@ -1,32 +1,54 @@
 """Script containing the integrands used in Gordeyev integrals.
 """
 
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
 
 import numpy as np
 import scipy.constants as const
 import scipy.special as sps
 
 from inputs import config as cf
-from utils import v_int_parallel as para_int
 from utils import vdfs
+from utils.parallel import v_int_parallel as para_int
 
 
 class INTEGRAND(ABC):
+    """Base class for an integrand object.
+
+    Arguments:
+        ABC {ABC} -- abstract base class
+    """
+    @abstractproperty
+    def the_type(self) -> str:
+        """The type of the intregrand implementation.
+        """
+
     @abstractmethod
     def initialize(self, y, params):
-        pass
+        """Needs an initialization method.
+
+        Arguments:
+            y {np.ndarray} -- array for integration variable
+            params {dict} -- dictionary holding all needed parameters
+        """
 
     @abstractmethod
     def integrand(self):
-        pass
+        """Method that returns the np.ndarray that is used as the integrand.
+        """
 
 
 class INT_KAPPA(INTEGRAND):
+    """Integrand for the Gordeyev implementation of the kappa distribution from Mace (2003).
+
+    Arguments:
+        INTEGRAND {abstract base class} -- base class used to create integrand objects
+    """
+    the_type = 'kappa'
+
     def __init__(self):
         self.y = np.array([])
         self.params = {}
-        self.type = 'kappa'
         self.Z = float
         self.Kn = float
 
@@ -51,10 +73,16 @@ class INT_KAPPA(INTEGRAND):
 
 
 class INT_MAXWELL(INTEGRAND):
+    """Intregrand for the Gordeyev implementation of the Maxwellian distribution from e.g. Hagfors (1961) or Mace (2003).
+
+    Arguments:
+        INTEGRAND {abstract base class} -- base class used to create integrand objects
+    """
+    the_type = 'maxwell'
+
     def __init__(self):
         self.y = np.array([])
         self.params = {}
-        self.type = 'maxwell'
 
     def initialize(self, y, params):
         self.y = y
@@ -70,10 +98,11 @@ class INT_MAXWELL(INTEGRAND):
 
 
 class INT_LONG(INTEGRAND):
+    the_type = 'long_calc'
+
     def __init__(self):
         self.y = np.array([])
         self.params = {}
-        self.type = 'long_calc'
 
     def initialize(self, y, params):
         self.y = y
