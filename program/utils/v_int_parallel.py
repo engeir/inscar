@@ -6,10 +6,10 @@ import multiprocessing as mp
 from functools import partial
 
 import numpy as np
+import scipy.integrate as si
 from tqdm import tqdm
 
 from inputs import config as cf
-from utils import integrand_functions as intf
 
 
 def integrand(y, params, v, f):
@@ -38,7 +38,20 @@ def integrand(y, params, v, f):
 
 
 def parallel(params, v, f, index):
-    array[index[0]] = intf.v_int_integrand(index[1], params, v, f)
+    array[index[0]] = v_int_integrand(index[1], params, v, f)
+
+
+def v_int_integrand(y, params, v, f):
+    sin = np.sin(p(y, params) * v)
+    val = v * sin * f
+    res = si.simps(val, v)
+    return res
+
+
+def p(y, params):
+    k_perp = cf.K_RADAR * np.sin(cf.I_P['THETA'])
+    k_par = cf.K_RADAR * np.cos(cf.I_P['THETA'])
+    return (2 * k_perp**2 / params['w_c']**2 * (1 - np.cos(y * params['w_c'])) + k_par**2 * y**2)**.5
 
 
 def shared_array(shape):
