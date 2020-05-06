@@ -19,11 +19,11 @@ Makes plots of an incoherent scatter radar spectrum based on the theory presente
 ## Installing <a name = "installing"></a>
 The program is built using `python3.8` and tested on **macOS**.
 
-Before trying the program, run
+Run
 ```
 pip install -r requirements.txt
 ```
-to install all needed packages, and then navigate to the `program` folder
+from directory `isr_spectrum` where `requirements.txt` is located to install all needed packages, and then navigate to the `program` folder
 ```
 cd program
 ```
