@@ -60,9 +60,9 @@ class INT_KAPPA(INTEGRAND):
     def z_func(self):
         theta_2 = 2 * ((self.params['kappa'] - 3 / 2) / self.params['kappa']) * self.params['T'] * const.k / self.params['m']
         self.Z = (2 * self.params['kappa'])**(1 / 2) * \
-            (cf.K_RADAR**2 * np.sin(cf.I_P['THETA'])**2 * theta_2 / self.params['w_c']**2 *
+            (cf.K_RADAR**2 * np.sin(self.params['THETA'])**2 * theta_2 / self.params['w_c']**2 *
              (1 - np.cos(self.params['w_c'] * self.y)) +
-             1 / 2 * cf.K_RADAR**2 * np.cos(cf.I_P['THETA'])**2 * theta_2 * self.y**2)**(1 / 2)
+             1 / 2 * cf.K_RADAR**2 * np.cos(self.params['THETA'])**2 * theta_2 * self.y**2)**(1 / 2)
         self.Kn = sps.kv(self.params['kappa'] + 1 / 2, self.Z)
         self.Kn[self.Kn == np.inf] = 1
 
@@ -90,9 +90,9 @@ class INT_MAXWELL(INTEGRAND):
 
     def integrand(self):
         G = np.exp(- self.y * self.params['nu'] -
-                   cf.K_RADAR**2 * np.sin(cf.I_P['THETA'])**2 * self.params['T'] * const.k /
+                   cf.K_RADAR**2 * np.sin(self.params['THETA'])**2 * self.params['T'] * const.k /
                    (self.params['m'] * self.params['w_c']**2) * (1 - np.cos(self.params['w_c'] * self.y)) -
-                   .5 * (cf.K_RADAR * np.cos(cf.I_P['THETA']) * self.y)**2 * self.params['T'] * const.k / self.params['m'])
+                   .5 * (cf.K_RADAR * np.cos(self.params['THETA']) * self.y)**2 * self.params['T'] * const.k / self.params['m'])
 
         return G
 
@@ -127,8 +127,8 @@ class INT_LONG(INTEGRAND):
     def p_d(self):
         # At y=0 we get 0/0, but in the limit as y tends to zero,
         # we get p_d = |k| * |w_c| / np.sqrt(w_c**2) (from above, opposite sign from below)
-        cos_t = np.cos(cf.I_P['THETA'])
-        sin_t = np.sin(cf.I_P['THETA'])
+        cos_t = np.cos(self.params['THETA'])
+        sin_t = np.sin(self.params['THETA'])
         w_c = self.params['w_c']
         num = abs(cf.K_RADAR) * abs(w_c) * (cos_t**2 *
                                             w_c * self.y + sin_t**2 * np.sin(w_c * self.y))
