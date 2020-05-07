@@ -38,13 +38,13 @@ def interpolate_data(v, params):
             path = 'Arecibo-photo-electrons/'
         else:
             path = 'data/Arecibo-photo-electrons/'
-        x = loadmat(path + cf.I_P['mat_file'])
+        x = loadmat(path + params['mat_file'])
         data = x['fe_zmuE']
         sum_over_pitch = np.einsum('ijk->ik', data) / 18  # removes j-dimansion through dot-product
         # count = np.argmax(sum_over_pitch, 0)
         # IDX = np.argmax(np.bincount(count))
         # idx = int(np.argwhere(read_dat_file('z4fe.dat')==400))
-        idx = int(np.argwhere(read_dat_file('z4fe.dat')==cf.I_P['Z']))
+        idx = int(np.argwhere(read_dat_file('z4fe.dat')==params['Z']))
         f_1 = sum_over_pitch[idx, :]
         energies = read_dat_file('E4fe.dat')
 

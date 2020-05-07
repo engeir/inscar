@@ -19,7 +19,7 @@ from utils import integrand_functions as intf
 from utils.parallel import parallelization as para
 
 
-def isr_spectrum(version, kappa=None, area=False, vdf=None):
+def isr_spectrum(version, sys_set, kappa=None, area=False, vdf=None):
     """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
 
     Arguments:
@@ -31,37 +31,41 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
     Returns:
         1D array -- two one dimensional numpy arrays for the frequency domain and the values of the spectrum
     """
-    func = version_check(version, vdf, kappa)
-    w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
-    M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
-    W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
+    sys_set, p = correct_inputs(version, sys_set, {'kappa': kappa, 'vdf': vdf})
+    kappa, vdf = p['kappa'], p['vdf']
+    func = version_check(version, vdf, kappa, sys_set)
+    # w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
+    # M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
+    # W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
+    w_c = w_e_gyro(np.linalg.norm([sys_set['B']], 2))
+    M_i = sys_set['MI'] * (const.m_p + const.m_n) / 2
+    W_c = w_ion_gyro(np.linalg.norm([sys_set['B']], 2), M_i)
 
-    # Simpson integration in parallel
     # Ions
-    params = {'nu': cf.I_P['NU_I'], 'm': M_i, 'T': cf.I_P['T_I'],
+    params = {'THETA': sys_set['THETA'], 'nu': sys_set['NU_I'], 'm': M_i, 'T': sys_set['T_I'],
               'w_c': W_c, 'kappa': kappa, 'vdf': vdf}
     y = np.linspace(0, cf.Y_MAX_i**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
     f_ion = intf.INT_MAXWELL()
     f_ion.initialize(y, params)
-    Fi = para.integrate(M_i, cf.I_P['T_I'], cf.I_P['NU_I'], y, function=f_ion, kappa=kappa)
+    Fi = para.integrate(M_i, sys_set['T_I'], sys_set['NU_I'], y, function=f_ion, kappa=kappa)
 
     # Electrons
-    params = {'nu': cf.I_P['NU_E'], 'm': const.m_e, 'T': cf.I_P['T_E'],
-              'w_c': w_c, 'kappa': kappa, 'vdf': vdf}
+    params = {'THETA': sys_set['THETA'], 'nu': sys_set['NU_E'], 'm': const.m_e, 'T': sys_set['T_E'], 'T_ES': sys_set['T_ES'],
+              'w_c': w_c, 'kappa': kappa, 'vdf': vdf, 'Z': sys_set['Z'], 'mat_file': sys_set['mat_file']}
     y = np.linspace(0, cf.Y_MAX_e**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
     func.initialize(y, params)
     Fe = para.integrate(
-        const.m_e, cf.I_P['T_E'], cf.I_P['NU_E'], y, function=func, kappa=kappa)
+        const.m_e, sys_set['T_E'], sys_set['NU_E'], y, function=func, kappa=kappa)
 
     Xp_i = np.sqrt(
-        1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
+        1 / (2 * L_Debye(sys_set['NE'], sys_set['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
     Xp_e = np.sqrt(
-        1 / (2 * L_Debye(cf.I_P['NE'], cf.I_P['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
+        1 / (2 * L_Debye(sys_set['NE'], sys_set['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
 
     f_scaled = cf.f
     # In case we have \omega = 0 in our frequency array, we just ignore this warning message
     with np.errstate(divide='ignore', invalid='ignore'):
-        Is = cf.I_P['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
+        Is = sys_set['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
             4 * Xp_e**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp_e**2 * Fe + 2 * Xp_i**2 * Fi)**2
 
     if area:
@@ -71,7 +75,8 @@ def isr_spectrum(version, kappa=None, area=False, vdf=None):
         else:
             print('F_MAX is set too high. The area was not calculated.')
 
-    return f_scaled, Is
+    sys_set['THETA'] = round(params['THETA'] * 180 / np.pi, 1)
+    return f_scaled, Is, dict(sys_set, **p)
 
 
 def L_Debye(*args, kappa=None):
@@ -141,7 +146,22 @@ def w_e_gyro(B):
     return w_e
 
 
-def version_check(version, vdf, kappa):
+def correct_inputs(version, sys_set, params):
+    """Extra check suppressing the parameters that was given but is not necessary.
+    """
+    if version != 'kappa' and not (version == 'long_calc' and params['vdf'] in ['kappa', 'kappa_vol2']):
+        params['kappa'] = None
+    if version != 'long_calc':
+        params['vdf'] = None
+    if version != 'long_calc' or params['vdf'] != 'gauss_shell':
+        sys_set['T_ES'] = None
+    if version != 'long_calc' or params['vdf'] != 'real_data':
+        sys_set['Z'] = None
+        sys_set['mat_file'] = None
+    return sys_set, params
+
+
+def version_check(version, vdf, kappa, sys_set):
     versions = ['kappa', 'maxwell', 'long_calc']
     try:
         if not version in versions:
@@ -152,7 +172,7 @@ def version_check(version, vdf, kappa):
     if version == 'maxwell':
         func = intf.INT_MAXWELL()
     elif version == 'kappa':
-        kappa_check(kappa)
+        kappa_check(kappa, sys_set)
         func = intf.INT_KAPPA()
     elif version == 'long_calc':
         vdfs = ['maxwell', 'kappa', 'kappa_vol2', 'gauss_shell', 'real_data']
@@ -163,7 +183,7 @@ def version_check(version, vdf, kappa):
         except Exception:
             sys.exit(version_error(vdf, vdfs, element='VDF'))
         if vdf in ['kappa', 'kappa_vol2']:
-            kappa_check(kappa)
+            kappa_check(kappa, sys_set)
             if isinstance(kappa, list):
                 sys.exit(print('kappa as a list is not accepted for the long_calc version.'))
         func = intf.INT_LONG()
@@ -177,15 +197,14 @@ def version_error(version, versions, element='version'):
     print(f'The {element} is wrong: "{version}" not found in {versions}')
 
 
-def kappa_check(kappa):
+def kappa_check(kappa, sys_set):
     try:
         if kappa is None:
             raise SystemError
     except SystemError:
-        print('You forgot to send in the kappa parameter.')
-        sys.exit()
-    if cf.I_P['NU_E'] != 0 or cf.I_P['NU_I'] != 0:
+        sys.exit(print('You forgot to send in the kappa parameter.'))
+    if sys_set['NU_E'] != 0 or sys_set['NU_I'] != 0:
         text = f'''\
                 Warning: the kappa function is defined for a collisionless plasma.
-                You are using: nu_i = {cf.I_P['NU_I']} and nu_e = {cf.I_P['NU_E']}.'''
+                You are using: nu_i = {sys_set['NU_I']} and nu_e = {sys_set['NU_E']}.'''
         print(txt.fill(txt.dedent(text), width=300))
