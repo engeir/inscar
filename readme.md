@@ -51,7 +51,7 @@ THETA -- Pitch angle [1]
 Z -- Height of real data [100, 599] [km]
 mat_file -- Important when using real data and decides the time of day
 ```
-which are found in `program/inputs/config.py`.
+which are given in `main.py`.
 
 ### Calculation method
 The program support different methods of calculating the spectrum, based on how you assume the particles to be distributed. This includes a Maxwellian distribution and a kappa distribution, in addition to any other arbitrary isotropic distribution.
@@ -64,13 +64,21 @@ isr_spectrum/
 ├── extra/
 │   ├── simple_calculations.py
 │   └── simple_plots.py
-├── not_in_use/
-│   ├── chirpz.py
-│   ├── int_cy.pyx
-│   ├── profile.py
-│   ├── pure_cython.pyx
-│   └── setup.py
 ├── program/
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── Arecibo-photo-electrons/
+│   │   │   ├── E4fe.dat
+│   │   │   ├── fe_zmuE-01.mat
+│   │   │   ├── fe_zmuE-01.mat-01.png
+│   │   │   ├── ...
+│   │   │   ├── fe_zmuE-15.mat
+│   │   │   ├── fe_zmuE-15.mat-01.png
+│   │   │   ├── SzeN.dat
+│   │   │   ├── theta_lims.dat
+│   │   │   ├── timeOfDayUT.dat
+│   │   │   └── z4fe.dat
+│   │   └── read.py
 │   ├── inputs/
 │   │   ├── __init__.py
 │   │   └── config.py
@@ -81,9 +89,11 @@ isr_spectrum/
 │   └── utils/
 │       ├── __init__.py
 │       ├── integrand_functions.py
-│       ├── parallelization.py
+│       ├── parallel/
+│       │   ├── __init__.py
+│       │   ├── parallelization.py
+│       │   └── v_int_parallel.py
 │       ├── spectrum_calculation.py
-│       ├── v_int_parallel.py
 │       └── vdfs.py
 ├── readme.md
 └── requirements.txt
