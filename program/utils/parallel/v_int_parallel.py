@@ -49,8 +49,8 @@ def v_int_integrand(y, params, v, f):
 
 
 def p(y, params):
-    k_perp = cf.K_RADAR * np.sin(cf.I_P['THETA'])
-    k_par = cf.K_RADAR * np.cos(cf.I_P['THETA'])
+    k_perp = cf.K_RADAR * np.sin(params['THETA'])
+    k_par = cf.K_RADAR * np.cos(params['THETA'])
     return (2 * k_perp**2 / params['w_c']**2 * (1 - np.cos(y * params['w_c'])) + k_par**2 * y**2)**.5
 
 

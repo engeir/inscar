@@ -2,7 +2,6 @@
 """
 
 import os
-import sys
 import time
 import datetime
 import itertools
@@ -18,7 +17,7 @@ import matplotlib.gridspec as grid_spec  # pylint: disable=C0413
 import matplotlib.pyplot as plt  # pylint: disable=C0413
 from matplotlib.backends.backend_pdf import PdfPages  # pylint: disable=C0413
 import numpy as np  # pylint: disable=C0413
-import scipy.constants as const  # pylint: disable=C0413
+import scipy.signal as signal  # pylint: disable=C0413
 import si_prefix as sip  # pylint: disable=C0413
 
 from inputs import config as cf  # pylint: disable=C0413
@@ -28,247 +27,77 @@ from utils import spectrum_calculation as isr  # pylint: disable=C0413
 matplotlib.rcParams.update({
     'text.usetex': True,
     'font.family': 'Ovo',
-    # 'font.serif': 'Ovo',
-    # 'mathtext.fontset': 'cm',
-    # Use ASCII minus
     'axes.unicode_minus': False,
+    'pgf.texsystem': 'pdflatex'
 })
-matplotlib.rcParams.update({"pgf.texsystem": "pdflatex"})
-
-
-class CreateData:
-    """Creation class with methods that return frequency range and spectra.
-    """
-
-    def __init__(self, version, kappa=None, vdf=None, area=False):
-        """Initialize the class with correct variables.
-
-        Arguments:
-            version {str} -- chose to use the quicker maxwell or kappa versions (analytic solution) or
-                             the long_calc for arbitrary isotropic VDF (numerical solution only)
-
-        Keyword Arguments:
-            kappa {int or float} -- kappa index for the kappa VDFs (default: {None})
-            vdf {str} -- when using 'long_calc', set which VDF to use (default: {None})
-            area {bool} -- if the spectrum is small enough around zero frequency, calculate the area (under the ion line) (default: {False})
-        """
-        self.version = version
-        self.kappa = kappa
-        self.vdf = vdf
-        self.area = area
-
-    def create_single_spectrum(self):
-        """Create one spectrum only.
-
-        Returns:
-            np.ndarray -- two arrays, one for frequency and one for the corresponding power
-        """
-        f, s = isr.isr_spectrum(
-            self.version, vdf=self.vdf, kappa=self.kappa, area=self.area)
-        return f, s
-
-    def create_multi_spectrum(self):
-        """Create a list of spectra, one for each kappa index, plus one maxwellian for reference.
-
-        Returns:
-            np.ndarray and list of np.ndarrays -- frequency and a list of corresponding spectra
-        """
-        multi_spectrum = []
-        f, s = isr.isr_spectrum('maxwell', area=self.area)
-        multi_spectrum.append(s)
-        for k in self.kappa:
-            _, s = isr.isr_spectrum(
-                self.version, vdf=self.vdf, kappa=k, area=self.area)
-            multi_spectrum.append(s)
-        return f, multi_spectrum
-
-    def create_single_or_multi(self):
-        """Create spectra for one set of plasma parameters.
-
-        The method automatically decides between single or multi spectrum.
-
-        Returns:
-            np.ndarray x2 or np.ndarray and list of np.ndarrays -- frequency and list of spectra or only one spectrum
-        """
-        if isinstance(self.kappa, list):
-            f, s = self.create_multi_spectrum()
-        else:
-            f, s = self.create_single_spectrum()
-        return f, s
-
-    def create_multi_params(self):
-        """Create multiple spectra for different set of plasma parameters.
-
-        For each set of plasma parameters, either single or multi spectra can be created.
-
-        Returns:
-            np.ndarray and list of list (of np.ndarrays) or np.ndarray -- returns frequency and resulting spectra from single_or_multi
-        """
-        I_P_original = cf.I_P.copy()
-        I_P_copy = cf.I_P.copy()
-        items = []
-        for item in I_P_copy:
-            if isinstance(I_P_copy[item], list):
-                items.append(item)
-        multi_params = []
-        for i in range(cf.RIDGES):
-            for item in items:
-                cf.I_P[item] = I_P_copy[item][i]
-            f, s = self.create_single_or_multi()
-            multi_params.append(s)
-        cf.I_P = I_P_original
-        return f, multi_params
 
 
 class PlotClass:
     """Create a plot object that automatically will show the data created.
     """
 
-    def __init__(self, version, kappa=None, vdf=None, area=False, plasma=False, info=None):
+    def __init__(self, plasma=False):
         """Make plots of an IS spectrum based on a variety of VDFs.
 
-        Arguments:
-            version {str} -- chose to the quicker maxwell or kappa version (analytic solution) or
-                             the long_calc for arbitrary isotropic VDF (numerical solution only)
-
         Keyword Arguments:
-            kappa {int or float} -- kappa index for the kappa VDFs (default: {None})
-            vdf {str} -- when using 'long_calc', set which VDF to use (default: {None})
-            area {bool} -- if the spectrum is small enough around zero frequency, calculate the area (under the ion line) (default: {False})
             plasma {bool} -- choose to plot only the part of the spectrum where the plasma line is found (default: {False})
-            info {str} -- optional: info that will be saved to the pdf metadata made for the plots (default: {None})
-            mat_file {str} -- optional: decide which .mat file to use (default: {'fe_zmuE-01.mat'})
         """
-        self.version = version
-        self.kappa = kappa
-        self.vdf = vdf
+        self.save = input('Press "y/yes" to save plot, any other key to dismiss.\t').lower()
+        self.page = 1
+        self.pdffig = None
+        self.save_path = str
         self.plasma = plasma
-        self.info = info
         self.correct_inputs()
-        self.create_data = CreateData(self.version, self.kappa, self.vdf, area)
-        save = input(
-            'Press "y/yes" to save plot, any other key to dismiss.\t').lower()
-        self.setup()
-        self.final(save)
+        self.line_styles = ['-', '--', ':', '-.',
+                            (0, (3, 5, 1, 5, 1, 5)),
+                            (0, (3, 1, 1, 1, 1, 1))]
 
     def correct_inputs(self):
         """Extra check suppressing the parameters that was given but is not necessary.
         """
-        if self.version != 'kappa' and not (self.version == 'long_calc' and self.vdf in ['kappa', 'kappa_vol2']):
-            self.kappa = None
-        if self.version != 'long_calc':
-            self.vdf = None
-        if self.version != 'long_calc' or self.vdf != 'gauss_shell':
-            cf.I_P['T_ES'] = None
-        if self.version != 'long_calc' or self.vdf != 'real_data':
-            cf.I_P['Z'] = None
-            cf.I_P['mat_file'] = None
         if self.plasma:
-            if isinstance(cf.I_P['T_E'], list):
-                T_0 = cf.I_P['T_E'][0]
-            else:
-                T_0 = cf.I_P['T_E']
-            if self.find_p_line(None, None, None, T_0, check=True):
-                sys.exit(print(f"F_MAX (= {cf.I_P['F_MAX']}) is not high enough to look at the plasma line."))
+            if self.find_p_line(None, None, None, check=True):
+                print(f"F_MAX (= {cf.I_P['F_MAX']}) is not high enough to look at the plasma line. Overrides option.")
+                self.plasma = False
 
-    def setup(self):
-        """Do initial tasks. Decide on what kind of plot and create correct data.
-        """
-        self.line_styles = itertools.cycle(['-', '--', ':', '-.',
-                                            (0, (3, 5, 1, 5, 1, 5)),
-                                            (0, (3, 1, 1, 1, 1, 1))])
-        if isinstance(self.kappa, list):
-            self.version = 'both'
-        if any([isinstance(cf.I_P[e], list) for e in cf.I_P]):
-            self.plot_type = 'ridge'
-            self.f, self.data = self.create_data.create_multi_params()
-        else:
-            self.plot_type = 'normal'
-            self.f, self.data = self.create_data.create_single_or_multi()
-
-    def final(self, save):
-        """Make the plots from the created data and save if needed.
-
-        Arguments:
-            save {str} -- if 'y' or 'yes', the figure is saved to a predefined directory
-        """
-        if save in ['y', 'yes']:
-            self.save_me()
-        else:
-            self.plot('semilogy')
-            self.plot('plot')
-            self.plot('loglog')
-        plt.show()
-
-    def save_me(self):
+    def save_it(self, version, params):
         """Save the figure as a multi page pdf with all parameters saved in the meta data.
 
         The date and time is used in the figure name, in addition to it ending with which method was used.
-        The settings that was used in config as as inputs to the plot object is saved in the metadata of the figure.
+        The settings that was used in config as inputs to the plot object is saved in the metadata of the figure.
         """
-        cf.I_P['THETA'] = round(cf.I_P['THETA'] * 180 / np.pi, 1)
-        if self.info is None:
-            I_P = dict({'vdf': self.vdf, 'kappa': self.kappa, 'F_N_POINTS': cf.F_N_POINTS,
-                        'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS}, **cf.I_P)
-        else:
-            I_P = dict({'vdf': self.vdf, 'kappa': self.kappa, 'info': self.info, 'F_N_POINTS': cf.F_N_POINTS,
-                        'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS}, **cf.I_P)
+        params.insert(0, {'F_MAX': cf.I_P['F_MAX'], 'F0': cf.I_P['F0'], 'V:MAX': cf.V_MAX, 'F_N_POINTS': cf.F_N_POINTS,
+                       'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
         tt = time.localtime()
         the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
         os.makedirs('../../../report/master-thesis/figures', exist_ok=True)
-        save_path = f'../../../report/master-thesis/figures/{the_time}_{self.version}'
-        pdffig = PdfPages(str(save_path) + '.pdf')
-        metadata = pdffig.infodict()
-        metadata['Title'] = f'ISR Spectrum w/ {self.version}'
+        self.save_path = f'../../../report/master-thesis/figures/{the_time}_{version}'
+        self.pdffig = PdfPages(str(self.save_path) + '.pdf')
+        metadata = self.pdffig.infodict()
+        metadata['Title'] = f'ISR Spectrum w/ {version}'
         metadata['Author'] = 'Eirik R. Enger'
-        metadata['Subject'] = f"IS spectrum made using a {self.version} distribution and Simpson's integration rule."
-        metadata['Keywords'] = f'{I_P}'
+        metadata['Subject'] = f"IS spectrum made using a {version} distribution and Simpson's integration rule."
+        metadata['Keywords'] = f'{params}'
         metadata['ModDate'] = datetime.datetime.today()
-        self.plot('semilogy')
-        pdffig.attach_note("Semilog y")
-        plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-        plt.savefig(str(save_path) + '_page_1.pgf', bbox_inches='tight')
-        self.plot('plot')
-        pdffig.attach_note("Linear plot")
-        plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-        plt.savefig(str(save_path) + '_page_2.pgf', bbox_inches='tight')
-        self.plot('loglog')
-        pdffig.attach_note("Loglog")
-        plt.savefig(pdffig, bbox_inches='tight', format='pdf', dpi=600)
-        plt.savefig(str(save_path) + '_page_3.pgf', bbox_inches='tight')
-        pdffig.close()
 
-    def plot(self, func_type):
-        """Make a plot independent of what kind of data is used, and with any given plotting method.
-
-        Arguments:
-            func_type {str} -- any attribute of the matplotlib.pyplot object is accepted and is used to do the plotting
-        """
-        try:
-            getattr(plt, func_type)
-        except Exception:
-            print(f'{func_type} is not an attribute of the matplotlib.pyplot object. Skips to next.')
-        else:
-            if self.plot_type == 'ridge':
-                # msg = [r'$T_e = {}$'.format(j) + ' K' for j in cf.I_P['T_E']]
-                # msg = [r'${}$'.format(j) + ' km' for j in cf.I_P['Z']]
-                the_time = [8 + (int(j.split('-')[-1].split('.')[0]) + 1) / 2 for j in cf.I_P['mat_file']]
-                msg = [f"ToD: {int(j):02d}:{int(j * 60 % 60):02d} UT" for j in the_time]
-                msg.reverse()
-                self.plot_ridge(self.f, self.data, func_type, msg=msg)
-            else:
-                self.plot_normal(self.f, self.data, func_type)
-
-    def plot_normal(self, f, Is, func_type):
+    def plot_normal(self, f, Is, func_type, l_txt):
         """Make a plot using f as x-axis scale and Is as values.
 
         Is may be either a (N,) or (N,1) np.ndarray or a list of such arrays.
 
         Arguments:
             f {np.ndarray} -- variable along x-axis
-            Is {np.ndarray or list} -- y-axis values along x-axis
+            Is {list} -- y-axis values along x-axis
             func_type {str} -- attribute of the matplotlib.pyplot object
         """
+        try:
+            getattr(plt, func_type)
+        except Exception:
+            print(
+                f'{func_type} is not an attribute of the matplotlib.pyplot object. Using "plot".')
+            func_type = 'plot'
+        if len(Is) != len(l_txt):
+            print('Warning: The number of spectra does not match the number of labels.')
         Is = Is.copy()
         # Linear plot show only ion line (kHz range).
         if func_type == 'plot' and not self.plasma:
@@ -277,58 +106,57 @@ class PlotClass:
         plt.figure(figsize=(6, 3))
         if self.plasma:
             # Clip the frequency axis around the plasma frequency.
-            mask = self.find_p_line(freq, Is, exp, cf.I_P['T_E'])
+            mask = self.find_p_line(freq, Is, exp)
             freq = freq[mask]
         if func_type == 'semilogy':
             # Rescale the y-axis to a dB scale.
             plt.xlabel(f'Frequency [{p}Hz]')
             plt.ylabel(
                 '10*log10(Power) [dB]')
-            if isinstance(Is, list):
-                for i, _ in enumerate(Is):
-                    Is[i] = 10 * np.log10(Is[i])
-            else:
-                Is = 10 * np.log10(Is)
+            for i, _ in enumerate(Is):
+                Is[i] = 10 * np.log10(Is[i])
         else:
             plt.xlabel(f'Frequency [{p}Hz]')
             plt.ylabel('Power')
-        if isinstance(Is, list):
-            self.rename_labels()
-            for st, s, lab in zip(self.line_styles, Is, self.kappa):
-                if self.plasma:
-                    s = s[mask]
-                if func_type == 'semilogy':
-                    plt.plot(freq, s, 'r', linestyle=st,
-                             linewidth=.8, label=lab)
-                else:
-                    plot_object = getattr(plt, func_type)
-                    plot_object(freq, s, 'r', linestyle=st,
-                                linewidth=.8, label=lab)
-            plt.legend()
-        else:
+        for st, s, lab in zip(itertools.cycle(self.line_styles), Is, l_txt):
             if self.plasma:
-                Is = Is[mask]
+                s = s[mask]
             if func_type == 'semilogy':
-                plt.plot(freq, Is, 'r')
+                plt.plot(freq, s, 'r', linestyle=st,
+                         linewidth=.8, label=lab)
             else:
                 plot_object = getattr(plt, func_type)
-                plot_object(freq, Is, 'r')
+                plot_object(freq, s, 'r', linestyle=st,
+                            linewidth=.8, label=lab)
+        plt.legend()
         plt.minorticks_on()
         plt.grid(True, which="both", ls="-", alpha=0.4)
         plt.tight_layout()
 
-    def plot_ridge(self, frequency, multi_parameters, func_type, msg=None):
+        if self.save in ['y', 'yes']:
+            self.pdffig.attach_note(func_type)
+            plt.savefig(self.pdffig, bbox_inches='tight', format='pdf', dpi=600)
+            plt.savefig(str(self.save_path) + f'_page_{self.page}.pgf', bbox_inches='tight')
+            self.page += 1
+
+    def plot_ridge(self, frequency, multi_parameters, func_type, l_txt, ridge_txt=None):
         # Inspired by https://matplotlib.org/matplotblog/posts/create-ridgeplots-in-matplotlib/
         # To make sure not to alter any list objects, they are copied.
+        try:
+            getattr(plt, func_type)
+        except Exception:
+            print(
+                f'{func_type} is not an attribute of the matplotlib.pyplot object. Using "plot".')
+            func_type = 'plot'
+        if len(multi_parameters) != len(ridge_txt):
+            print('Warning: The list if spectra lists is not of the same length as the length of "ridge_txt"')
         f_original = frequency.copy()
         multi_params = multi_parameters.copy()
         multi_params.reverse()
-        if msg is None:
-            msg = ['' for _ in multi_params]
-        if isinstance(cf.I_P['T_E'], list):
-            TEMP_0 = cf.I_P['T_E'][0]
+        if ridge_txt is None:
+            ridge_txt = ['' for _ in multi_params]
         else:
-            TEMP_0 = cf.I_P['T_E']
+            ridge_txt.reverse()
         gs = grid_spec.GridSpec(len(multi_params), 1)
         fig = plt.figure(figsize=(7, 9))
         ax_objs = []
@@ -336,6 +164,8 @@ class PlotClass:
         # If you want equal scaling of the y axis as well
         # y_min, y_max = self.scaling_y(multi_params)
         for j, params in enumerate(multi_params):
+            if len(params) != len(l_txt):
+                print('Warning: The number of spectra does not match the number of labels.')
             # f is reset due to the scaling of 'plot' immediately below.
             f = f_original
             # Linear plot show only ion line (kHz range).
@@ -343,47 +173,51 @@ class PlotClass:
                 f, params = self.only_ionline(f, params)
             p, freq, exp = self.scale_f(f)
             if self.plasma:
-                mask = self.find_p_line(freq, params, exp, temp=TEMP_0)
+                mask = self.find_p_line(freq, params, exp)
                 freq = freq[mask]
             ax_objs.append(fig.add_subplot(gs[j:j + 1, 0:]))
-            if isinstance(params, list):
-                self.rename_labels()
-                first = 0
-                for st, s, lab in zip(self.line_styles, params, self.kappa):
-                    if self.plasma:
-                        s = s[mask]
-                    plot_object = getattr(ax_objs[-1], func_type)
-                    plot_object(freq, s, color=(Rgb[j], 0., 1 - Rgb[j]), linewidth=1, label=lab, linestyle=st)
-                    if first == 0:
-                        idx = np.argwhere(freq > ax_objs[-1].viewLim.x0)[0]
-                        legend_pos = (ax_objs[-1].viewLim.x1, np.max(s))
-                        y0 = s[idx]
-                        ax_objs[-1].text(freq[idx], s[idx], msg[j],
-                                         fontsize=14, ha="right", va='bottom')
-                    first += 1
-                    # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
-                    if j == 0:
-                        plt.legend(loc='upper right', bbox_to_anchor=legend_pos, bbox_transform=ax_objs[-1].transData)
-            else:
+            # if list...
+            first = 0
+            for st, s, lab in zip(itertools.cycle(self.line_styles), params, l_txt):
                 if self.plasma:
-                    params = params[mask]
+                    s = s[mask]
                 plot_object = getattr(ax_objs[-1], func_type)
-                plot_object(freq, params, color=(Rgb[j], 0., 1 - Rgb[j]), linewidth=1)
-                idx = np.argwhere(freq > ax_objs[-1].viewLim.x0)[0]
-                y0 = params[idx]
-                ax_objs[-1].text(freq[idx], params[idx], msg[j],
-                                 fontsize=14, ha="right", va='bottom')
-                # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
+                plot_object(freq, s, color=(Rgb[j], 0., 1 - Rgb[j]), linewidth=1, label=lab, linestyle=st)
+                if first == 0:
+                    idx = np.argwhere(freq > ax_objs[-1].viewLim.x0)[0]
+                    legend_pos = (ax_objs[-1].viewLim.x1, np.max(s))
+                    y0 = s[idx]
+                    ax_objs[-1].text(freq[idx], s[idx], ridge_txt[j],
+                                        fontsize=14, ha="right", va='bottom')
+                first += 1
+                # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
+                if j == 0:
+                    plt.legend(loc='upper right', bbox_to_anchor=legend_pos, bbox_transform=ax_objs[-1].transData)
+            # else:
+            #     if self.plasma:
+            #         params = params[mask]
+            #     plot_object = getattr(ax_objs[-1], func_type)
+            #     plot_object(freq, params, color=(Rgb[j], 0., 1 - Rgb[j]), linewidth=1)
+            #     idx = np.argwhere(freq > ax_objs[-1].viewLim.x0)[0]
+            #     y0 = params[idx]
+            #     ax_objs[-1].text(freq[idx], params[idx], ridge_txt[j],
+            #                      fontsize=14, ha="right", va='bottom')
+            #     # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
 
             # plt.ylim([y_min, y_max])
             if func_type == 'plot':
                 # Make a vertical line of comparable size in all plots.
-                self.match_box(f_original, freq, multi_params, [TEMP_0, y0, j])
+                self.match_box(f_original, freq, multi_params, [y0, j])
 
             self.remove_background(ax_objs[-1], multi_params, j, p)
 
         gs.update(hspace=-0.6)
         # plt.tight_layout()
+        if self.save in ['y', 'yes']:
+            self.pdffig.attach_note(func_type)
+            plt.savefig(self.pdffig, bbox_inches='tight', format='pdf', dpi=600)
+            plt.savefig(str(self.save_path) + f'_page_{self.page}.pgf', bbox_inches='tight')
+            self.page += 1
 
     @staticmethod
     def remove_background(plt_obj, multi_params, j, p):
@@ -404,12 +238,13 @@ class PlotClass:
         for sp in spines:
             plt_obj.spines[sp].set_visible(False)
 
-    def rename_labels(self):
-        if any([isinstance(kappa_i, int) for kappa_i in self.kappa]):
-            for v, kappa_i in enumerate(self.kappa):
-                self.kappa[v] = r'$\kappa = {}$'.format(kappa_i)
-        if 'Maxwellian' not in self.kappa:
-            self.kappa.insert(0, 'Maxwellian')
+    @staticmethod
+    def rename_labels(kappa):
+        if any([isinstance(kappa_i, int) for kappa_i in kappa]):
+            for v, kappa_i in enumerate(kappa):
+                kappa[v] = r'$\kappa = {}$'.format(kappa_i)
+        if 'Maxwellian' not in kappa:
+            kappa.insert(0, 'Maxwellian')
 
     @staticmethod
     def scale_f(frequency):
@@ -428,7 +263,7 @@ class PlotClass:
         return pre, freq, exp
 
     @staticmethod
-    def find_p_line(freq, spectrum, scale, temp, check=False):
+    def find_p_line(freq, spectrum, scale, check=False):
         """Find the frequency that is most likely the peak of the plasma line
         and return the lower and upper bounds for an interval around the peak.
 
@@ -441,18 +276,20 @@ class PlotClass:
         Returns:
             np.ndarray -- array with boolean elements
         """
-        if isinstance(spectrum, list):
-            spec = spectrum[0]
-        else:
-            spec = spectrum
-        if isinstance(cf.I_P['NE'], list):
-            n_e = cf.I_P['NE'][0]
-        else:
-            n_e = cf.I_P['NE']
-        w_p = np.sqrt(n_e * const.elementary_charge**2
-                      / (const.m_e * const.epsilon_0))
-        f = w_p * (1 + 3 * cf.K_RADAR**2 *
-                   temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
+        # if isinstance(spectrum, list):
+        spec = spectrum[0]
+        # else:
+        #     spec = spectrum
+        p, _ = signal.find_peaks(spec)[-1]
+        f = freq[p]
+        # if isinstance(cf.I_P['NE'], list):
+        #     n_e = cf.I_P['NE'][0]
+        # else:
+        #     n_e = cf.I_P['NE']
+        # w_p = np.sqrt(n_e * const.elementary_charge**2
+        #               / (const.m_e * const.epsilon_0))
+        # f = w_p * (1 + 3 * cf.K_RADAR**2 *
+        #            temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
         if check:
             upper = f + 1e6
             return bool(upper > cf.I_P['F_MAX'])
@@ -507,7 +344,7 @@ class PlotClass:
                 spec = multi_params[0]
             else:
                 spec = multi_params
-            mask = self.find_p_line(f, spec, 0, args[0])
+            mask = self.find_p_line(f, spec, 0)
         diff = np.inf
         for params in multi_params:
             if isinstance(params, list):
@@ -524,13 +361,82 @@ class PlotClass:
                 if difference < diff:
                     diff = difference
 
-        x0 = np.min(freq) + (np.max(freq) - np.min(freq)) * v_line_x[args[2]]
-        plt.vlines(x=x0, ymin=args[1],
-                   ymax=args[1] + int(np.ceil(diff / 10) * 5), color='k', linewidth=3)
-        plt.text(x0, args[1] + int(np.ceil(diff / 10) * 5) / 2,
+        x0 = np.min(freq) + (np.max(freq) - np.min(freq)) * v_line_x[args[1]]
+        plt.vlines(x=x0, ymin=args[0],
+                   ymax=args[0] + int(np.ceil(diff / 10) * 5), color='k', linewidth=3)
+        plt.text(x0, args[0] + int(np.ceil(diff / 10) * 5) / 2,
                  r'${}$'.format(int(np.ceil(diff / 10) * 5)), rotation=90, ha='right', va='center')
 
+
+class Simulation:
+    def __init__(self):
+        # === Input parameters ===
+        # B -- Magnetic field strength [T]
+        # F0 -- Radar frequency [Hz]
+        # F_MAX -- Range of frequency domain [Hz]
+        # MI -- Ion mass in atomic mass units [u]
+        # NE -- Electron number density [m^(-3)]
+        # NU_E -- Electron collision frequency [Hz]
+        # NU_I -- Ion collision frequency [Hz]
+        # T_E -- Electron temperature [K]
+        # T_I -- Ion temperature [K]
+        # T_ES -- Temperature of suprathermal electrons in the gauss_shell VDF [K]
+        # THETA -- Pitch angle [1]
+        # Z -- Height of real data [100, 599] [km]
+        # mat_file -- Important when using real data and decides the time of day
+        self.f = np.ndarray([])
+        self.data = []
+        self.meta_data = []
+        self.legend_txt = []
+        self.ridge_txt = []
+        self.plot = PlotClass()
+
+    def create_data(self):
+        # Message for temperature
+        # ridge_txt = [r'$T_e = {}$'.format(j) + ' K' for j in cf.I_P['T_E']]
+        # Message for height
+        # ridge_txt = [r'${}$'.format(j) + ' km' for j in cf.I_P['Z']]
+        # Message for ToD
+        # the_time = [8 + (int(j.split('-')[-1].split('.')[0]) + 1) / 2 for j in cf.I_P['mat_file']]
+        # ridge_txt = [f"ToD: {int(j):02d}:{int(j * 60 % 60):02d} UT" for j in the_time]
+        self.ridge_txt.append('One')
+
+        self.legend_txt.append('Maxwellian')
+        sys_set = {'B': 5e-4, 'MI': 16, 'NE': 2e11, 'NU_E': 0, 'NU_I': 0, 'T_E': 5000, 'T_I': 2000, 'T_ES': 90000,
+                   'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
+        params = {'kappa': 3, 'vdf': 'kappa', 'area': False}
+        self.f, s, meta_data = isr.isr_spectrum('maxwell', sys_set, **params)
+        self.data.append(s)
+        # Add data parameters to meta_data
+        self.meta_data.append(meta_data)
+
+        self.legend_txt.append('Kappa')
+        sys_set = {'B': 5e-4, 'MI': 16, 'NE': 2e10, 'NU_E': 0, 'NU_I': 0, 'T_E': 5000, 'T_I': 2000, 'T_ES': 90000,
+                   'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
+        _, s, meta_data = isr.isr_spectrum('kappa', sys_set, **params)
+        self.data.append(s)
+        # Add data parameters to meta_data
+        self.meta_data.append(meta_data)
+
+    def save_handle(self, mode):
+        if self.plot.save in ['y', 'yes']:
+            if mode == 'setUp':
+                self.plot.save_it('m_k', self.meta_data)
+            elif mode == 'tearDown':
+                self.plot.pdffig.close()
+                plt.show()
+
+    def plot_data(self):
+        self.plot.plot_normal(self.f, self.data, 'plot', self.legend_txt)
+        self.plot.plot_ridge(self.f, [self.data], 'plot', self.legend_txt, self.ridge_txt)
+
+    def run(self):
+        self.create_data()
+        self.save_handle('setUp')
+        self.plot_data()
+        self.save_handle('tearDown')
+
+
 if __name__ == '__main__':
-    ver = 'kappa'
-    kwargs = {'kappa': 3, 'vdf': 'gauss_shell', 'plasma': True}
-    PlotClass(ver,  **kwargs)
+    sim = Simulation()
+    sim.run()
