@@ -36,7 +36,7 @@ class PlotClass:
     """Create a plot object that automatically will show the data created.
     """
 
-    def __init__(self, plasma=False):
+    def __init__(self):
         """Make plots of an IS spectrum based on a variety of VDFs.
 
         Keyword Arguments:
@@ -44,21 +44,30 @@ class PlotClass:
         """
         self.save = input('Press "y/yes" to save plot, any other key to dismiss.\t').lower()
         self.page = 1
+        self.plasma = False
         self.pdffig = None
         self.save_path = str
-        self.plasma = plasma
         self.correct_inputs()
         self.line_styles = ['-', '--', ':', '-.',
                             (0, (3, 5, 1, 5, 1, 5)),
                             (0, (3, 1, 1, 1, 1, 1))]
 
+    def __setattr__(self, name, value):
+        self.__dict__[name] = value
+        self.correct_inputs()
+
     def correct_inputs(self):
         """Extra check suppressing the parameters that was given but is not necessary.
         """
-        if self.plasma:
-            if self.find_p_line(None, None, None, check=True):
-                print(f"F_MAX (= {cf.I_P['F_MAX']}) is not high enough to look at the plasma line. Overrides option.")
+        try:
+            if not isinstance(self.plasma, bool):
                 self.plasma = False
+            if self.plasma:
+                if self.find_p_line(None, None, check=True):
+                    print(f"F_MAX (= {cf.I_P['F_MAX']}) is not high enough to look at the plasma line. Overrides option.")
+                    self.plasma = False
+        except Exception:
+            pass
 
     def save_it(self, version, params):
         """Save the figure as a multi page pdf with all parameters saved in the meta data.
@@ -81,14 +90,13 @@ class PlotClass:
         metadata['ModDate'] = datetime.datetime.today()
 
     def plot_normal(self, f, Is, func_type, l_txt):
-        """Make a plot using f as x-axis scale and Is as values.
-
-        Is may be either a (N,) or (N,1) np.ndarray or a list of such arrays.
+        """Make a plot using f as x axis and Is as y axis.
 
         Arguments:
-            f {np.ndarray} -- variable along x-axis
-            Is {list} -- y-axis values along x-axis
+            f {np.ndarray} -- variable along x axis
+            Is {list} -- list of np.ndarrays that give the y axis values along x axis
             func_type {str} -- attribute of the matplotlib.pyplot object
+            l_txt {list} -- a list of strings that give the legend of the spectra. Same length as the inner lists
         """
         try:
             getattr(plt, func_type)
@@ -106,7 +114,7 @@ class PlotClass:
         plt.figure(figsize=(6, 3))
         if self.plasma:
             # Clip the frequency axis around the plasma frequency.
-            mask = self.find_p_line(freq, Is, exp)
+            mask = self.find_p_line(freq * 10**exp, Is)
             freq = freq[mask]
         if func_type == 'semilogy':
             # Rescale the y-axis to a dB scale.
@@ -140,6 +148,19 @@ class PlotClass:
             self.page += 1
 
     def plot_ridge(self, frequency, multi_parameters, func_type, l_txt, ridge_txt=None):
+        """Make a ridge plot of several spectra.
+
+        Arguments:
+            frequency {np.ndarray} -- frequency axis
+            multi_parameters {list} -- list (outer) containing lists (inner) of np.ndarrays.
+                                       The arrays contain the spectrum values at the frequencies given by 'frequency'
+            func_type {str} -- attribute of the matplotlib.pyplot class
+            l_txt {list} -- a list of strings that give the legend of the spectra. Same length as the inner lists
+
+        Keyword Arguments:
+            ridge_txt {list} -- list of strings that give the text to the left of all ridges.
+                                Same length as outer list or None (default: {None})
+        """
         # Inspired by https://matplotlib.org/matplotblog/posts/create-ridgeplots-in-matplotlib/
         # To make sure not to alter any list objects, they are copied.
         try:
@@ -149,7 +170,7 @@ class PlotClass:
                 f'{func_type} is not an attribute of the matplotlib.pyplot object. Using "plot".')
             func_type = 'plot'
         if len(multi_parameters) != len(ridge_txt):
-            print('Warning: The list if spectra lists is not of the same length as the length of "ridge_txt"')
+            print('Warning: The list of spectra lists is not of the same length as the length of "ridge_txt"')
         f_original = frequency.copy()
         multi_params = multi_parameters.copy()
         multi_params.reverse()
@@ -174,7 +195,7 @@ class PlotClass:
                 f, params = self.only_ionline(f, params)
             p, freq, exp = self.scale_f(f)
             if self.plasma:
-                mask = self.find_p_line(freq, params, exp)
+                mask = self.find_p_line(freq * 10**exp, params)
                 freq = freq[mask]
             ax_objs.append(fig.add_subplot(gs[j:j + 1, 0:]))
             first = 0
@@ -188,7 +209,7 @@ class PlotClass:
                     legend_pos = (ax_objs[-1].viewLim.x1, np.max(s))
                     y0 = s[idx]
                     ax_objs[-1].text(freq[idx], s[idx], ridge_txt[j],
-                                        fontsize=14, ha="right", va='bottom')
+                                     fontsize=14, ha="right", va='bottom')
                 first += 1
                 # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
                 if j == 0:
@@ -229,14 +250,6 @@ class PlotClass:
             plt_obj.spines[sp].set_visible(False)
 
     @staticmethod
-    def rename_labels(kappa):
-        if any([isinstance(kappa_i, int) for kappa_i in kappa]):
-            for v, kappa_i in enumerate(kappa):
-                kappa[v] = r'$\kappa = {}$'.format(kappa_i)
-        if 'Maxwellian' not in kappa:
-            kappa.insert(0, 'Maxwellian')
-
-    @staticmethod
     def scale_f(frequency):
         """Scale the axis and add the appropriate SI prefix.
 
@@ -253,14 +266,13 @@ class PlotClass:
         return pre, freq, exp
 
     @staticmethod
-    def find_p_line(freq, spectrum, scale, check=False):
+    def find_p_line(freq, spectrum, check=False):
         """Find the frequency that is most likely the peak of the plasma line
         and return the lower and upper bounds for an interval around the peak.
 
         Arguments:
             freq {np.ndarray} -- sample points of frequency parameter
             spectrum {list} -- list of np.ndarray, values of spectrum at the sampled frequencies
-            scale {int} -- exponent corresponding to the prefix of the frequency scale
 
         Keyword Arguments:
             check {bool} -- used in correct_inputs to check if plasma plots are possible (default: {False})
@@ -271,23 +283,17 @@ class PlotClass:
         spec = spectrum[0]
         # This assumes that scipy's find_peaks() from the signal module is able to
         # find the peak, and that it is the rightmost peak (highest frequency).
-        p, _ = signal.find_peaks(spec)[-1]
+        p = signal.find_peaks(spec, height=10)[0][-1]
         f = freq[p]
 
         if check:
             upper = f + 1e6
             return bool(upper > cf.I_P['F_MAX'])
-        fr = np.copy(freq)
-        sp = np.copy(spec)
-        lower, upper = (f - 1e6) / 10**scale, (f + 1e6) / 10**scale
-        m = (fr > lower) & (fr < upper)
-        fr_n = fr[m]
-        sp = sp[m]
-        av = fr_n[np.argmax(sp)]
-        lower, upper = av - 2e6 / 10**scale, av + 2e6 / 10**scale
+        lower, upper = f - 1e6, f + 1e6
+
         # Don't want the ion line to ruin the scaling of the y axis
-        if lower < 1e5 / 10**scale:
-            lower = 1e5 / 10**scale
+        if lower < 1e5:
+            lower = 1e5
         return (freq > lower) & (freq < upper)
 
     @staticmethod
@@ -321,26 +327,19 @@ class PlotClass:
         v_line_x = np.linspace(.04, .2, len(multi_params))
         if self.plasma:
             f = freq_original.copy()
-            if isinstance(multi_params, list):
-                spec = multi_params[0]
-            else:
-                spec = multi_params
-            mask = self.find_p_line(f, spec, 0)
+            spec = multi_params[0]
+            mask = self.find_p_line(f, spec)
         diff = np.inf
         for params in multi_params:
-            if isinstance(params, list):
-                for s in params:
-                    if self.plasma:
-                        s = s[mask]
-                    difference = np.max(s) - np.min(s)
-                    if difference < diff:
-                        diff = difference
-            else:
+            plot_diff = 0
+            for s in params:
                 if self.plasma:
-                    params = params[mask]
-                difference = np.max(params) - np.min(params)
-                if difference < diff:
-                    diff = difference
+                    s = s[mask]
+                difference = np.max(s) - np.min(s)
+                if plot_diff < difference:
+                    plot_diff = difference
+            if plot_diff < diff:
+                diff = plot_diff
 
         x0 = np.min(freq) + (np.max(freq) - np.min(freq)) * v_line_x[args[1]]
         plt.vlines(x=x0, ymin=args[0],
@@ -414,10 +413,10 @@ class Simulation:
         # Message for ToD
         # the_time = [8 + (int(j.split('-')[-1].split('.')[0]) + 1) / 2 for j in cf.I_P['mat_file']]
         # ridge_txt = [f"ToD: {int(j):02d}:{int(j * 60 % 60):02d} UT" for j in the_time]
-        TEMPS = [2000, 5000]
+        TEMPS = [2000]  # , 5000]
         methods = ['maxwell', 'kappa']
         sys_set = {'B': 5e-4, 'MI': 16, 'NE': 2e11, 'NU_E': 0, 'NU_I': 0, 'T_E': 5000, 'T_I': 2000, 'T_ES': 90000,
-                'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
+                   'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
         params = {'kappa': 3, 'vdf': 'kappa', 'area': False}
         for T in TEMPS:
             ridge = []
@@ -436,6 +435,9 @@ class Simulation:
     def plot_data(self):
         """Plot the created data from self.data.
 
+        If you want to only plot the plasma line, set
+        self.plot.plasma = True
+
         self.plot.plot_normal() accepts list of np.ndarray and
         self.plot.plot_ridge() accepts list of lists of np.ndarray,
         i.e. list of the structure you send to self.plot.plot_normal()
@@ -443,11 +445,13 @@ class Simulation:
         Examples:
         ::
             # Given the example in self.create_data()
+            # self.plot.plasma = True
             self.plot.plot_normal(self.f, self.data[0], 'plot', self.legend_txt)
             self.plot.plot_normal(self.f, self.data[0], 'semilogy', self.legend_txt)
             self.plot.plot_ridge(self.f, self.data, 'plot', self.legend_txt, self.ridge_txt)
             self.plot.plot_ridge(self.f, self.data, 'semilogy', self.legend_txt, self.ridge_txt)
         """
+        self.plot.plasma = True
         self.plot.plot_normal(self.f, self.data[0], 'plot', self.legend_txt)
         self.plot.plot_normal(self.f, self.data[0], 'semilogy', self.legend_txt)
         self.plot.plot_ridge(self.f, self.data, 'plot', self.legend_txt, self.ridge_txt)
