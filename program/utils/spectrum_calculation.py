@@ -19,24 +19,26 @@ from utils import integrand_functions as intf
 from utils.parallel import parallelization as para
 
 
-def isr_spectrum(version, sys_set, kappa=None, area=False, vdf=None):
-    """Calculate a ISR spectrum using the theory presented by Hagfors [1961].
+def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False):
+    """Calculate an ISR spectrum using the theory presented by Hagfors [1961] and Mace [2003].
 
     Arguments:
         version {str} -- decide which integral to use when calculating ISR spectrum
+        system_set {dict} -- all plasma parameters and other parameters needed in the different calculation methods
 
-    Raises:
-        SystemError: if the version is not valid / not found among the existing versions, an error is raised
+    Keyword Arguments:
+        kappa {int} -- kappa index used in any kappa distribution (default: {None})
+        vdf {str} -- gives the VDF used in the long_calc calculation (default: {None})
+        area {bool} -- if True, calculates the area under the ion line (default: {False})
 
     Returns:
-        1D array -- two one dimensional numpy arrays for the frequency domain and the values of the spectrum
+        f {np.ndarray} -- 1D array giving the frequency axis
+        Is {np.ndarray} -- 1D array giving the spectrum at the sampled frequencies
+        meta_data {dict} -- all parameters used to calculate the returned spectrum
     """
-    sys_set, p = correct_inputs(version, sys_set, {'kappa': kappa, 'vdf': vdf})
+    sys_set, p = correct_inputs(version, system_set.copy(), {'kappa': kappa, 'vdf': vdf})
     kappa, vdf = p['kappa'], p['vdf']
     func = version_check(version, vdf, kappa, sys_set)
-    # w_c = w_e_gyro(np.linalg.norm([cf.I_P['B']], 2))
-    # M_i = cf.I_P['MI'] * (const.m_p + const.m_n) / 2
-    # W_c = w_ion_gyro(np.linalg.norm([cf.I_P['B']], 2), M_i)
     w_c = w_e_gyro(np.linalg.norm([sys_set['B']], 2))
     M_i = sys_set['MI'] * (const.m_p + const.m_n) / 2
     W_c = w_ion_gyro(np.linalg.norm([sys_set['B']], 2), M_i)
@@ -62,7 +64,7 @@ def isr_spectrum(version, sys_set, kappa=None, area=False, vdf=None):
     Xp_e = np.sqrt(
         1 / (2 * L_Debye(sys_set['NE'], sys_set['T_E'], kappa=kappa)**2 * cf.K_RADAR**2))
 
-    f_scaled = cf.f
+    # f_scaled = cf.f
     # In case we have \omega = 0 in our frequency array, we just ignore this warning message
     with np.errstate(divide='ignore', invalid='ignore'):
         Is = sys_set['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
@@ -76,7 +78,7 @@ def isr_spectrum(version, sys_set, kappa=None, area=False, vdf=None):
             print('F_MAX is set too high. The area was not calculated.')
 
     sys_set['THETA'] = round(params['THETA'] * 180 / np.pi, 1)
-    return f_scaled, Is, dict(sys_set, **p)
+    return cf.f, Is, dict(sys_set, **p)
 
 
 def L_Debye(*args, kappa=None):
