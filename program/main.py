@@ -183,8 +183,6 @@ class PlotClass:
         fig = plt.figure(figsize=(7, 9))
         ax_objs = []
         Rgb = np.linspace(0, 1, len(multi_params))
-        # If you want equal scaling of the y axis as well
-        # y_min, y_max = self.scaling_y(multi_params)
         for j, params in enumerate(multi_params):
             if len(params) != len(l_txt):
                 print('Warning: The number of spectra does not match the number of labels.')
@@ -215,7 +213,6 @@ class PlotClass:
                 if j == 0:
                     plt.legend(loc='upper right', bbox_to_anchor=legend_pos, bbox_transform=ax_objs[-1].transData)
 
-            # plt.ylim([y_min, y_max])
             if func_type == 'plot':
                 # Make a vertical line of comparable size in all plots.
                 self.match_box(f_original, freq, multi_params, [y0, j])
@@ -223,7 +220,6 @@ class PlotClass:
             self.remove_background(ax_objs[-1], multi_params, j, p)
 
         gs.update(hspace=-0.6)
-        # plt.tight_layout()
         if self.save in ['y', 'yes']:
             self.pdffig.attach_note(func_type)
             plt.savefig(self.pdffig, bbox_inches='tight', format='pdf', dpi=600)
@@ -304,23 +300,6 @@ class PlotClass:
         for i, _ in enumerate(Is):
             Is[i] = Is[i][idx].reshape((-1,))
         return f, Is
-
-    @staticmethod
-    def scaling_y(multi_params):
-        y_min, y_max = np.inf, - np.inf
-        for params in multi_params:
-            if isinstance(params, list):
-                for s in params:
-                    if y_min > np.min(s):
-                        y_min = np.min(s)
-                    if y_max < np.max(s):
-                        y_max = np.max(s)
-            else:
-                if y_min > np.min(params):
-                    y_min = np.min(params)
-                if y_max < np.max(params):
-                    y_max = np.max(params)
-        return y_min, y_max
 
     def match_box(self, freq_original, freq, multi_parameters, args):
         multi_params = multi_parameters.copy()
