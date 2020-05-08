@@ -67,7 +67,7 @@ class PlotClass:
         The settings that was used in config as inputs to the plot object is saved in the metadata of the figure.
         """
         params.insert(0, {'F_MAX': cf.I_P['F_MAX'], 'F0': cf.I_P['F0'], 'V:MAX': cf.V_MAX, 'F_N_POINTS': cf.F_N_POINTS,
-                       'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
+                          'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
         tt = time.localtime()
         the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
         os.makedirs('../../../report/master-thesis/figures', exist_ok=True)
@@ -153,6 +153,7 @@ class PlotClass:
         f_original = frequency.copy()
         multi_params = multi_parameters.copy()
         multi_params.reverse()
+        ridge_txt = ridge_txt.copy()
         if ridge_txt is None:
             ridge_txt = ['' for _ in multi_params]
         else:
@@ -176,7 +177,6 @@ class PlotClass:
                 mask = self.find_p_line(freq, params, exp)
                 freq = freq[mask]
             ax_objs.append(fig.add_subplot(gs[j:j + 1, 0:]))
-            # if list...
             first = 0
             for st, s, lab in zip(itertools.cycle(self.line_styles), params, l_txt):
                 if self.plasma:
@@ -193,16 +193,6 @@ class PlotClass:
                 # ax_objs[-1].fill_between(freq, s, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
                 if j == 0:
                     plt.legend(loc='upper right', bbox_to_anchor=legend_pos, bbox_transform=ax_objs[-1].transData)
-            # else:
-            #     if self.plasma:
-            #         params = params[mask]
-            #     plot_object = getattr(ax_objs[-1], func_type)
-            #     plot_object(freq, params, color=(Rgb[j], 0., 1 - Rgb[j]), linewidth=1)
-            #     idx = np.argwhere(freq > ax_objs[-1].viewLim.x0)[0]
-            #     y0 = params[idx]
-            #     ax_objs[-1].text(freq[idx], params[idx], ridge_txt[j],
-            #                      fontsize=14, ha="right", va='bottom')
-            #     # ax_objs[-1].fill_between(freq, params, alpha=1, color=(Rgb[j], 0., 1 - Rgb[j]))
 
             # plt.ylim([y_min, y_max])
             if func_type == 'plot':
@@ -269,27 +259,21 @@ class PlotClass:
 
         Arguments:
             freq {np.ndarray} -- sample points of frequency parameter
-            spectrum {np.ndarray} -- values of spectrum at the sampled frequencies
+            spectrum {list} -- list of np.ndarray, values of spectrum at the sampled frequencies
             scale {int} -- exponent corresponding to the prefix of the frequency scale
-            temp {int} -- electron temperature
+
+        Keyword Arguments:
+            check {bool} -- used in correct_inputs to check if plasma plots are possible (default: {False})
 
         Returns:
             np.ndarray -- array with boolean elements
         """
-        # if isinstance(spectrum, list):
         spec = spectrum[0]
-        # else:
-        #     spec = spectrum
+        # This assumes that scipy's find_peaks() from the signal module is able to
+        # find the peak, and that it is the rightmost peak (highest frequency).
         p, _ = signal.find_peaks(spec)[-1]
         f = freq[p]
-        # if isinstance(cf.I_P['NE'], list):
-        #     n_e = cf.I_P['NE'][0]
-        # else:
-        #     n_e = cf.I_P['NE']
-        # w_p = np.sqrt(n_e * const.elementary_charge**2
-        #               / (const.m_e * const.epsilon_0))
-        # f = w_p * (1 + 3 * cf.K_RADAR**2 *
-        #            temp * const.k / (const.m_e * w_p**2))**.5 / (2 * np.pi)
+
         if check:
             upper = f + 1e6
             return bool(upper > cf.I_P['F_MAX'])
@@ -301,7 +285,7 @@ class PlotClass:
         sp = sp[m]
         av = fr_n[np.argmax(sp)]
         lower, upper = av - 2e6 / 10**scale, av + 2e6 / 10**scale
-        # Don't want the ion line to ruin the scaling
+        # Don't want the ion line to ruin the scaling of the y axis
         if lower < 1e5 / 10**scale:
             lower = 1e5 / 10**scale
         return (freq > lower) & (freq < upper)
@@ -311,11 +295,8 @@ class PlotClass:
         Is = Is.copy()
         idx = np.argwhere(abs(f) < 4e4)
         f = f[idx].reshape((-1,))
-        if isinstance(Is, list):
-            for i, _ in enumerate(Is):
-                Is[i] = Is[i][idx].reshape((-1,))
-        else:
-            Is = Is[idx].reshape((-1,))
+        for i, _ in enumerate(Is):
+            Is[i] = Is[i][idx].reshape((-1,))
         return f, Is
 
     @staticmethod
@@ -392,6 +373,40 @@ class Simulation:
         self.plot = PlotClass()
 
     def create_data(self):
+        """Create IS spectra.
+
+        The spectra should be appended to the self.data list, giving a list of spectra that are themselves np.ndarrays,
+        or into a list of such lists as the aforementioned.
+
+        A list of spectra can be plotted in 'plot_normal', while a list of lists can be plotted by plot_ridge.
+        When using plot_ridge, it is assumed that all the lists in the outer list is of equal length.
+
+        The list self.ridge_txt should be the same length as the length of the outer list when plotting with
+        plt_ridge, since this text will go on the left of every ridge.
+        The list self.legend_txt should be the same length as the length of the inner lists, and will give
+        the legend for the spectra given in the inner lists.
+
+        Examples:
+        ::
+            TEMPS = [2000, 5000]
+            methods = ['maxwell', 'kappa']
+            sys_set = {'B': 5e-4, 'MI': 16, 'NE': 2e11, 'NU_E': 0, 'NU_I': 0, 'T_E': 5000, 'T_I': 2000, 'T_ES': 90000,
+                    'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
+            params = {'kappa': 3, 'vdf': 'kappa', 'area': False}
+            for T in TEMPS:
+                ridge = []
+                sys_set['T_E'] = T
+                self.ridge_txt.append(f'$T_e = {T}$ K')
+                for m in methods:
+                    self.f, s, meta_data = isr.isr_spectrum(m, sys_set, **params)
+                    self.meta_data.append(meta_data)
+                    ridge.append(s)
+                self.data.append(ridge)
+
+            # For a nicer legend, it is added after
+            self.legend_txt.append('Maxwellian')
+            self.legend_txt.append('Kappa')
+        """
         # Message for temperature
         # ridge_txt = [r'$T_e = {}$'.format(j) + ' K' for j in cf.I_P['T_E']]
         # Message for height
@@ -399,36 +414,53 @@ class Simulation:
         # Message for ToD
         # the_time = [8 + (int(j.split('-')[-1].split('.')[0]) + 1) / 2 for j in cf.I_P['mat_file']]
         # ridge_txt = [f"ToD: {int(j):02d}:{int(j * 60 % 60):02d} UT" for j in the_time]
-        self.ridge_txt.append('One')
-
-        self.legend_txt.append('Maxwellian')
+        TEMPS = [2000, 5000]
+        methods = ['maxwell', 'kappa']
         sys_set = {'B': 5e-4, 'MI': 16, 'NE': 2e11, 'NU_E': 0, 'NU_I': 0, 'T_E': 5000, 'T_I': 2000, 'T_ES': 90000,
-                   'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
+                'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
         params = {'kappa': 3, 'vdf': 'kappa', 'area': False}
-        self.f, s, meta_data = isr.isr_spectrum('maxwell', sys_set, **params)
-        self.data.append(s)
-        # Add data parameters to meta_data
-        self.meta_data.append(meta_data)
+        for T in TEMPS:
+            ridge = []
+            sys_set['T_E'] = T
+            self.ridge_txt.append(f'$T_e = {T}$ K')
+            for m in methods:
+                self.f, s, meta_data = isr.isr_spectrum(m, sys_set, **params)
+                self.meta_data.append(meta_data)
+                ridge.append(s)
+            self.data.append(ridge)
 
+        # For a nicer legend, it is added after
+        self.legend_txt.append('Maxwellian')
         self.legend_txt.append('Kappa')
-        sys_set = {'B': 5e-4, 'MI': 16, 'NE': 2e10, 'NU_E': 0, 'NU_I': 0, 'T_E': 5000, 'T_I': 2000, 'T_ES': 90000,
-                   'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
-        _, s, meta_data = isr.isr_spectrum('kappa', sys_set, **params)
-        self.data.append(s)
-        # Add data parameters to meta_data
-        self.meta_data.append(meta_data)
-
-    def save_handle(self, mode):
-        if self.plot.save in ['y', 'yes']:
-            if mode == 'setUp':
-                self.plot.save_it('m_k', self.meta_data)
-            elif mode == 'tearDown':
-                self.plot.pdffig.close()
-                plt.show()
 
     def plot_data(self):
-        self.plot.plot_normal(self.f, self.data, 'plot', self.legend_txt)
-        self.plot.plot_ridge(self.f, [self.data], 'plot', self.legend_txt, self.ridge_txt)
+        """Plot the created data from self.data.
+
+        self.plot.plot_normal() accepts list of np.ndarray and
+        self.plot.plot_ridge() accepts list of lists of np.ndarray,
+        i.e. list of the structure you send to self.plot.plot_normal()
+
+        Examples:
+        ::
+            # Given the example in self.create_data()
+            self.plot.plot_normal(self.f, self.data[0], 'plot', self.legend_txt)
+            self.plot.plot_normal(self.f, self.data[0], 'semilogy', self.legend_txt)
+            self.plot.plot_ridge(self.f, self.data, 'plot', self.legend_txt, self.ridge_txt)
+            self.plot.plot_ridge(self.f, self.data, 'semilogy', self.legend_txt, self.ridge_txt)
+        """
+        self.plot.plot_normal(self.f, self.data[0], 'plot', self.legend_txt)
+        self.plot.plot_normal(self.f, self.data[0], 'semilogy', self.legend_txt)
+        self.plot.plot_ridge(self.f, self.data, 'plot', self.legend_txt, self.ridge_txt)
+        self.plot.plot_ridge(self.f, self.data, 'semilogy', self.legend_txt, self.ridge_txt)
+
+    def save_handle(self, mode):
+        if mode == 'setUp':
+            if self.plot.save in ['y', 'yes']:
+                self.plot.save_it('m_k', self.meta_data)
+        elif mode == 'tearDown':
+            if self.plot.save in ['y', 'yes']:
+                self.plot.pdffig.close()
+            plt.show()
 
     def run(self):
         self.create_data()
