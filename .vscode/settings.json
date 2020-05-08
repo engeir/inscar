@@ -63,6 +63,7 @@
         "pytest",
         "rect",
         "scipy",
+        "scipy's",
         "semilogx",
         "semilogy",
         "sharedctypes",
