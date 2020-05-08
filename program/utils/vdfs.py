@@ -127,7 +127,7 @@ class F_GAUSS_SHELL(VDF):
         self.v = v
         self.params = params
         self.vth = np.sqrt(self.params['T'] * const.k / self.params['m'])
-        self.r = (cf.I_P['T_ES'] * const.k / self.params['m'])**.5
+        self.r = (self.params['T_ES'] * const.k / self.params['m'])**.5
         self.f_M = F_MAXWELL(self.v, self.params)
         self.normalize()
 

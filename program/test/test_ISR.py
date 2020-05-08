@@ -13,7 +13,6 @@ import scipy.integrate as si  # pylint: disable=C0413
 
 from utils import spectrum_calculation as isr  # pylint: disable=C0413
 from utils import vdfs  # pylint: disable=C0413
-from inputs import config as cf  # pylint: disable=C0413
 
 
 class TestISR(unittest.TestCase):
@@ -26,19 +25,13 @@ class TestISR(unittest.TestCase):
     """
 
     @classmethod
-    def SetUpClass(cls):
+    def setUpClass(cls):
         cls.a, cls.b = None, None
 
     def setUp(self):
-        I_P_copy = cf.I_P.copy()
-        items = []
-        for item in I_P_copy:
-            if isinstance(I_P_copy[item], list):
-                items.append(item)
-        for item in items:
-            cf.I_P[item] = I_P_copy[item][0]
-        # if isinstance(cf.I_P['T_E'], list):
-        #     cf.I_P['T_E'] = int(cf.I_P['T_E'][0])
+        self.sys_set = {'B': 5e-4, 'MI': 16, 'NE': 2e11, 'NU_E': 0, 'NU_I': 0, 'T_E': 5000, 'T_I': 2000, 'T_ES': 90000,
+                        'THETA': 40 * np.pi / 180, 'Z': 599, 'mat_file': 'fe_zmuE-01.mat'}
+        self.params = {'kappa': 3, 'vdf': 'gauss_shell', 'area': False}
 
     def tearDown(self):
         self.assertIsInstance(self.a, np.ndarray)
@@ -46,13 +39,37 @@ class TestISR(unittest.TestCase):
         self.assertEqual(self.a.shape, self.b.shape, msg='a.shape != b.shape')
 
     def test_isr_maxwell(self):
-        self.a, self.b = isr.isr_spectrum('maxwell', kappa=6)
+        self.a, self.b, meta_data = isr.isr_spectrum('maxwell', self.sys_set, **self.params)
+        self.assertEqual(meta_data['kappa'], None)
+        self.assertEqual(meta_data['vdf'], None)
+        self.assertEqual(meta_data['T_ES'], None)
+        self.assertEqual(meta_data['Z'], None)
+        self.assertEqual(meta_data['mat_file'], None)
 
     def test_isr_kappa(self):
-        self.a, self.b = isr.isr_spectrum('kappa', kappa=4)
+        self.a, self.b, meta_data = isr.isr_spectrum('kappa', self.sys_set, **self.params)
+        self.assertEqual(meta_data['kappa'], 3)
+        self.assertEqual(meta_data['vdf'], None)
+        self.assertEqual(meta_data['T_ES'], None)
+        self.assertEqual(meta_data['Z'], None)
+        self.assertEqual(meta_data['mat_file'], None)
 
-    def test_isr_long_calc(self):
-        self.a, self.b = isr.isr_spectrum('long_calc', vdf='kappa', kappa=6)
+    def test_isr_long_calc_gauss(self):
+        self.a, self.b, meta_data = isr.isr_spectrum('long_calc', self.sys_set, **self.params)
+        self.assertEqual(meta_data['kappa'], None)
+        self.assertEqual(meta_data['vdf'], 'gauss_shell')
+        self.assertEqual(meta_data['T_ES'], 90000)
+        self.assertEqual(meta_data['Z'], None)
+        self.assertEqual(meta_data['mat_file'], None)
+
+    def test_isr_long_calc_real(self):
+        self.params['vdf'] = 'real_data'
+        self.a, self.b, meta_data = isr.isr_spectrum('long_calc', self.sys_set, **self.params)
+        self.assertEqual(meta_data['kappa'], None)
+        self.assertEqual(meta_data['vdf'], 'real_data')
+        self.assertEqual(meta_data['T_ES'], None)
+        self.assertEqual(meta_data['Z'], 599)
+        self.assertEqual(meta_data['mat_file'], 'fe_zmuE-01.mat')
 
 
 class TestVDF(unittest.TestCase):
@@ -64,14 +81,9 @@ class TestVDF(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if isinstance(cf.I_P['T_E'], list):
-            cf.I_P['T_E'] = int(cf.I_P['T_E'][0])
         cls.v = np.linspace(0, (6e6)**(1 / 3), int(1e7))**3
-        cls.params = {'m': 9.1093837015e-31, 'T': 1000, 'kappa': 3}
+        cls.params = {'m': 9.1093837015e-31, 'T': 1000, 'kappa': 3, 'T_ES': 90000}
         cls.f = None
-
-    def setUp(self):
-        cf.SCALING = None
 
     def tearDown(self):
         # The function f is scaled with the Jacobian of cartesian to spherical
