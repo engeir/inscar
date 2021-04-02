@@ -6,11 +6,10 @@ import sys
 
 import numpy as np
 
-
 # Check if a test is running. Potential paths are
 # ['pytest.py', 'pytest', 'test_ISR.py', '__main__.py', 'python3.7 -m unittest']
 # or check if 'main.py' was used.
-if os.path.basename(os.path.realpath(sys.argv[0])) != 'main.py':
+if os.path.basename(os.path.realpath(sys.argv[0])) != "main.py":
     # DO NOT EDIT
     F_N_POINTS = 1e1
     Y_N_POINTS = 1e1
@@ -29,7 +28,7 @@ Y_MAX_i = 1.5e-2
 V_MAX = 6e6
 ORDER = 3
 
-I_P = {'F_MIN': 2.5e6, 'F_MAX': 9.5e6}
-f = np.linspace(I_P['F_MIN'], I_P['F_MAX'], int(F_N_POINTS))
-f = (f / I_P['F_MAX'])**1 * I_P['F_MAX']
+I_P = {"F_MIN": 2.5e6, "F_MAX": 9.5e6}
+f = np.linspace(I_P["F_MIN"], I_P["F_MAX"], int(F_N_POINTS))
+f = (f / I_P["F_MAX"]) ** 1 * I_P["F_MAX"]
 w = 2 * np.pi * f  # Angular frequency

@@ -8,7 +8,6 @@ import sys
 import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
-
 from inputs import config as cf
 from utils import integrand_functions as intf
 from utils.parallel import gordeyev_int_parallel
@@ -41,57 +40,119 @@ def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False, debye=No
         meta_data {dict} -- all parameters used to calculate
         the returned spectrum
     """
-    sys_set, p = correct_inputs(version, system_set.copy(), {'kappa': kappa, 'vdf': vdf})
-    kappa, vdf = p['kappa'], p['vdf']
+    sys_set, p = correct_inputs(
+        version, system_set.copy(), {"kappa": kappa, "vdf": vdf}
+    )
+    kappa, vdf = p["kappa"], p["vdf"]
     func = version_check(version, vdf, kappa)
-    w_c = w_e_gyro(np.linalg.norm([sys_set['B']], 2))
-    M_i = sys_set['MI'] * (const.m_p + const.m_n) / 2
-    W_c = w_ion_gyro(np.linalg.norm([sys_set['B']], 2), M_i)
+    w_c = w_e_gyro(np.linalg.norm([sys_set["B"]], 2))
+    M_i = sys_set["MI"] * (const.m_p + const.m_n) / 2
+    W_c = w_ion_gyro(np.linalg.norm([sys_set["B"]], 2), M_i)
 
     # Ions
-    params = {'K_RADAR': sys_set['K_RADAR'], 'THETA': sys_set['THETA'],
-              'nu': sys_set['NU_I'], 'm': M_i, 'T': sys_set['T_I'], 'w_c': W_c}
-    y = np.linspace(0, cf.Y_MAX_i**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
+    params = {
+        "K_RADAR": sys_set["K_RADAR"],
+        "THETA": sys_set["THETA"],
+        "nu": sys_set["NU_I"],
+        "m": M_i,
+        "T": sys_set["T_I"],
+        "w_c": W_c,
+    }
+    y = (
+        np.linspace(
+            0, cf.Y_MAX_i ** (1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double
+        )
+        ** cf.ORDER
+    )
     f_ion = intf.INT_MAXWELL()
     f_ion.initialize(y, params)
-    Fi = gordeyev_int_parallel.integrate(M_i, sys_set['T_I'], sys_set['NU_I'], y, function=f_ion, kappa=kappa)
+    Fi = gordeyev_int_parallel.integrate(
+        M_i, sys_set["T_I"], sys_set["NU_I"], y, function=f_ion, kappa=kappa
+    )
 
     # Electrons
-    params = {'K_RADAR': sys_set['K_RADAR'], 'THETA': sys_set['THETA'],
-              'nu': sys_set['NU_E'], 'm': const.m_e, 'T': sys_set['T_E'],
-              'T_ES': sys_set['T_ES'], 'w_c': w_c, 'kappa': kappa, 'vdf': vdf,
-              'Z': sys_set['Z'], 'mat_file': sys_set['mat_file'],
-              'pitch_angle': sys_set['pitch_angle']}
-    y = np.linspace(0, cf.Y_MAX_e**(1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double)**cf.ORDER
+    params = {
+        "K_RADAR": sys_set["K_RADAR"],
+        "THETA": sys_set["THETA"],
+        "nu": sys_set["NU_E"],
+        "m": const.m_e,
+        "T": sys_set["T_E"],
+        "T_ES": sys_set["T_ES"],
+        "w_c": w_c,
+        "kappa": kappa,
+        "vdf": vdf,
+        "Z": sys_set["Z"],
+        "mat_file": sys_set["mat_file"],
+        "pitch_angle": sys_set["pitch_angle"],
+    }
+    y = (
+        np.linspace(
+            0, cf.Y_MAX_e ** (1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double
+        )
+        ** cf.ORDER
+    )
     func.initialize(y, params)
-    Fe = gordeyev_int_parallel.integrate(const.m_e, sys_set['T_E'], sys_set['NU_E'], y, function=func, kappa=kappa)
+    Fe = gordeyev_int_parallel.integrate(
+        const.m_e, sys_set["T_E"], sys_set["NU_E"], y, function=func, kappa=kappa
+    )
 
-    Xp_i = np.sqrt(1 / (2 * L_Debye(sys_set['NE'], sys_set['T_E'], kappa=None)**2 * \
-           sys_set['K_RADAR']**2))
-    if func.the_type == 'maxwell' or debye == 'maxwell':
-        Xp_e = np.sqrt(1 / (2 * L_Debye(sys_set['NE'], sys_set['T_E'])**2 * \
-               sys_set['K_RADAR']**2))
-    elif func.the_type == 'kappa':
-        Xp_e = np.sqrt(1 / (2 * L_Debye(sys_set['NE'], sys_set['T_E'], kappa=kappa)**2 * \
-               sys_set['K_RADAR']**2))
-    elif func.the_type == 'a_vdf':
-        Xp_e = np.sqrt(1 / (2 * L_Debye(sys_set['NE'], sys_set['T_E'], char_vel=func.char_vel)**2 * \
-               sys_set['K_RADAR']**2))
+    Xp_i = np.sqrt(
+        1
+        / (
+            2
+            * L_Debye(sys_set["NE"], sys_set["T_E"], kappa=None) ** 2
+            * sys_set["K_RADAR"] ** 2
+        )
+    )
+    if func.the_type == "maxwell" or debye == "maxwell":
+        Xp_e = np.sqrt(
+            1
+            / (
+                2
+                * L_Debye(sys_set["NE"], sys_set["T_E"]) ** 2
+                * sys_set["K_RADAR"] ** 2
+            )
+        )
+    elif func.the_type == "kappa":
+        Xp_e = np.sqrt(
+            1
+            / (
+                2
+                * L_Debye(sys_set["NE"], sys_set["T_E"], kappa=kappa) ** 2
+                * sys_set["K_RADAR"] ** 2
+            )
+        )
+    elif func.the_type == "a_vdf":
+        Xp_e = np.sqrt(
+            1
+            / (
+                2
+                * L_Debye(sys_set["NE"], sys_set["T_E"], char_vel=func.char_vel) ** 2
+                * sys_set["K_RADAR"] ** 2
+            )
+        )
 
     # In case we have $ \omega = 0 $ in our frequency array, we just ignore this warning message $\label{lst:is_spectrum}$
-    with np.errstate(divide='ignore', invalid='ignore'):
-        Is = sys_set['NE'] / (np.pi * cf.w) * (np.imag(- Fe) * abs(1 + 2 * Xp_i**2 * Fi)**2 + (
-            4 * Xp_e**4 * np.imag(- Fi) * abs(Fe)**2)) / abs(1 + 2 * Xp_e**2 * Fe + 2 * Xp_i**2 * Fi)**2
+    with np.errstate(divide="ignore", invalid="ignore"):
+        Is = (
+            sys_set["NE"]
+            / (np.pi * cf.w)
+            * (
+                np.imag(-Fe) * abs(1 + 2 * Xp_i ** 2 * Fi) ** 2
+                + (4 * Xp_e ** 4 * np.imag(-Fi) * abs(Fe) ** 2)
+            )
+            / abs(1 + 2 * Xp_e ** 2 * Fe + 2 * Xp_i ** 2 * Fi) ** 2
+        )
 
     if area:
-        if cf.I_P['F_MAX'] < 1e4:
+        if cf.I_P["F_MAX"] < 1e4:
             area = si.simps(Is, cf.f)
-            print('The area under the ion line is %1.6e.' % area)
+            print("The area under the ion line is %1.6e." % area)
         else:
-            print('F_MAX is set too high. The area was not calculated.')
+            print("F_MAX is set too high. The area was not calculated.")
 
-    sys_set['THETA'] = round(params['THETA'] * 180 / np.pi, 1)
-    sys_set['version'] = version
+    sys_set["THETA"] = round(params["THETA"] * 180 / np.pi, 1)
+    sys_set["version"] = version
     return cf.f, Is, dict(sys_set, **p)
 
 
@@ -121,17 +182,19 @@ def L_Debye(*args, kappa=None, char_vel=None):
 
     if nargin < 3:
         if kappa is not None:
-            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)
-                         ) * np.sqrt((kappa - 3 / 2) / (kappa - 1 / 2))
+            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e ** 2)) * np.sqrt(
+                (kappa - 3 / 2) / (kappa - 1 / 2)
+            )
         elif char_vel is not None:
-            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)
-                         ) * np.sqrt(char_vel)
+            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e ** 2)) * np.sqrt(
+                char_vel
+            )
         else:
-            LD = np.sqrt(Ep0 * const.k * T_e /
-                         (max(0, n_e) * const.e**2))
+            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e ** 2))
     else:
-        LD = np.sqrt(Ep0 * const.k /
-                     ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e**2))
+        LD = np.sqrt(
+            Ep0 * const.k / ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e ** 2)
+        )
 
     return LD
 
@@ -170,16 +233,18 @@ def correct_inputs(version, sys_set, params):
     """Extra check suppressing the parameters
     that was given but is not necessary.
     """
-    if version != 'kappa' and not (version == 'a_vdf' and params['vdf'] in ['kappa', 'kappa_vol2']):
-        params['kappa'] = None
-    if version != 'a_vdf':
-        params['vdf'] = None
-    if version != 'a_vdf' or params['vdf'] != 'gauss_shell':
-        sys_set['T_ES'] = None
-    if version != 'a_vdf' or params['vdf'] != 'real_data':
-        sys_set['Z'] = None
-        sys_set['mat_file'] = None
-        sys_set['pitch_angle'] = None
+    if version != "kappa" and not (
+        version == "a_vdf" and params["vdf"] in ["kappa", "kappa_vol2"]
+    ):
+        params["kappa"] = None
+    if version != "a_vdf":
+        params["vdf"] = None
+    if version != "a_vdf" or params["vdf"] != "gauss_shell":
+        sys_set["T_ES"] = None
+    if version != "a_vdf" or params["vdf"] != "real_data":
+        sys_set["Z"] = None
+        sys_set["mat_file"] = None
+        sys_set["pitch_angle"] = None
     return sys_set, params
 
 
@@ -194,36 +259,36 @@ def version_check(version, vdf, kappa):
     Returns:
         object -- an integrand object from `integrand_functions.py`
     """
-    versions = ['kappa', 'maxwell', 'a_vdf']
+    versions = ["kappa", "maxwell", "a_vdf"]
     try:
-        if not version in versions:
+        if version not in versions:
             raise SystemError
         print(f'Using version "{version}"', flush=True)
     except SystemError:
         sys.exit(version_error(version, versions))
-    if version == 'maxwell':
+    if version == "maxwell":
         func = intf.INT_MAXWELL()
-    elif version == 'kappa':
+    elif version == "kappa":
         kappa_check(kappa)
         func = intf.INT_KAPPA()
-    elif version == 'a_vdf':
-        vdfs = ['maxwell', 'kappa', 'kappa_vol2', 'gauss_shell', 'real_data']
+    elif version == "a_vdf":
+        vdfs = ["maxwell", "kappa", "kappa_vol2", "gauss_shell", "real_data"]
         try:
-            if not vdf in vdfs:
+            if vdf not in vdfs:
                 raise SystemError
             print(f'Using VDF "{vdf}"', flush=True)
         except Exception:
-            sys.exit(version_error(vdf, vdfs, element='VDF'))
-        if vdf in ['kappa', 'kappa_vol2']:
+            sys.exit(version_error(vdf, vdfs, element="VDF"))
+        if vdf in ["kappa", "kappa_vol2"]:
             kappa_check(kappa)
         func = intf.INT_LONG()
     return func
 
 
-def version_error(version, versions, element='version'):
+def version_error(version, versions, element="version"):
     exc_type, _, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f'{exc_type} error in file {fname}, line {exc_tb.tb_lineno}')
+    print(f"{exc_type} error in file {fname}, line {exc_tb.tb_lineno}")
     print(f'The {element} is wrong: "{version}" not found in {versions}')
 
 
@@ -231,4 +296,4 @@ def kappa_check(kappa):
     try:
         kappa = int(kappa)
     except SystemError:
-        sys.exit(print('You did not send in a valid kappa index.'))
+        sys.exit(print("You did not send in a valid kappa index."))

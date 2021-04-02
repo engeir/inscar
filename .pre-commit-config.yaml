@@ -28,7 +28,7 @@ repos:
     name: pytest
     stages: [commit]
     language: system
-    entry: poetry run pytest program
+    entry: poetry run pytest program/test
     types: [python]
     pass_filenames: false
 

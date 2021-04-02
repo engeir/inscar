@@ -9,7 +9,6 @@ from functools import partial
 
 import numpy as np
 import scipy.integrate as si
-
 from inputs import config as cf
 
 
@@ -58,9 +57,12 @@ def p(y, params):
     Returns:
         np.ndarray -- value of the `p` function
     """
-    k_perp = params['K_RADAR'] * np.sin(params['THETA'])
-    k_par = params['K_RADAR'] * np.cos(params['THETA'])
-    return (2 * k_perp**2 / params['w_c']**2 * (1 - np.cos(y * params['w_c'])) + k_par**2 * y**2)**.5
+    k_perp = params["K_RADAR"] * np.sin(params["THETA"])
+    k_par = params["K_RADAR"] * np.cos(params["THETA"])
+    return (
+        2 * k_perp ** 2 / params["w_c"] ** 2 * (1 - np.cos(y * params["w_c"]))
+        + k_par ** 2 * y ** 2
+    ) ** 0.5
 
 
 def shared_array(shape):

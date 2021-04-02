@@ -12,24 +12,25 @@ one of the pre-defined classes from `reproduce.py`.
 # the start method must be reset to 'fork'. See
 # https://tinyurl.com/yyxxfxst for more info.
 import multiprocessing as mp
-mp.set_start_method('fork')
+
+mp.set_start_method("fork")
 
 import matplotlib  # pylint: disable=C0413
 import matplotlib.pyplot as plt  # pylint: disable=C0413
 import numpy as np  # pylint: disable=C0413
-
 from plotting import hello_kitty as hk  # pylint: disable=C0413
 from plotting import reproduce  # pylint: disable=C0413
 from plotting.plot_class import PlotClass  # pylint: disable=C0413
 
-
 # Customize matplotlib
-matplotlib.rcParams.update({
-    'text.usetex': True,
-    'font.family': 'DejaVu Sans',
-    'axes.unicode_minus': False,
-    'pgf.texsystem': 'pdflatex'
-})
+matplotlib.rcParams.update(
+    {
+        "text.usetex": True,
+        "font.family": "DejaVu Sans",
+        "axes.unicode_minus": False,
+        "pgf.texsystem": "pdflatex",
+    }
+)
 
 
 class Simulation:
@@ -113,7 +114,7 @@ class Simulation:
         ```
         """
         # self.from_file = True
-        self.r.create_it('../figures/temp_ridge.npz', from_file=self.from_file)
+        self.r.create_it("../figures/temp_ridge.npz", from_file=self.from_file)
         self.f = self.r.f
         self.data = self.r.data
         self.legend_txt = self.r.legend_txt
@@ -150,21 +151,24 @@ class Simulation:
         self.r.plot_it()
 
     def save_handle(self, mode):
-        if mode == 'setUp':
-            if self.plot.save in ['y', 'yes']:
-                self.plot.save_it(self.f, self.data, self.legend_txt, self.ridge_txt, self.meta_data)
-        elif mode == 'tearDown':
-            if self.plot.save in ['y', 'yes']:
+        if mode == "setUp":
+            if self.plot.save in ["y", "yes"]:
+                self.plot.save_it(
+                    self.f, self.data, self.legend_txt, self.ridge_txt, self.meta_data
+                )
+        elif mode == "tearDown":
+            if self.plot.save in ["y", "yes"]:
                 self.plot.pdffig.close()
             plt.show()
 
     def run(self):
         self.create_data()
-        self.save_handle('setUp')
+        self.save_handle("setUp")
         self.plot_data()
-        self.save_handle('tearDown')
+        self.save_handle("tearDown")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     Simulation().run()
-    # hk.HelloKitty(1).run() $\label{lst:hk}$
+    if False:
+        hk.HelloKitty(1).run()  # $\label{lst:hk}$

@@ -7,10 +7,9 @@ import multiprocessing as mp
 from functools import partial
 
 import numpy as np
-import scipy.special as sps
 import scipy.constants as const
 import scipy.integrate as si
-
+import scipy.special as sps
 from inputs import config as cf
 
 
@@ -39,14 +38,14 @@ def integrate(m, T, nu, y, function, kappa=None):
     pool = mp.Pool()
     pool.map(func, idx)
     pool.close()
-    if function.the_type == 'kappa':  # $\label{lst:gordeyev_scale}$
-        a = array / (2**(kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
-    elif function.the_type == 'a_vdf':
+    if function.the_type == "kappa":  # $\label{lst:gordeyev_scale}$
+        a = array / (2 ** (kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
+    elif function.the_type == "a_vdf":
         # Characteristic velocity scaling
         a = 4 * np.pi * T * const.k * array / m * function.char_vel
     else:
         a = array
-    if function.the_type == 'a_vdf':
+    if function.the_type == "a_vdf":
         F = a
     else:
         F = 1 - (1j * cf.w + nu) * a
@@ -58,7 +57,7 @@ def parallel(y, f, index):
 
 
 def simpson(w, y, f):
-    val = np.exp(- 1j * w * y) * f
+    val = np.exp(-1j * w * y) * f
 
     sint = si.simps(val, y)
     return sint

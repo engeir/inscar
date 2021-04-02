@@ -1,23 +1,22 @@
 """Class containing two plotting styles used in `reproduce.py`.
 """
 
-import os
-import time
 import datetime
 import itertools
+import os
+import time
 
 import matplotlib.gridspec as grid_spec
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import scipy.signal as signal
 import si_prefix as sip
-
 from inputs import config as cf
+from matplotlib.backends.backend_pdf import PdfPages
+
 
 class PlotClass:
-    """Create a plot object to show the data created.
-    """
+    """Create a plot object to show the data created."""
 
     def __init__(self):
         """Make plots of an IS spectrum based on a variety of VDFs.
@@ -26,18 +25,32 @@ class PlotClass:
             plasma {bool} -- choose to plot only the part of the
                 spectrum where the plasma line is found (default: {False})
         """
-        self.save = input('Press "y/yes" to save plot, ' + \
-                          'any other key to dismiss.\t').lower()
+        self.save = input(
+            'Press "y/yes" to save plot, ' + "any other key to dismiss.\t"
+        ).lower()
         self.page = 1
         self.plasma = False
         self.pdffig = None
         self.save_path = None
         self.correct_inputs()
-        self.colors = ['k', 'magenta', 'royalblue', 'yellow',
-                       'chartreuse', 'firebrick', 'red', 'darkorange']
-        self.line_styles = ['-', '--', '-.', ':',
-                            (0, (3, 5, 1, 5, 1, 5)),
-                            (0, (3, 1, 1, 1, 1, 1))]
+        self.colors = [
+            "k",
+            "magenta",
+            "royalblue",
+            "yellow",
+            "chartreuse",
+            "firebrick",
+            "red",
+            "darkorange",
+        ]
+        self.line_styles = [
+            "-",
+            "--",
+            "-.",
+            ":",
+            (0, (3, 5, 1, 5, 1, 5)),
+            (0, (3, 1, 1, 1, 1, 1)),
+        ]
 
     def __setattr__(self, name, value):
         self.__dict__[name] = value
@@ -66,36 +79,53 @@ class PlotClass:
 
         If a figure is created from file, the same file name is used.
         """
-        version = ''
+        version = ""
         for d in params:
-            if 'version' in d:
+            if "version" in d:
                 if any(c.isalpha() for c in version):
                     version += f'_{d["version"][0]}'
                 else:
                     version += f'{d["version"][0]}'
         if self.save_path is None:
-            params.insert(0, {'F_MIN': cf.I_P['F_MIN'], 'F_MAX': cf.I_P['F_MAX'],
-                              'V_MAX': cf.V_MAX, 'F_N_POINTS': cf.F_N_POINTS,
-                              'Y_N_POINTS': cf.Y_N_POINTS, 'V_N_POINTS': cf.V_N_POINTS})
+            params.insert(
+                0,
+                {
+                    "F_MIN": cf.I_P["F_MIN"],
+                    "F_MAX": cf.I_P["F_MAX"],
+                    "V_MAX": cf.V_MAX,
+                    "F_N_POINTS": cf.F_N_POINTS,
+                    "Y_N_POINTS": cf.Y_N_POINTS,
+                    "V_N_POINTS": cf.V_N_POINTS,
+                },
+            )
         tt = time.localtime()
-        the_time = f'{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}'
-        save_path = '../../../report/master-thesis/figures/in_use'
+        the_time = f"{tt[0]}_{tt[1]}_{tt[2]}_{tt[3]}--{tt[4]}--{tt[5]}"
+        save_path = "../../../report/master-thesis/figures/in_use"
         if not os.path.exists(save_path):
-            save_path = '../figures'
+            save_path = "../figures"
             os.makedirs(save_path, exist_ok=True)
         if self.save_path is None:
-            self.save_path = f'{save_path}/{the_time}_{version}'
+            self.save_path = f"{save_path}/{the_time}_{version}"
         else:
-            self.save_path = save_path + '/' + self.save_path
-        np.savez(f'{self.save_path}', frequency=f, spectra=data, legend_txt=l_txt, ridge_txt=r_txt, meta=params)
-        self.pdffig = PdfPages(str(self.save_path) + '.pdf')
+            self.save_path = save_path + "/" + self.save_path
+        np.savez(
+            f"{self.save_path}",
+            frequency=f,
+            spectra=data,
+            legend_txt=l_txt,
+            ridge_txt=r_txt,
+            meta=params,
+        )
+        self.pdffig = PdfPages(str(self.save_path) + ".pdf")
         metadata = self.pdffig.infodict()
-        metadata['Title'] = f'ISR Spectrum w/ {version}'
-        metadata['Author'] = 'Eirik R. Enger'
-        metadata['Subject'] = f"IS spectrum made using a {version} distribution ' + \
+        metadata["Title"] = f"ISR Spectrum w/ {version}"
+        metadata["Author"] = "Eirik R. Enger"
+        metadata[
+            "Subject"
+        ] = f"IS spectrum made using a {version} distribution ' + \
                               'and Simpson's integration rule."
-        metadata['Keywords'] = f'{params}'
-        metadata['ModDate'] = datetime.datetime.today()
+        metadata["Keywords"] = f"{params}"
+        metadata["ModDate"] = datetime.datetime.today()
 
     def plot_normal(self, f, Is, func_type, l_txt):
         """Make a plot using `f` as `x` axis and `Is` as `y` axis.
@@ -111,52 +141,74 @@ class PlotClass:
         try:
             getattr(plt, func_type)
         except Exception:
-            print(f'{func_type} is not an attribute of the ' + \
-                  'matplotlib.pyplot object. Using "plot".')
-            func_type = 'plot'
+            print(
+                f"{func_type} is not an attribute of the "
+                + 'matplotlib.pyplot object. Using "plot".'
+            )
+            func_type = "plot"
         if len(Is) != len(l_txt):
-            print('Warning: The number of spectra does ' + \
-                  'not match the number of labels.')
+            print(
+                "Warning: The number of spectra does "
+                + "not match the number of labels."
+            )
         self.colors = np.linspace(0, 1, len(Is))
         Is = Is.copy()
         # TODO: should probably remove this
         # Linear plot show only ion line (kHz range).
-        if func_type == 'plot' and not self.plasma:
+        if func_type == "plot" and not self.plasma:
             f, Is = self.only_ionline(f, Is)
         p, freq, exp = self.scale_f(f)
         plt.figure(figsize=(6, 3))
         if self.plasma:
             # Clip the frequency axis around the plasma frequency.
-            mask = self.find_p_line(freq * 10**exp, Is)
+            mask = self.find_p_line(freq * 10 ** exp, Is)
             freq = freq[mask]
-        if func_type == 'semilogy':
-            plt.xlabel(f'Frequency [{p}Hz]')
-            plt.ylabel('Echo power [dB]')
+        if func_type == "semilogy":
+            plt.xlabel(f"Frequency [{p}Hz]")
+            plt.ylabel("Echo power [dB]")
             for i, _ in enumerate(Is):
                 Is[i] = 10 * np.log10(Is[i])
         else:
-            plt.xlabel(f'Frequency [{p}Hz]')
-            plt.ylabel('Echo power')
-        for clr, st, s, lab in zip(itertools.cycle(self.colors), itertools.cycle(self.line_styles), Is, l_txt):
+            plt.xlabel(f"Frequency [{p}Hz]")
+            plt.ylabel("Echo power")
+        for clr, st, s, lab in zip(
+            itertools.cycle(self.colors), itertools.cycle(self.line_styles), Is, l_txt
+        ):
             if self.plasma:
                 s = s[mask]
-            if func_type == 'semilogy':
-                plt.plot(freq, s, linestyle=st, alpha=.7, color=(clr, 0., 0.),  # color=clr,
-                         linewidth=.8, label=lab)
+            if func_type == "semilogy":
+                plt.plot(
+                    freq,
+                    s,
+                    linestyle=st,
+                    alpha=0.7,
+                    color=(clr, 0.0, 0.0),  # color=clr,
+                    linewidth=0.8,
+                    label=lab,
+                )
             else:
                 plot_object = getattr(plt, func_type)
-                plot_object(freq, s, linestyle=st, alpha=.7, color=(clr, 0., 0.),  # color=clr,
-                            linewidth=.8, label=lab)
+                plot_object(
+                    freq,
+                    s,
+                    linestyle=st,
+                    alpha=0.7,
+                    color=(clr, 0.0, 0.0),  # color=clr,
+                    linewidth=0.8,
+                    label=lab,
+                )
 
         plt.legend()
         plt.minorticks_on()
         plt.grid(True, which="major", ls="-", alpha=0.4)
         plt.tight_layout()
 
-        if self.save in ['y', 'yes']:
+        if self.save in ["y", "yes"]:
             self.pdffig.attach_note(func_type)
-            plt.savefig(self.pdffig, bbox_inches='tight', format='pdf', dpi=600)
-            plt.savefig(str(self.save_path) + f'_page_{self.page}.pgf', bbox_inches='tight')
+            plt.savefig(self.pdffig, bbox_inches="tight", format="pdf", dpi=600)
+            plt.savefig(
+                str(self.save_path) + f"_page_{self.page}.pgf", bbox_inches="tight"
+            )
             self.page += 1
 
     def plot_ridge(self, frequency, multi_parameters, func_type, l_txt, ridge_txt=None):
@@ -180,22 +232,26 @@ class PlotClass:
         try:
             getattr(plt, func_type)
         except Exception:
-            print(f'{func_type} is not an attribute of the ' + \
-                  'matplotlib.pyplot object. Using "plot".')
-            func_type = 'plot'
+            print(
+                f"{func_type} is not an attribute of the "
+                + 'matplotlib.pyplot object. Using "plot".'
+            )
+            func_type = "plot"
         if len(multi_parameters) != len(ridge_txt):
-            print('Warning: The list of spectra lists is not of the same ' + \
-                  'length as the length of "ridge_txt"')
+            print(
+                "Warning: The list of spectra lists is not of the same "
+                + 'length as the length of "ridge_txt"'
+            )
             if len(multi_parameters) > len(ridge_txt):
                 for _ in range(len(multi_parameters) - len(ridge_txt)):
-                    ridge_txt.append('')
+                    ridge_txt.append("")
         f_original = frequency.copy()
         multi_params = multi_parameters.copy()
         # Reverse the order to put the first elements at the bottom of the figure
         multi_params.reverse()
         ridge_txt = ridge_txt.copy()
         if ridge_txt is None:
-            ridge_txt = ['' for _ in multi_params]
+            ridge_txt = ["" for _ in multi_params]
         else:
             ridge_txt.reverse()
         gs = grid_spec.GridSpec(len(multi_params), 1)
@@ -204,46 +260,67 @@ class PlotClass:
         Rgb = np.linspace(0, 1, len(multi_params))
         for j, params in enumerate(multi_params):
             if len(params) != len(l_txt):
-                print('Warning: The number of spectra ' + \
-                      'does not match the number of labels.')
+                print(
+                    "Warning: The number of spectra "
+                    + "does not match the number of labels."
+                )
             # f is reset due to the scaling of 'plot' below
             f = f_original
             # Linear plot show only ion line (kHz range).
-            if func_type == 'plot' and not self.plasma:
+            if func_type == "plot" and not self.plasma:
                 f, params = self.only_ionline(f, params)
             p, freq, exp = self.scale_f(f)
             if self.plasma:
-                mask = self.find_p_line(freq * 10**exp, params)
+                mask = self.find_p_line(freq * 10 ** exp, params)
                 freq = freq[mask]
             # Make a new subplot / ridge
-            ax_objs.append(fig.add_subplot(gs[j:j + 1, 0:]))
+            ax_objs.append(fig.add_subplot(gs[j : j + 1, 0:]))
             first = 0
             for st, s, lab in zip(itertools.cycle(self.line_styles), params, l_txt):
                 if self.plasma:
                     s = s[mask]
                 plot_object = getattr(ax_objs[-1], func_type)
-                plot_object(freq, s, color=(Rgb[j], 0., 1 - Rgb[j]), linewidth=1, label=lab, linestyle=st)
+                plot_object(
+                    freq,
+                    s,
+                    color=(Rgb[j], 0.0, 1 - Rgb[j]),
+                    linewidth=1,
+                    label=lab,
+                    linestyle=st,
+                )
                 if first == 0:
                     idx = np.argwhere(freq > ax_objs[-1].viewLim.x0)[0]
                     legend_pos = (ax_objs[-1].viewLim.x1, np.max(s))
                     y0 = s[idx]
-                    ax_objs[-1].text(freq[idx], s[idx], ridge_txt[j],
-                                     fontsize=14, ha="right", va='bottom')
+                    ax_objs[-1].text(
+                        freq[idx],
+                        s[idx],
+                        ridge_txt[j],
+                        fontsize=14,
+                        ha="right",
+                        va="bottom",
+                    )
                 first += 1
                 if j == 0:
-                    plt.legend(loc='upper right', bbox_to_anchor=legend_pos, bbox_transform=ax_objs[-1].transData)
+                    plt.legend(
+                        loc="upper right",
+                        bbox_to_anchor=legend_pos,
+                        bbox_transform=ax_objs[-1].transData,
+                    )
 
-            if func_type == 'plot':
+            if func_type == "plot":
                 # Make a vertical line of comparable size in all plots.
                 self.match_box(f_original, freq, multi_params, [y0, j])
 
             self.remove_background(ax_objs[-1], multi_params, j, p)
 
         gs.update(hspace=-0.6)
-        if self.save in ['y', 'yes']:
+        if self.save in ["y", "yes"]:
             self.pdffig.attach_note(func_type)
-            plt.savefig(self.pdffig, bbox_inches='tight', format='pdf', dpi=600)
-            plt.savefig(str(self.save_path) + f'_page_{self.page}.pgf', bbox_inches='tight')
+            plt.savefig(self.pdffig, bbox_inches="tight", format="pdf", dpi=600)
+            plt.savefig(
+                str(self.save_path) + f"_page_{self.page}.pgf", bbox_inches="tight"
+            )
             self.page += 1
 
     @staticmethod
@@ -253,13 +330,15 @@ class PlotClass:
         rect.set_alpha(0)
         # Remove borders, axis ticks and labels
         plt_obj.set_yticklabels([])
-        plt.tick_params(axis='y', which='both', left=False,
-                        right=False, labelleft=False)
+        plt.tick_params(
+            axis="y", which="both", left=False, right=False, labelleft=False
+        )
         if j == len(multi_params) - 1:
-            plt.xlabel(f'Frequency [{p}Hz]')
+            plt.xlabel(f"Frequency [{p}Hz]")
         else:
-            plt.tick_params(axis='x', which='both', bottom=False,
-                            top=False, labelbottom=False)
+            plt.tick_params(
+                axis="x", which="both", bottom=False, top=False, labelbottom=False
+            )
 
         spines = ["top", "right", "left", "bottom"]
         for sp in spines:
@@ -278,7 +357,7 @@ class PlotClass:
         """
         freq = np.copy(frequency)
         exp = sip.split(np.max(freq))[1]
-        freq /= 10**exp
+        freq /= 10 ** exp
         pre = sip.prefix(exp)
         return pre, freq, exp
 
@@ -305,7 +384,7 @@ class PlotClass:
             # Assumes that the rightmost peak (highest frequency) is the plasma line
             p = signal.find_peaks(spec, height=10)[0][-1]
         except Exception:
-            print('Warning: did not find any plasma line')
+            print("Warning: did not find any plasma line")
             return freq < np.inf
         f = freq[p]
 
@@ -341,7 +420,7 @@ class PlotClass:
                 first is the index for the ridge
         """
         multi_params = multi_parameters.copy()
-        v_line_x = np.linspace(.04, .2, len(multi_params))
+        v_line_x = np.linspace(0.04, 0.2, len(multi_params))
         if self.plasma:
             f = freq_original.copy()
             spec = multi_params[0]
@@ -359,6 +438,18 @@ class PlotClass:
                 diff = plot_diff
 
         x0 = np.min(freq) + (np.max(freq) - np.min(freq)) * v_line_x[args[1]]
-        plt.vlines(x=x0, ymin=args[0], ymax=args[0] + int(np.ceil(diff / 10) * 5), color='k', linewidth=3)
-        plt.text(x0, args[0] + int(np.ceil(diff / 10) * 5) / 2,
-                 r'${}$'.format(int(np.ceil(diff / 10) * 5)), rotation=90, ha='right', va='center')
+        plt.vlines(
+            x=x0,
+            ymin=args[0],
+            ymax=args[0] + int(np.ceil(diff / 10) * 5),
+            color="k",
+            linewidth=3,
+        )
+        plt.text(
+            x0,
+            args[0] + int(np.ceil(diff / 10) * 5) / 2,
+            r"${}$".format(int(np.ceil(diff / 10) * 5)),
+            rotation=90,
+            ha="right",
+            va="center",
+        )
