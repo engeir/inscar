@@ -15,7 +15,7 @@ if os.path.basename(os.path.realpath(sys.argv[0])) != "main.py":
     Y_N_POINTS = 1e1
     V_N_POINTS = 1e1
 else:
-    F_N_POINTS = 1e4  # Number of sample points in frequency, $N_f$
+    F_N_POINTS = 1e5  # Number of sample points in frequency, $N_f$
     Y_N_POINTS = 8e4  # Number of sample points in integral variable, $N_y$
     V_N_POINTS = 4e4  # Number of sample points in velocity integral variable, $N_v$
 # Adds one sample to get an even number of bins, which in
@@ -28,7 +28,7 @@ Y_MAX_i = 1.5e-2
 V_MAX = 6e6
 ORDER = 3
 
-I_P = {"F_MIN": 2.5e6, "F_MAX": 9.5e6}
+I_P = {"F_MIN": -2e6, "F_MAX": 2e6}
 f = np.linspace(I_P["F_MIN"], I_P["F_MAX"], int(F_N_POINTS))
 f = (f / I_P["F_MAX"]) ** 1 * I_P["F_MAX"]
 w = 2 * np.pi * f  # Angular frequency

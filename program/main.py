@@ -42,9 +42,9 @@ class Simulation:
         self.legend_txt = []
         self.ridge_txt = []
         self.plot = PlotClass()
-        self.r = reproduce.PlotNumerical(self.plot)  # $\label{lst:spectra}$
+        # self.r = reproduce.PlotNumerical(self.plot)  # $\label{lst:spectra}$
         # self.r = reproduce.PlotTestDebye(self.plot)
-        # self.r = reproduce.PlotSpectra(self.plot)
+        self.r = reproduce.PlotSpectra(self.plot)
         # self.r = reproduce.PlotIonLine(self.plot)
         # self.r = reproduce.PlotPlasmaLine(self.plot)
         # self.r = reproduce.PlotTemperature(self.plot)
