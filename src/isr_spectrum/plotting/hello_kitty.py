@@ -15,12 +15,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
-from inputs import config as cf
 from lmfit.models import LorentzianModel
 from matplotlib import gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 from tqdm import tqdm
-from utils import spectrum_calculation as isr
+
+from isr_spectrum.inputs import config as cf
+from isr_spectrum.utils import spectrum_calculation as isr
 
 # Customize matplotlib
 matplotlib.rcParams.update(

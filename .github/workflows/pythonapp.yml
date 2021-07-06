@@ -16,7 +16,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        # pip install -r requirements.txt
+        python -m pip install poetry
+        python -m poetry install
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -26,5 +28,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with unittest
       run: |
-        cd program
-        python -m unittest test.test_ISR -b
+        python -m poetry run python -m unittest tests.test_ISR -b
+        # python -m unittest tests.test_ISR -b

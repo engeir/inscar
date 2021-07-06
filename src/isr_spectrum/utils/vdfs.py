@@ -11,7 +11,8 @@ import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
-from utils import read
+
+from isr_spectrum.utils import read
 
 
 class VDF(ABC):

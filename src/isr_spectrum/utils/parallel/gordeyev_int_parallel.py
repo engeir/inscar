@@ -10,7 +10,8 @@ import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
-from inputs import config as cf
+
+from isr_spectrum.inputs import config as cf
 
 
 def integrate(m, T, nu, y, function, kappa=None):

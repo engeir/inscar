@@ -9,7 +9,8 @@ from functools import partial
 
 import numpy as np
 import scipy.integrate as si
-from inputs import config as cf
+
+from isr_spectrum.inputs import config as cf
 
 
 def integrand(y, params, v, f):

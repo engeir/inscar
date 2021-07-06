@@ -27,7 +27,7 @@ matplotlib.rcParams.update(
 )
 
 if __name__ != "__main__":
-    from utils import spectrum_calculation as isr
+    from isr_spectrum.utils import spectrum_calculation as isr
 
 
 class Reproduce(ABC):

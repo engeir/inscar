@@ -14,8 +14,9 @@ import unittest  # pylint: disable=C0413
 import numpy as np  # pylint: disable=C0413
 import scipy.constants as const  # pylint: disable=C0413
 import scipy.integrate as si  # pylint: disable=C0413
-from utils import spectrum_calculation as isr  # pylint: disable=C0413
-from utils import vdfs  # pylint: disable=C0413
+
+from isr_spectrum.utils import spectrum_calculation as isr  # pylint: disable=C0413
+from isr_spectrum.utils import vdfs  # pylint: disable=C0413
 
 
 class TestISR(unittest.TestCase):
