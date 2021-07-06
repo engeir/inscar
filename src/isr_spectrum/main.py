@@ -1,15 +1,13 @@
 """Main script for controlling the calculation of the IS spectrum.
 
-Calculate spectra from specified parameters as shown in the
-examples given in the class methods, create a new set-up with
-the `Reproduce` abstract base class in `reproduce.py` or use
-one of the pre-defined classes from `reproduce.py`.
+Calculate spectra from specified parameters as shown in the examples given in the class
+methods, create a new set-up with the `Reproduce` abstract base class in `reproduce.py` or
+use one of the pre-defined classes from `reproduce.py`.
 """
 
-# The start method of the multiprocessing module was changed from python3.7
-# to python3.8. Instead of using 'fork', 'spawn' is the new default.
-# To be able to use global variables across all parallel processes,
-# the start method must be reset to 'fork'. See
+# The start method of the multiprocessing module was changed from python3.7 to python3.8
+# (macOS). Instead of using 'fork', 'spawn' is the new default.  To be able to use global
+# variables across all parallel processes, the start method must be reset to 'fork'. See
 # https://tinyurl.com/yyxxfxst for more info.
 import multiprocessing as mp
 
@@ -18,15 +16,16 @@ mp.set_start_method("fork")
 import matplotlib  # pylint: disable=C0413
 import matplotlib.pyplot as plt  # pylint: disable=C0413
 import numpy as np  # pylint: disable=C0413
-from plotting import hello_kitty as hk  # pylint: disable=C0413
-from plotting import reproduce  # pylint: disable=C0413
-from plotting.plot_class import PlotClass  # pylint: disable=C0413
+
+from isr_spectrum.plotting import hello_kitty as hk
+from isr_spectrum.plotting import reproduce
+from isr_spectrum.plotting.plot_class import PlotClass
 
 # Customize matplotlib
 matplotlib.rcParams.update(
     {
         "text.usetex": True,
-        "font.family": "DejaVu Sans",
+        "font.family": "serif",
         "axes.unicode_minus": False,
         "pgf.texsystem": "pdflatex",
     }
@@ -168,7 +167,11 @@ class Simulation:
         self.save_handle("tearDown")
 
 
-if __name__ == "__main__":
+def main():
     Simulation().run()
     if False:
         hk.HelloKitty(1).run()  # $\label{lst:hk}$
+
+
+if __name__ == "__main__":
+    main()

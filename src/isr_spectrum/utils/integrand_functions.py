@@ -7,9 +7,10 @@ import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
-from inputs import config as cf
-from utils import vdfs
-from utils.parallel import v_int_parallel
+
+from isr_spectrum.inputs import config as cf
+from isr_spectrum.utils import vdfs
+from isr_spectrum.utils.parallel import v_int_parallel
 
 
 class INTEGRAND(ABC):
