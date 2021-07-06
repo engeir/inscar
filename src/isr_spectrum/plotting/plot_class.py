@@ -11,8 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal as signal
 import si_prefix as sip
-from inputs import config as cf
 from matplotlib.backends.backend_pdf import PdfPages
+
+from isr_spectrum.inputs import config as cf
 
 
 class PlotClass:
