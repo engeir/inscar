@@ -28,7 +28,13 @@ The program is built using `python3.8` and tested on **macOS** and **ubuntu20.10
 Clone the repository using `git clone https://github.com/engeir/isr-spectrum.git` or
 download the latest release,
 [v1.0](https://github.com/engeir/isr_spectrum/archive/v1.0.zip). Dependencies are handled
-by `poetry`, to install using `poetry`, run
+by [`poetry`](https://python-poetry.org/), which can be installed with
+
+```sh
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+```
+
+To install using `poetry`, run
 ```sh
 poetry install
 ```
@@ -82,7 +88,7 @@ distribution, in addition to any arbitrary isotropic distribution.
 
 The version that determine the calculation method is described in
 [`spectrum_calculation.py`](src/isr_spectrum/utils/spectrum_calculation.py), in the docstring of
-the function [`isr_spectrum`](src/isr_spectrum/utils/spectrum_calculation.py#L17), with additional
+the function [`isr_spectrum`](src/isr_spectrum/utils/spectrum_calculation.py#L18), with additional
 keyword arguments.
 
 ## File structure <a name = "structure"></a>
