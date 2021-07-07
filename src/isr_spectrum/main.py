@@ -114,7 +114,7 @@ class Simulation:
         ```
         """
         # self.from_file = True
-        if self.from_file == False:
+        if self.from_file is False:
             print(
                 f"Parallelising integral using the {'numba' if cf.NJIT else 'multiprocessing'} module."
             )

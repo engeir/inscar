@@ -11,8 +11,8 @@ import scipy.integrate as si
 
 from isr_spectrum.inputs import config as cf
 from isr_spectrum.utils import integrand_functions as intf
-from isr_spectrum.utils.parallel import gordeyev_int_parallel
 from isr_spectrum.utils.njit import gordeyev_njit
+from isr_spectrum.utils.parallel import gordeyev_int_parallel
 
 
 def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False, debye=None):
