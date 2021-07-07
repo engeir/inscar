@@ -10,6 +10,7 @@ import scipy.special as sps
 
 from isr_spectrum.inputs import config as cf
 from isr_spectrum.utils import vdfs
+from isr_spectrum.utils.njit import gordeyev_njit
 from isr_spectrum.utils.parallel import v_int_parallel
 
 
@@ -170,7 +171,18 @@ class INT_LONG(INTEGRAND):
             self.y, self.params, v, vdfs.F_MAXWELL(v, self.params).f_0()
         )
         int_maxwell = si.simps(res_maxwell, self.y)
-        res = v_int_parallel.integrand(self.y, self.params, v, f.f_0())
+        if cf.NJIT:
+            v_func = f.f_0()
+            res = gordeyev_njit.integrate_velocity(
+                self.y,
+                v,
+                v_func,
+                self.params["K_RADAR"],
+                self.params["THETA"],
+                self.params["w_c"],
+            )
+        else:
+            res = v_int_parallel.integrand(self.y, self.params, v, f.f_0())
         int_res = si.simps(res, self.y)
         # The scaling of the factor describing the characteristic velocity
         self.char_vel = int_maxwell / int_res

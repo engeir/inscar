@@ -12,6 +12,7 @@ import scipy.integrate as si
 from isr_spectrum.inputs import config as cf
 from isr_spectrum.utils import integrand_functions as intf
 from isr_spectrum.utils.parallel import gordeyev_int_parallel
+from isr_spectrum.utils.njit import gordeyev_njit
 
 
 def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False, debye=None):
@@ -67,9 +68,25 @@ def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False, debye=No
     )
     f_ion = intf.INT_MAXWELL()
     f_ion.initialize(y, params)
-    Fi = gordeyev_int_parallel.integrate(
-        M_i, sys_set["T_I"], sys_set["NU_I"], y, function=f_ion, kappa=kappa
-    )
+    if kappa is None:
+        kappa = 1
+    else:
+        pass
+    if cf.NJIT:
+        Fi = gordeyev_njit.integrate(
+            M_i,
+            sys_set["T_I"],
+            sys_set["NU_I"],
+            y,
+            function=f_ion,  # .integrand(),
+            the_type=f_ion.the_type,
+            # char_vel=char_vel,
+            kappa=kappa,
+        )
+    else:
+        Fi = gordeyev_int_parallel.integrate(
+            M_i, sys_set["T_I"], sys_set["NU_I"], y, function=f_ion, kappa=kappa
+        )
 
     # Electrons
     params = {
@@ -93,9 +110,21 @@ def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False, debye=No
         ** cf.ORDER
     )
     func.initialize(y, params)
-    Fe = gordeyev_int_parallel.integrate(
-        const.m_e, sys_set["T_E"], sys_set["NU_E"], y, function=func, kappa=kappa
-    )
+    if cf.NJIT:
+        Fe = gordeyev_njit.integrate(
+            const.m_e,
+            sys_set["T_E"],
+            sys_set["NU_E"],
+            y,
+            function=func,
+            the_type=func.the_type,
+            # char_vel=char_vel,
+            kappa=kappa,
+        )
+    else:
+        Fe = gordeyev_int_parallel.integrate(
+            const.m_e, sys_set["T_E"], sys_set["NU_E"], y, function=func, kappa=kappa
+        )
 
     Xp_i = np.sqrt(
         1

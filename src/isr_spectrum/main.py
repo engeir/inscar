@@ -17,6 +17,7 @@ import matplotlib  # pylint: disable=C0413
 import matplotlib.pyplot as plt  # pylint: disable=C0413
 import numpy as np  # pylint: disable=C0413
 
+import isr_spectrum.inputs.config as cf
 from isr_spectrum.plotting import hello_kitty as hk
 from isr_spectrum.plotting import reproduce
 from isr_spectrum.plotting.plot_class import PlotClass
@@ -113,6 +114,10 @@ class Simulation:
         ```
         """
         # self.from_file = True
+        if self.from_file == False:
+            print(
+                f"Parallelising integral using the {'numba' if cf.NJIT else 'multiprocessing'} module."
+            )
         self.r.create_it("../figures/temp_ridge.npz", from_file=self.from_file)
         self.f = self.r.f
         self.data = self.r.data

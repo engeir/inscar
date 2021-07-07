@@ -78,9 +78,11 @@ def integrate_velocity(y, v, f, k_r, theta, w_c):
 @nb.njit
 def p(y, k_r, theta, w_c):
     """From Mace [2003].
+
     Args:
         y {np.ndarray} -- parameter from Gordeyev integral
         params {dict} -- plasma parameters
+
     Returns:
         np.ndarray -- value of the `p` function
     """

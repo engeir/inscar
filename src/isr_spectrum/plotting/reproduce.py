@@ -293,7 +293,10 @@ class PlotSpectra(Reproduce):
             "mat_file": "fe_zmuE-07.mat",
         }
         params = {"kappa": 20, "vdf": "real_data", "area": False}
+        t0 = time.perf_counter()
         self.f, s, meta_data = isr.isr_spectrum("maxwell", sys_set, **params)
+        t1 = time.perf_counter()
+        print(f"Took {t1-t0:.2f} seconds.")
         self.data.append(s)
         for k in kappa:
             params["kappa"] = k

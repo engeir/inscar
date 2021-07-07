@@ -49,6 +49,8 @@ def interpolate_data(v, params):
         energies = read_dat_file("E4fe.dat")
     else:
         path = "data/arecibo/"
+        if not os.path.exists(path):
+            path = "src/isr_spectrum/data/arecibo/"
         x = loadmat(path + params["mat_file"])
         data = x["fe_zmuE"]
         if isinstance(params["pitch_angle"], list):

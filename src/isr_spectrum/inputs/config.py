@@ -6,6 +6,10 @@ import sys
 
 import numpy as np
 
+# Set parallel version: defaults to the njit implementation. `False` will use the
+# multiprocessing module.
+NJIT = True
+
 # Check if a test is running. Potential paths are
 # ['pytest.py', 'pytest', 'test_ISR.py', '__main__.py', 'python3.7 -m unittest']
 # or check if 'main.py' was used.
