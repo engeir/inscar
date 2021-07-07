@@ -5,6 +5,7 @@ Run from `main.py`.
 """
 
 import sys
+import time
 from abc import ABC, abstractmethod
 
 import matplotlib
@@ -296,7 +297,10 @@ class PlotSpectra(Reproduce):
         self.data.append(s)
         for k in kappa:
             params["kappa"] = k
+            t0 = time.perf_counter()
             self.f, s, meta_data = isr.isr_spectrum("kappa", sys_set, **params)
+            t1 = time.perf_counter()
+            print(f"Took {t1-t0:.2f} seconds.")
             self.data.append(s)
         meta_data["version"] = "both"
         self.meta_data.append(meta_data)
