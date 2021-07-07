@@ -25,10 +25,16 @@ Calculates an incoherent scatter radar spectrum based on the theory presented in
 
 The program is built using `python3.9.2` and tested on **macOS** and **ubuntu20.10**.
 
-Clone the repository using `git clone https://github.com/engeir/isr-spectrum.git` or
-download the latest release,
-[v2.0.0](https://github.com/engeir/isr-spectrum/archive/refs/tags/v2.0.0.zip). Dependencies are handled
-by [`poetry`](https://python-poetry.org/), which can be installed with
+Clone the repository using
+
+```sh
+git clone --depth=1 https://github.com/engeir/isr-spectrum.git
+```
+
+or download the latest release,
+[v2.0.0](https://github.com/engeir/isr-spectrum/archive/refs/tags/v2.0.0.zip).
+Dependencies are handled by [`poetry`](https://python-poetry.org/), which can be installed
+with
 
 ```sh
 curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
