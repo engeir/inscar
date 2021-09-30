@@ -1,4 +1,4 @@
-name: ISR spectrum
+name: Tests
 
 on: [push]
 
