@@ -77,6 +77,10 @@ class Reproduce(ABC):
             elif len(args) == 2:
                 path = args[0]
                 name = args[1]
+            else:
+                raise ValueError(
+                    "Too many arguments. Accepts zero, one or two arguments."
+                )
         else:
             path = "../../figures/"
             name = "hello_kitty_2020_6_9_2--28--4.npz"
@@ -639,6 +643,10 @@ class PlotHK:
             elif len(args) == 2:
                 path = args[0]
                 self.name = args[1]
+            else:
+                raise ValueError(
+                    "Too many arguments. Accepts zero, one or two arguments."
+                )
         else:
             path = "../../figures/"
             # Old
