@@ -122,7 +122,7 @@ class PlotNumerical(Reproduce):
 
     def create_from_code(self):
         F0 = 430e6
-        K_RADAR = -2 * F0 * 2 * np.pi / const.c  # Radar wavenumber
+        K_RADAR = -2 * F0 * 2 * np.pi / const.c
         sys_set = {
             "K_RADAR": K_RADAR,
             "B": 35000e-9,
@@ -139,10 +139,8 @@ class PlotNumerical(Reproduce):
             "pitch_angle": "all",
         }
         params = {"kappa": 3, "vdf": "maxwell", "area": False}
-
-        ridge = []
         self.f, s1, meta_data = isr.isr_spectrum("maxwell", sys_set, **params)
-        ridge.append(s1)
+        ridge = [s1]
         self.meta_data.append(meta_data)
         _, s2, _ = isr.isr_spectrum("a_vdf", sys_set, **params)
         ridge.append(s2)
@@ -204,8 +202,10 @@ class PlotNumerical(Reproduce):
             self.p.pdffig.attach_note("numerical precision test")
             plt.savefig(self.p.pdffig, bbox_inches="tight", format="pdf", dpi=600)
             plt.savefig(
-                str(self.p.save_path) + f"_page_{self.p.page}.pgf", bbox_inches="tight"
+                f'{str(self.p.save_path)}_page_{self.p.page}.pgf',
+                bbox_inches="tight",
             )
+
             self.p.page += 1
 
 
@@ -510,10 +510,9 @@ class PlotTemperature(Reproduce):
         params = {"kappa": 8, "vdf": "real_data", "area": False}
         kappa = [20, 3]
         for t in T:
-            ridge = []
             sys_set["T_E"] = t
             self.f, s, meta_data = isr.isr_spectrum("maxwell", sys_set, **params)
-            ridge.append(s)
+            ridge = [s]
             for k in kappa:
                 params["kappa"] = k
                 self.f, s, meta_data = isr.isr_spectrum("kappa", sys_set, **params)
@@ -543,8 +542,10 @@ class PlotTemperature(Reproduce):
             self.p.pdffig.attach_note("freq change")
             plt.savefig(self.p.pdffig, bbox_inches="tight", format="pdf", dpi=600)
             plt.savefig(
-                str(self.p.save_path) + f"_page_{self.p.page}.pgf", bbox_inches="tight"
+                f'{str(self.p.save_path)}_page_{self.p.page}.pgf',
+                bbox_inches="tight",
             )
+
             self.p.page += 1
 
 
@@ -565,7 +566,7 @@ class PlotHKExtremes(Reproduce):
 
     def create_from_code(self):
         F0 = 430e6
-        K_RADAR = -2 * F0 * 2 * np.pi / const.c  # Radar wavenumber
+        K_RADAR = -2 * F0 * 2 * np.pi / const.c
         sys_set = {
             "K_RADAR": K_RADAR,
             "B": 35000e-9,
@@ -582,11 +583,9 @@ class PlotHKExtremes(Reproduce):
             "pitch_angle": list(range(10)),
         }
         params = {"kappa": 8, "vdf": "real_data", "area": False}
-        # Ridge 1
-        ridge = []
         # Line 1
         self.f, s, meta_data = isr.isr_spectrum("a_vdf", sys_set, **params)
-        ridge.append(s)
+        ridge = [s]
         self.meta_data.append(meta_data)
         # Line 2
         sys_set["NE"] = 1e12
