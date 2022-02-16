@@ -1,5 +1,4 @@
-"""Class containing two plotting styles used in `reproduce.py`.
-"""
+"""Class containing two plotting styles used in `reproduce.py`."""
 
 import datetime
 import itertools
