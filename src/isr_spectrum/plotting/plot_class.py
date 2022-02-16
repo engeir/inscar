@@ -1,5 +1,4 @@
-"""Class containing two plotting styles used in `reproduce.py`.
-"""
+"""Class containing two plotting styles used in `reproduce.py`."""
 
 import datetime
 import itertools
@@ -31,7 +30,7 @@ class PlotClass:
         ).lower()
         self.page = 1
         self.plasma = False
-        self.pdffig = None
+        self.pdffig: PdfPages
         self.save_path = None
         self.correct_inputs()
         self.colors = [

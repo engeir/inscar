@@ -5,9 +5,12 @@
 [![release](https://img.shields.io/github/release/engeir/isr_spectrum.svg)](https://github.com/engeir/isr_spectrum/releases/latest)
 [![DOI](https://zenodo.org/badge/233043566.svg)](https://zenodo.org/badge/latestdoi/233043566)
 ![Tests](https://github.com/engeir/isr_spectrum/workflows/ISR%20spectrum/badge.svg)
+[![codecov](https://codecov.io/gh/engeir/isr-spectrum/branch/master/graph/badge.svg?token=P8S18UILSB)](https://codecov.io/gh/engeir/isr-spectrum)
 ![CodeQL](https://github.com/engeir/isr_spectrum/workflows/CodeQL/badge.svg)
 
 </div>
+
+![isr-spectrum](./docs/img/normal_is_spectra.png)
 
 ---
 

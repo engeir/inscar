@@ -10,9 +10,7 @@ import numpy as np
 # multiprocessing module.
 NJIT = False
 
-# Check if a test is running. Potential paths are
-# ['pytest.py', 'pytest', 'test_ISR.py', '__main__.py', 'python3.7 -m unittest']
-# or check if 'main.py' was used.
+# Check if a test is running.
 if os.path.basename(os.path.realpath(sys.argv[0])) != "main.py":
     # DO NOT EDIT
     F_N_POINTS = 1e1

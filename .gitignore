@@ -8,6 +8,8 @@ __pycache__
 **/arecibo2
 **/Arecibo-photo-electrons
 **/figures
+.python-version
+coverage.xml
 
 # Compiled source #
 ###################
