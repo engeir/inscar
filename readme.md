@@ -9,6 +9,8 @@
 
 </div>
 
+![isr-spectrum](./docs/img/normal_is_spectra.png)
+
 ---
 
 ## Contents
