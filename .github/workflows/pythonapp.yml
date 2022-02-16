@@ -28,5 +28,15 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with unittest
       run: |
-        python -m poetry run python -m unittest tests.test_ISR -b
-        # python -m unittest tests.test_ISR -b
+        poetry run pytest --cov=./ --cov-report=xml
+
+    - name: Coverage upload
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+        directory: ./coverage/reports/
+        files: ./coverage.xml # optional
+        # flags: unittests # optional
+        name: codecov-umbrella # optional
+        # fail_ci_if_error: true # optional (default = false)
+        verbose: true # optional (default = false)
