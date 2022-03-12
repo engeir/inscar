@@ -21,19 +21,19 @@ repos:
     entry: poetry run black src
     types: [python]
 
-  - id: flake8
-    name: flake8
-    stages: [commit]
-    language: system
-    entry: poetry run flake8 src
-    types: [python]
-    exclude: setup.py
-
-  - id: pytest
-    name: pytest
-    stages: [commit]
-    language: system
-    entry: poetry run pytest tests
-    types: [python]
-    pass_filenames: false
-
+  # - id: flake8
+  #   name: flake8
+  #   stages: [commit]
+  #   language: system
+  #   entry: poetry run flake8 src
+  #   types: [python]
+  #   exclude: setup.py
+  #
+  # - id: pytest
+  #   name: pytest
+  #   stages: [commit]
+  #   language: system
+  #   entry: poetry run pytest tests
+  #   types: [python]
+  #   pass_filenames: false
+  #

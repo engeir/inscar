@@ -15,6 +15,139 @@ from isr_spectrum.utils.njit import gordeyev_njit
 from isr_spectrum.utils.parallel import gordeyev_int_parallel
 
 
+class SpectrumCalculation:
+    """Class containing the calculation of the power density spectrum."""
+
+    def __init__(self):
+        self.i_int_func = intf.INT_MAXWELL()
+        self.e_int_func = intf.INT_MAXWELL()
+        self.params: dict
+        self.numba = True
+
+    def set_params(self, params) -> None:
+        self.params = params
+
+    def set_electron_integrand_function(self, int_func) -> None:
+        self.e_int_func = int_func
+
+    def set_ion_integrand_function(self, int_func) -> None:
+        self.i_int_func = int_func
+
+    def calculate_spectrum(self) -> tuple[np.ndaarray, np.ndarray]:
+        if not hasattr(self, "params"):
+            raise ValueError("No parameters set.")
+        wc_e = w_e_gyro(np.linalg.norm(self.params["B"], 2))
+        wc_i = w_ion_gyro(np.linalg.norm(self.params["B"], 2), m_i)
+
+        fi, fe = self._calulate_f_functions()
+
+        xp_i = self._susceptibility(self.e_int_func.the_type, self.e_int_func.kappa)
+        xp_e = self._susceptibility(self.e_int_func.the_type, self.e_int_func.kappa)
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            isr = (
+                self.params["NE"]
+                / (np.pi * cf.w)
+                * (
+                    np.imag(-fe) * abs(1 + 2 * xp_i ** 2 * fi) ** 2
+                    + (4 * xp_e ** 4 * np.imag(-fi) * abs(fe) ** 2)
+                )
+                / abs(1 + 2 * xp_e ** 2 * fe + 2 * xp_i ** 2 * fi) ** 2
+            )
+        return cf.f, isr
+
+    def _calulate_f_functions(self) -> tuple[np.ndarray, np.ndarray]:
+        m_i = self.params["MI"] * (const.m_p + const.m_n) / 2
+        y_i = (
+            np.linspace(
+                0, cf.Y_MAX_i ** (1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double
+            )
+            ** cf.ORDER
+        )
+        self.i_int_func.initialize(y_i, self.params)
+        kappa_i = 1 if not hasattr(self.i_int_func, "kappa") else self.i_int_func.kappa
+        y_e = (
+            np.linspace(
+                0, cf.Y_MAX_e ** (1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double
+            )
+            ** cf.ORDER
+        )
+        self.e_int_func.initialize(y_e, self.params)
+        kappa_e = 1 if not hasattr(self.e_int_func, "kappa") else self.e_int_func.kappa
+        if self.numba:
+            fi = gordeyev_njit.integrate(
+                m_i,
+                self.params["T_I"],
+                self.params["NU_I"],
+                y_i,
+                function=self.i_int_func,  # .integrand(),
+                the_type=self.i_int_func.the_type,
+                kappa=kappa_i,
+            )
+            fe = gordeyev_njit.integrate(
+                const.m_e,
+                self.params["T_E"],
+                self.params["NU_E"],
+                y_e,
+                function=self.e_int_func,
+                the_type=self.e_int_func.the_type,
+                kappa=kappa_e,
+            )
+        else:
+            fi = gordeyev_int_parallel.integrate(
+                m_i,
+                self.params["T_I"],
+                self.params["NU_I"],
+                y_i,
+                function=self.i_int_func,
+                kappa=kappa_i,
+            )
+            fe = gordeyev_int_parallel.integrate(
+                const.m_e,
+                self.params["T_E"],
+                self.params["NU_E"],
+                y_e,
+                function=self.e_int_func,
+                kappa=kappa_e,
+            )
+        return fi, fe
+
+    def _susceptibility(self, the_type, kappa) -> np.ndarray:
+        if the_type == "maxwell":
+            xp = np.sqrt(
+                1
+                / (
+                    2
+                    * L_Debye(self.params["NE"], self.params["T_E"]) ** 2
+                    * self.params["K_RADAR"] ** 2
+                )
+            )
+        elif the_type == "kappa":
+            xp = np.sqrt(
+                1
+                / (
+                    2
+                    * L_Debye(self.params["NE"], self.params["T_E"], kappa=kappa) ** 2
+                    * self.params["K_RADAR"] ** 2
+                )
+            )
+        elif the_type == "a_vdf":
+            xp = np.sqrt(
+                1
+                / (
+                    2
+                    * L_Debye(
+                        self.params["NE"], self.params["T_E"], char_vel=func.char_vel
+                    )
+                    ** 2
+                    * self.params["K_RADAR"] ** 2
+                )
+            )
+        else:
+            raise ValueError("Unknown function type.")
+        return xp
+
+
 def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False, debye=None):
     """Calculate an ISR spectrum using the theory
     presented by Hagfors [1961] and Mace [2003].

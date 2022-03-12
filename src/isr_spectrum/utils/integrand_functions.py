@@ -146,6 +146,10 @@ class INT_LONG(INTEGRAND):
         self.y = np.array([])
         self.params = {}
         self.char_vel = float
+        self.vdf = vdfs.F_MAXWELL
+
+    def set_vdf(self, vdf):
+        self.vdf = vdf
 
     def initialize(self, y, params):
         self.y = y
@@ -153,16 +157,17 @@ class INT_LONG(INTEGRAND):
 
     def v_int(self):
         v = np.linspace(0, cf.V_MAX ** (1 / cf.ORDER), int(cf.V_N_POINTS)) ** cf.ORDER
-        if self.params["vdf"] == "maxwell":
-            f = vdfs.F_MAXWELL(v, self.params)
-        elif self.params["vdf"] == "kappa":
-            f = vdfs.F_KAPPA(v, self.params)
-        elif self.params["vdf"] == "kappa_vol2":
-            f = vdfs.F_KAPPA_2(v, self.params)
-        elif self.params["vdf"] == "gauss_shell":
-            f = vdfs.F_GAUSS_SHELL(v, self.params)
-        elif self.params["vdf"] == "real_data":
-            f = vdfs.F_REAL_DATA(v, self.params)
+        f = self.vdf(v, self.params)
+        # if self.params["vdf"] == "maxwell":
+        #     f = vdfs.F_MAXWELL(v, self.params)
+        # elif self.params["vdf"] == "kappa":
+        #     f = vdfs.F_KAPPA(v, self.params)
+        # elif self.params["vdf"] == "kappa_vol2":
+        #     f = vdfs.F_KAPPA_2(v, self.params)
+        # elif self.params["vdf"] == "gauss_shell":
+        #     f = vdfs.F_GAUSS_SHELL(v, self.params)
+        # elif self.params["vdf"] == "real_data":
+        #     f = vdfs.F_REAL_DATA(v, self.params)
 
         # Compare the velocity integral to the Maxwellian case.
         # This way we make up for the change in characteristic velocity
