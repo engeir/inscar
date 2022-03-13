@@ -4,6 +4,7 @@ and other plasma parameters.
 
 import os
 import sys
+from typing import Tuple
 
 import numpy as np
 import scipy.constants as const
@@ -33,30 +34,35 @@ class SpectrumCalculation:
     def set_ion_integrand_function(self, int_func) -> None:
         self.i_int_func = int_func
 
-    def calculate_spectrum(self) -> tuple[np.ndaarray, np.ndarray]:
+    def calculate_spectrum(self) -> Tuple[np.ndarray, np.ndarray]:
         if not hasattr(self, "params"):
             raise ValueError("No parameters set.")
-        wc_e = w_e_gyro(np.linalg.norm(self.params["B"], 2))
-        wc_i = w_ion_gyro(np.linalg.norm(self.params["B"], 2), m_i)
+        m_i = self.params["MI"] * (const.m_p + const.m_n) / 2
+        wc_e = w_gyro(np.linalg.norm(self.params["B"], 2), const.m_e)
+        wc_i = w_gyro(np.linalg.norm(self.params["B"], 2), m_i)
 
         fi, fe = self._calulate_f_functions()
 
-        xp_i = self._susceptibility(self.e_int_func.the_type, self.e_int_func.kappa)
-        xp_e = self._susceptibility(self.e_int_func.the_type, self.e_int_func.kappa)
+        if hasattr(self.i_int_func, "kappa"):
+            kappa_i = getattr(self.i_int_func, "kappa")
+        else:
+            kappa_i = 1
+        if hasattr(self.e_int_func, "kappa"):
+            kappa_e = getattr(self.e_int_func, "kappa")
+        else:
+            kappa_e = 1
+        xp_i = self._susceptibility(self.i_int_func.the_type, kappa_i)
+        xp_e = self._susceptibility(self.e_int_func.the_type, kappa_e)
 
         with np.errstate(divide="ignore", invalid="ignore"):
-            isr = (
-                self.params["NE"]
-                / (np.pi * cf.w)
-                * (
-                    np.imag(-fe) * abs(1 + 2 * xp_i ** 2 * fi) ** 2
-                    + (4 * xp_e ** 4 * np.imag(-fi) * abs(fe) ** 2)
-                )
-                / abs(1 + 2 * xp_e ** 2 * fe + 2 * xp_i ** 2 * fi) ** 2
-            )
+            denominator = abs(1 + 2 * xp_e ** 2 * fe + 2 * xp_i ** 2 * fi) ** 2
+            numerator1 = np.imag(-fe) * abs(1 + 2 * xp_i ** 2 * fi) ** 2
+            numerator2 = 4 * xp_e ** 4 * np.imag(-fi) * abs(fe) ** 2
+            numerator = numerator1 + numerator2
+            isr = self.params["NE"] / (np.pi * cf.w) * numerator / denominator
         return cf.f, isr
 
-    def _calulate_f_functions(self) -> tuple[np.ndarray, np.ndarray]:
+    def _calulate_f_functions(self) -> Tuple[np.ndarray, np.ndarray]:
         m_i = self.params["MI"] * (const.m_p + const.m_n) / 2
         y_i = (
             np.linspace(
@@ -65,7 +71,11 @@ class SpectrumCalculation:
             ** cf.ORDER
         )
         self.i_int_func.initialize(y_i, self.params)
-        kappa_i = 1 if not hasattr(self.i_int_func, "kappa") else self.i_int_func.kappa
+        kappa_i = (
+            1
+            if not hasattr(self.i_int_func, "kappa")
+            else getattr(self.i_int_func, "kappa")
+        )
         y_e = (
             np.linspace(
                 0, cf.Y_MAX_e ** (1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double
@@ -73,7 +83,11 @@ class SpectrumCalculation:
             ** cf.ORDER
         )
         self.e_int_func.initialize(y_e, self.params)
-        kappa_e = 1 if not hasattr(self.e_int_func, "kappa") else self.e_int_func.kappa
+        kappa_e = (
+            1
+            if not hasattr(self.e_int_func, "kappa")
+            else getattr(self.e_int_func, "kappa")
+        )
         if self.numba:
             fi = gordeyev_njit.integrate(
                 m_i,
@@ -114,35 +128,16 @@ class SpectrumCalculation:
 
     def _susceptibility(self, the_type, kappa) -> np.ndarray:
         if the_type == "maxwell":
-            xp = np.sqrt(
-                1
-                / (
-                    2
-                    * L_Debye(self.params["NE"], self.params["T_E"]) ** 2
-                    * self.params["K_RADAR"] ** 2
-                )
-            )
+            debye_length = L_Debye(self.params["NE"], self.params["T_E"])
+            xp = np.sqrt(1 / (2 * debye_length ** 2 * self.params["K_RADAR"] ** 2))
         elif the_type == "kappa":
-            xp = np.sqrt(
-                1
-                / (
-                    2
-                    * L_Debye(self.params["NE"], self.params["T_E"], kappa=kappa) ** 2
-                    * self.params["K_RADAR"] ** 2
-                )
-            )
+            debye_length = L_Debye(self.params["NE"], self.params["T_E"], kappa=kappa)
+            xp = np.sqrt(1 / (2 * debye_length ** 2 * self.params["K_RADAR"] ** 2))
         elif the_type == "a_vdf":
-            xp = np.sqrt(
-                1
-                / (
-                    2
-                    * L_Debye(
-                        self.params["NE"], self.params["T_E"], char_vel=func.char_vel
-                    )
-                    ** 2
-                    * self.params["K_RADAR"] ** 2
-                )
+            debye_length = L_Debye(
+                self.params["NE"], self.params["T_E"], char_vel=self.e_int_func.char_vel
             )
+            xp = np.sqrt(1 / (2 * debye_length ** 2 * self.params["K_RADAR"] ** 2))
         else:
             raise ValueError("Unknown function type.")
         return xp
@@ -182,7 +177,7 @@ def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False, debye=No
     func = version_check(version, vdf, kappa)
     w_c = w_e_gyro(np.linalg.norm([sys_set["B"]], 2))
     M_i = sys_set["MI"] * (const.m_p + const.m_n) / 2
-    W_c = w_ion_gyro(np.linalg.norm([sys_set["B"]], 2), M_i)
+    W_c = w_gyro(np.linalg.norm([sys_set["B"]], 2), M_i)
 
     # Ions
     params = {
@@ -362,20 +357,19 @@ def L_Debye(*args, kappa=None, char_vel=None):
     return LD
 
 
-def w_ion_gyro(B, m_ion):
-    """Ion gyro frequency as a function of
-    magnetic field strength and ion mass.
+def w_gyro(B, m):
+    """Gyro frequency as a function of magnetic field strength and particle mass.
 
     Arguments:
         B {float} -- magnetic field strength
-        m_ion {float} -- ion mass
+        m {float} -- particle mass
 
     Returns:
         float -- ion gyro frequency
     """
-    w_e = const.e * B / m_ion
+    w = const.e * B / m
 
-    return w_e
+    return w
 
 
 def w_e_gyro(B):
