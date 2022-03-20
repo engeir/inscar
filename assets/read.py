@@ -14,8 +14,7 @@ from scipy.io import loadmat
 def f_0_maxwell(v, params):
     # NOTE: Normalized to 1D
     A = (2 * np.pi * params["T"] * const.k / params["m"]) ** (-1 / 2)
-    func = A * np.exp(-(v ** 2) / (2 * params["T"] * const.k / params["m"]))
-    return func
+    return A * np.exp(-(v ** 2) / (2 * params["T"] * const.k / params["m"]))
 
 
 def interpolate_data(v, params):

@@ -135,11 +135,11 @@ class TestVDF(unittest.TestCase):
         self.assertAlmostEqual(res, 1, places=6)
 
     def test_vdf_maxwell(self):
-        self.f = vdfs.F_MAXWELL(self.v, self.params)
+        self.f = vdfs.VdfMaxwell(self.v, self.params)
         # self.fs.insert(0, self.f.f_0())
 
     def test_vdf_kappa(self):
-        self.f = vdfs.F_KAPPA(self.v, self.params)
+        self.f = vdfs.VdfKappa(self.v, self.params)
         # self.fs.insert(1, self.f.f_0())
 
     # def test_vdf_kappa_vol2(self):
@@ -149,7 +149,7 @@ class TestVDF(unittest.TestCase):
     #     self.f = vdfs.F_GAUSS_SHELL(self.v, self.params)
 
     def test_vdf_real_data(self):
-        self.f = vdfs.F_REAL_DATA(self.v, self.params)
+        self.f = vdfs.VdfRealData(self.v, self.params)
         # self.fs.insert(2, self.f.f_0())
 
 

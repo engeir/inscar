@@ -16,12 +16,34 @@ from isr_spectrum.utils.njit import gordeyev_njit
 from isr_spectrum.utils.parallel import gordeyev_int_parallel
 
 
+class Particle:
+    def __init__(
+        self,
+        mass: float = const.m_e,
+        integrand_method: intf.Integrand = intf.IntMaxwell(),
+    ) -> None:
+        self.mass = mass
+        self.int_func = integrand_method
+
+
+class Plasma:
+    def __init__(self) -> None:
+        self.magnetic_field = 5e-6
+
+
+class Radar:
+    def __init__(self) -> None:
+        self.aspect_angle = np.radians(45)
+
+
 class SpectrumCalculation:
     """Class containing the calculation of the power density spectrum."""
 
     def __init__(self):
-        self.i_int_func = intf.INT_MAXWELL()
-        self.e_int_func = intf.INT_MAXWELL()
+        self.i_int_func = intf.IntMaxwell()
+        self.e_int_func = intf.IntMaxwell()
+        self._calulate_f = self._calulate_f_function
+        self._susceptibility = self._susceptibility_function
         self.params: dict
         self.numba = True
 
@@ -37,22 +59,15 @@ class SpectrumCalculation:
     def calculate_spectrum(self) -> Tuple[np.ndarray, np.ndarray]:
         if not hasattr(self, "params"):
             raise ValueError("No parameters set.")
-        m_i = self.params["MI"] * (const.m_p + const.m_n) / 2
-        wc_e = w_gyro(np.linalg.norm(self.params["B"], 2), const.m_e)
-        wc_i = w_gyro(np.linalg.norm(self.params["B"], 2), m_i)
+        # m_i = self.params["MI"] * (const.m_p + const.m_n) / 2
+        # wc_e = w_gyro(np.linalg.norm(self.params["B"], 2), const.m_e)
+        # wc_i = w_gyro(np.linalg.norm(self.params["B"], 2), m_i)
 
-        fi, fe = self._calulate_f_functions()
+        fi = self._calulate_f(self.i_int_func, ion=True)
+        fe = self._calulate_f(self.e_int_func, ion=False)
 
-        if hasattr(self.i_int_func, "kappa"):
-            kappa_i = getattr(self.i_int_func, "kappa")
-        else:
-            kappa_i = 1
-        if hasattr(self.e_int_func, "kappa"):
-            kappa_e = getattr(self.e_int_func, "kappa")
-        else:
-            kappa_e = 1
-        xp_i = self._susceptibility(self.i_int_func.the_type, kappa_i)
-        xp_e = self._susceptibility(self.e_int_func.the_type, kappa_e)
+        xp_i = self._susceptibility(self.i_int_func, ion=True)
+        xp_e = self._susceptibility(self.e_int_func, ion=False)
 
         with np.errstate(divide="ignore", invalid="ignore"):
             denominator = abs(1 + 2 * xp_e ** 2 * fe + 2 * xp_i ** 2 * fi) ** 2
@@ -62,81 +77,61 @@ class SpectrumCalculation:
             isr = self.params["NE"] / (np.pi * cf.w) * numerator / denominator
         return cf.f, isr
 
-    def _calulate_f_functions(self) -> Tuple[np.ndarray, np.ndarray]:
-        m_i = self.params["MI"] * (const.m_p + const.m_n) / 2
-        y_i = (
-            np.linspace(
-                0, cf.Y_MAX_i ** (1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double
-            )
-            ** cf.ORDER
-        )
-        self.i_int_func.initialize(y_i, self.params)
-        kappa_i = (
-            1
-            if not hasattr(self.i_int_func, "kappa")
-            else getattr(self.i_int_func, "kappa")
-        )
-        y_e = (
-            np.linspace(
-                0, cf.Y_MAX_e ** (1 / cf.ORDER), int(cf.Y_N_POINTS), dtype=np.double
-            )
-            ** cf.ORDER
-        )
-        self.e_int_func.initialize(y_e, self.params)
-        kappa_e = (
-            1
-            if not hasattr(self.e_int_func, "kappa")
-            else getattr(self.e_int_func, "kappa")
-        )
-        if self.numba:
-            fi = gordeyev_njit.integrate(
-                m_i,
-                self.params["T_I"],
-                self.params["NU_I"],
-                y_i,
-                function=self.i_int_func,  # .integrand(),
-                the_type=self.i_int_func.the_type,
-                kappa=kappa_i,
-            )
-            fe = gordeyev_njit.integrate(
-                const.m_e,
-                self.params["T_E"],
-                self.params["NU_E"],
-                y_e,
-                function=self.e_int_func,
-                the_type=self.e_int_func.the_type,
-                kappa=kappa_e,
-            )
-        else:
-            fi = gordeyev_int_parallel.integrate(
-                m_i,
-                self.params["T_I"],
-                self.params["NU_I"],
-                y_i,
-                function=self.i_int_func,
-                kappa=kappa_i,
-            )
-            fe = gordeyev_int_parallel.integrate(
-                const.m_e,
-                self.params["T_E"],
-                self.params["NU_E"],
-                y_e,
-                function=self.e_int_func,
-                kappa=kappa_e,
-            )
-        return fi, fe
+    def set_calculate_f_function(self, f_func) -> None:
+        self._calulate_f = f_func
 
-    def _susceptibility(self, the_type, kappa) -> np.ndarray:
-        if the_type == "maxwell":
-            debye_length = L_Debye(self.params["NE"], self.params["T_E"])
+    def _calulate_f_function(self, func, ion: bool) -> np.ndarray:
+        if hasattr(func, "kappa"):
+            kappa = getattr(func, "kappa")
+        else:
+            kappa = 1
+        if ion:
+            y_max = cf.Y_MAX_i ** (1 / cf.ORDER)
+            y = np.linspace(0, y_max, int(cf.Y_N_POINTS), dtype=np.double) ** cf.ORDER
+            temp = self.params["T_I"]
+            nu = self.params["NU_I"]
+            m = self.params["MI"] * (const.m_p + const.m_n) / 2
+        else:
+            y_max = cf.Y_MAX_e ** (1 / cf.ORDER)
+            y = np.linspace(0, y_max, int(cf.Y_N_POINTS), dtype=np.double) ** cf.ORDER
+            temp = self.params["T_E"]
+            nu = self.params["NU_E"]
+            m = const.m_e
+        func.initialize(y, self.params)
+        if self.numba:
+            int_func = gordeyev_njit.integrate
+        else:
+            int_func = gordeyev_int_parallel.integrate
+        f = int_func(
+            m,
+            temp,
+            nu,
+            y,
+            function=func,
+            kappa=kappa,
+        )
+        return f
+
+    def set_susceptibility_function(self, func) -> None:
+        self._susceptibility = func
+
+    def _susceptibility_function(self, func, ion: bool = True) -> np.ndarray:
+        if hasattr(func, "kappa"):
+            kappa = getattr(func, "kappa")
+        else:
+            kappa = 1
+        if ion:
+            temp = self.params["T_I"]
+        else:
+            temp = self.params["T_E"]
+        if func.the_type == "maxwell":
+            debye_length = L_Debye(self.params["NE"], temp)
             xp = np.sqrt(1 / (2 * debye_length ** 2 * self.params["K_RADAR"] ** 2))
-        elif the_type == "kappa":
-            debye_length = L_Debye(self.params["NE"], self.params["T_E"], kappa=kappa)
+        elif func.the_type == "kappa":
+            debye_length = L_Debye(self.params["NE"], temp, kappa=kappa)
             xp = np.sqrt(1 / (2 * debye_length ** 2 * self.params["K_RADAR"] ** 2))
-        elif the_type == "a_vdf":
-            debye_length = L_Debye(
-                self.params["NE"], self.params["T_E"], char_vel=self.e_int_func.char_vel
-            )
+        elif func.the_type == "a_vdf":
+            debye_length = L_Debye(self.params["NE"], temp, char_vel=func.char_vel)
             xp = np.sqrt(1 / (2 * debye_length ** 2 * self.params["K_RADAR"] ** 2))
         else:
             raise ValueError("Unknown function type.")
@@ -194,7 +189,7 @@ def isr_spectrum(version, system_set, kappa=None, vdf=None, area=False, debye=No
         )
         ** cf.ORDER
     )
-    f_ion = intf.INT_MAXWELL()
+    f_ion = intf.IntMaxwell()
     f_ion.initialize(y, params)
     if kappa is None:
         kappa = 1
@@ -424,10 +419,10 @@ def version_check(version, vdf, kappa):
     except SystemError:
         sys.exit(version_error(version, versions))
     if version == "maxwell":
-        func = intf.INT_MAXWELL()
+        func = intf.IntMaxwell()
     elif version == "kappa":
         kappa_check(kappa)
-        func = intf.INT_KAPPA()
+        func = intf.IntKappa()
     elif version == "a_vdf":
         vdfs = ["maxwell", "kappa", "kappa_vol2", "gauss_shell", "real_data"]
         try:
@@ -438,7 +433,7 @@ def version_check(version, vdf, kappa):
             sys.exit(version_error(vdf, vdfs, element="VDF"))
         if vdf in ["kappa", "kappa_vol2"]:
             kappa_check(kappa)
-        func = intf.INT_LONG()
+        func = intf.IntLong()
     return func
 
 

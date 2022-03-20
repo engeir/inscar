@@ -34,7 +34,7 @@ def inner_int(y, function):
     return array
 
 
-def integrate(m, T, nu, y, function, the_type: str, kappa=1.0):
+def integrate(m, T, nu, y, function, kappa=1.0):
     # f = function  # function.integrand()
     # array = np.zeros_like(cf.w, dtype=np.complex128)
     # a = np.zeros_like(cf.w, dtype=np.complex128)
@@ -42,20 +42,16 @@ def integrate(m, T, nu, y, function, the_type: str, kappa=1.0):
     # for idx in nb.prange(len(cf.w)):
     #     array[idx] = my_integration_function(cf.w[idx], y, function)
     array = inner_int(y, function.integrand())
-    if the_type == "kappa":  # $\label{lst:gordeyev_scale}$
+    if function.the_type == "kappa":  # $\label{lst:gordeyev_scale}$
         a = array / (2 ** (kappa - 1 / 2) * math.gamma(kappa + 1 / 2))
         # a = array / (2 ** (kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
-    elif the_type == "a_vdf":
+    elif function.the_type == "a_vdf":
         # Characteristic velocity scaling
         a = 4 * np.pi * T * const.k * array / m * function.char_vel
         # a = 4 * np.pi * T * const.k * array / m * function.char_vel
     else:
         a = array
-    if the_type == "a_vdf":
-        F = a
-    else:
-        F = 1 - (1j * cf.w + nu) * a
-    return F
+    return a if function.the_type == "a_vdf" else 1 - (1j * cf.w + nu) * a
 
 
 @nb.njit
@@ -63,8 +59,7 @@ def v_int_integrand(y, v, f, k_r, theta, w_c):
     sin = np.sin(p(y, k_r, theta, w_c) * v)
     val = v * sin * f
     # res = si.simps(val, v)
-    res = trapzl(val, v)
-    return res
+    return trapzl(val, v)
 
 
 @nb.njit(parallel=True)

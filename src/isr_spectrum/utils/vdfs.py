@@ -31,7 +31,7 @@ class VDF(ABC):
         """Return the values along the velocity axis of a VDF."""
 
 
-class F_MAXWELL(VDF):
+class VdfMaxwell(VDF):
     """Create an object that make Maxwellian distribution functions.
 
     Arguments:
@@ -47,14 +47,12 @@ class F_MAXWELL(VDF):
         self.A = (2 * np.pi * self.params["T"] * const.k / self.params["m"]) ** (-3 / 2)
 
     def f_0(self):
-        func = self.A * np.exp(
+        return self.A * np.exp(
             -self.v ** 2 / (2 * self.params["T"] * const.k / self.params["m"])
         )
 
-        return func
 
-
-class F_KAPPA(VDF):
+class VdfKappa(VDF):
     """Create an object that make kappa distribution functions.
 
     Arguments:
@@ -94,14 +92,12 @@ class F_KAPPA(VDF):
         Returns:
             np.ndarray -- 1D array with the VDF values at the sampled points
         """
-        func = self.A * (1 + self.v ** 2 / (self.params["kappa"] * self.theta_2)) ** (
+        return self.A * (1 + self.v ** 2 / (self.params["kappa"] * self.theta_2)) ** (
             -self.params["kappa"] - 1
         )
 
-        return func
 
-
-class F_KAPPA_2(VDF):
+class VdfKappa2(VDF):
     """Create an object that make kappa vol. 2 distribution functions.
 
     Arguments:
@@ -137,14 +133,12 @@ class F_KAPPA_2(VDF):
         Returns:
             np.ndarray -- 1D array with the VDF values at the sampled points
         """
-        func = self.A * (1 + self.v ** 2 / (self.params["kappa"] * self.v_th ** 2)) ** (
+        return self.A * (1 + self.v ** 2 / (self.params["kappa"] * self.v_th ** 2)) ** (
             -self.params["kappa"]
         )
 
-        return func
 
-
-class F_GAUSS_SHELL(VDF):
+class VdfGaussShell(VDF):
     """Create an object that make Gauss shell distribution functions.
 
     Arguments:
@@ -157,7 +151,7 @@ class F_GAUSS_SHELL(VDF):
         self.vth = np.sqrt(self.params["T"] * const.k / self.params["m"])
         self.r = (self.params["T_ES"] * const.k / self.params["m"]) ** 0.5
         self.steep = 5
-        self.f_M = F_MAXWELL(self.v, self.params)
+        self.f_M = VdfMaxwell(self.v, self.params)
         self.normalize()
 
     def normalize(self):
@@ -185,7 +179,7 @@ class F_GAUSS_SHELL(VDF):
         return func / (1e4 + 1)
 
 
-class F_REAL_DATA(VDF):
+class VdfRealData(VDF):
     """Create an object that make distribution functions from
     a 1D array.
 
@@ -204,6 +198,4 @@ class F_REAL_DATA(VDF):
         self.A = 1 / si.simps(f, self.v)
 
     def f_0(self):
-        func = self.A * read.interpolate_data(self.v, self.params)
-
-        return func
+        return self.A * read.interpolate_data(self.v, self.params)

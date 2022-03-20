@@ -14,7 +14,7 @@ from isr_spectrum.utils.njit import gordeyev_njit
 from isr_spectrum.utils.parallel import v_int_parallel
 
 
-class INTEGRAND(ABC):
+class Integrand(ABC):
     """Base class for an integrand object.
 
     Arguments:
@@ -39,12 +39,12 @@ class INTEGRAND(ABC):
         """Method that returns the np.ndarray that is used as the integrand."""
 
 
-class INT_KAPPA(INTEGRAND):
+class IntKappa(Integrand):
     """Implementation of the integrand of the Gordeyev
     integral for the kappa distribution from Mace (2003).
 
     Arguments:
-        INTEGRAND {ABC} -- base class used to create integrand objects
+        Integrand {ABC} -- base class used to create integrand objects
     """
 
     the_type = "kappa"
@@ -85,22 +85,20 @@ class INT_KAPPA(INTEGRAND):
         self.Kn[self.Kn == np.inf] = 1
 
     def integrand(self):
-        G = (
+        return (
             self.Z ** (self.params["kappa"] + 0.5)
             * self.Kn
             * np.exp(-self.y * self.params["nu"])
         )
 
-        return G
 
-
-class INT_MAXWELL(INTEGRAND):
+class IntMaxwell(Integrand):
     """Implementation of the intregrand in the Gordeyev
     integral for the Maxwellian distribution from
     e.g. Hagfors (1961) or Mace (2003).
 
     Arguments:
-        INTEGRAND {ABC} -- base class used to create integrand objects
+        Integrand {ABC} -- base class used to create integrand objects
     """
 
     the_type = "maxwell"
@@ -114,7 +112,7 @@ class INT_MAXWELL(INTEGRAND):
         self.params = params
 
     def integrand(self):
-        G = np.exp(
+        return np.exp(
             -self.y * self.params["nu"]
             - self.params["K_RADAR"] ** 2
             * np.sin(self.params["THETA"]) ** 2
@@ -129,15 +127,13 @@ class INT_MAXWELL(INTEGRAND):
             / self.params["m"]
         )
 
-        return G
 
-
-class INT_LONG(INTEGRAND):
+class IntLong(Integrand):
     """Implementation of the intregrand in the Gordeyev
     integral for the isotropic distribution from Mace (2003).
 
     Arguments:
-        INTEGRAND {ABC} -- base class used to create integrand objects
+        Integrand {ABC} -- base class used to create integrand objects
     """
 
     the_type = "a_vdf"
@@ -146,7 +142,7 @@ class INT_LONG(INTEGRAND):
         self.y = np.array([])
         self.params = {}
         self.char_vel = float
-        self.vdf = vdfs.F_MAXWELL
+        self.vdf = vdfs.VdfMaxwell
 
     def set_vdf(self, vdf):
         self.vdf = vdf
@@ -157,23 +153,23 @@ class INT_LONG(INTEGRAND):
 
     def v_int(self):
         v = np.linspace(0, cf.V_MAX ** (1 / cf.ORDER), int(cf.V_N_POINTS)) ** cf.ORDER
-        f = self.vdf(v, self.params)
-        # if self.params["vdf"] == "maxwell":
-        #     f = vdfs.F_MAXWELL(v, self.params)
-        # elif self.params["vdf"] == "kappa":
-        #     f = vdfs.F_KAPPA(v, self.params)
-        # elif self.params["vdf"] == "kappa_vol2":
-        #     f = vdfs.F_KAPPA_2(v, self.params)
-        # elif self.params["vdf"] == "gauss_shell":
-        #     f = vdfs.F_GAUSS_SHELL(v, self.params)
-        # elif self.params["vdf"] == "real_data":
-        #     f = vdfs.F_REAL_DATA(v, self.params)
+        # f = self.vdf(v, self.params)
+        if self.params["vdf"] == "kappa":
+            f = vdfs.VdfKappa(v, self.params)
+        elif self.params["vdf"] == "kappa_vol2":
+            f = vdfs.VdfKappa2(v, self.params)
+        elif self.params["vdf"] == "gauss_shell":
+            f = vdfs.VdfGaussShell(v, self.params)
+        elif self.params["vdf"] == "real_data":
+            f = vdfs.VdfRealData(v, self.params)
+        else:  # self.params["vdf"] == "maxwell":
+            f = vdfs.VdfMaxwell(v, self.params)
 
         # Compare the velocity integral to the Maxwellian case.
         # This way we make up for the change in characteristic velocity
         # and Debye length for different particle distributions.
         res_maxwell = v_int_parallel.integrand(
-            self.y, self.params, v, vdfs.F_MAXWELL(v, self.params).f_0()
+            self.y, self.params, v, vdfs.VdfMaxwell(v, self.params).f_0()
         )
         int_maxwell = si.simps(res_maxwell, self.y)
         if cf.NJIT:
@@ -208,15 +204,10 @@ class INT_LONG(INTEGRAND):
             * abs(w_c)
             * (cos_t ** 2 * w_c * self.y + sin_t ** 2 * np.sin(w_c * self.y))
         )
-        den = (
-            w_c
-            * (
-                cos_t ** 2 * w_c ** 2 * self.y ** 2
-                - 2 * sin_t ** 2 * np.cos(w_c * self.y)
-                + 2 * sin_t ** 2
-            )
-            ** 0.5
-        )
+        term1 = (cos_t * w_c * self.y) ** 2
+        term2 = -2 * sin_t ** 2 * np.cos(w_c * self.y)
+        term3 = 2 * sin_t ** 2
+        den = w_c * (term1 + term2 + term3) ** 0.5
         # np.sign(y[-1]) takes care of weather the limit should be considered taken from above or below.
         # The last element of the np.ndarray is chosen since it is assumed y runs from 0 to some finite real number.
         first = np.sign(self.y[-1]) * abs(self.params["K_RADAR"]) * abs(w_c) / abs(w_c)
