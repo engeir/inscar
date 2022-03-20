@@ -17,20 +17,10 @@ def trapzl(y, x):
 
 
 @nb.njit(parallel=True)
-def my_integration_function(w, y, f):
-    val = np.exp(-1j * w * y) * f
-
-    return trapzl(val, y)
-
-
-@nb.njit(parallel=True)
 def inner_int(y, function):
-    # f = function  # function.integrand()
     array = np.zeros_like(cf.w, dtype=np.complex128)
-    # a = np.zeros_like(cf.w, dtype=np.complex128)
-    # F = np.zeros_like(cf.w, dtype=np.complex128)
     for idx in nb.prange(len(cf.w)):
-        array[idx] = my_integration_function(cf.w[idx], y, function)
+        array[idx] = trapzl(np.exp(-1j * cf.w[idx] * y) * function, y)
     return array
 
 
