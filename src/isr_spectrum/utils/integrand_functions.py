@@ -8,10 +8,8 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-from isr_spectrum.inputs import config as cf
 from isr_spectrum.utils import vdfs
 from isr_spectrum.utils.njit import gordeyev_njit
-from isr_spectrum.utils.parallel import v_int_parallel
 
 
 class Integrand(ABC):

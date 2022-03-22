@@ -6,10 +6,6 @@ import sys
 
 import numpy as np
 
-# Set parallel version: defaults to the njit implementation. `False` will use the
-# multiprocessing module.
-NJIT = False
-
 # Check if a test is running.
 if os.path.basename(os.path.realpath(sys.argv[0])) != "main.py":
     # DO NOT EDIT

@@ -5,17 +5,9 @@ methods, create a new set-up with the `Reproduce` abstract base class in `reprod
 use one of the pre-defined classes from `reproduce.py`.
 """
 
-# The start method of the multiprocessing module was changed from python3.7 to python3.8
-# (macOS). Instead of using 'fork', 'spawn' is the new default.  To be able to use global
-# variables across all parallel processes, the start method must be reset to 'fork'. See
-# https://tinyurl.com/yyxxfxst for more info.
-import multiprocessing as mp
-
-mp.set_start_method("fork")
-
-import matplotlib  # pylint: disable=C0413
-import matplotlib.pyplot as plt  # pylint: disable=C0413
-import numpy as np  # pylint: disable=C0413
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 
 import isr_spectrum.inputs.config as cf
 from isr_spectrum.plotting import hello_kitty as hk

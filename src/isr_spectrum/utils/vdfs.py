@@ -12,8 +12,6 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-from isr_spectrum.utils import read
-
 
 class VDF(ABC):
     """Base class for a VDF object.

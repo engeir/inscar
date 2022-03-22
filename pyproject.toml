@@ -17,6 +17,7 @@ scipy = "^1.6.2"
 lmfit = "^1.0.2"
 PyQt5 = "^5.15.4"
 numba = "^0.53.1"
+attrs = "^21.4.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"

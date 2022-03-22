@@ -4,8 +4,6 @@ import numba as nb
 import numpy as np
 import scipy.constants as const
 
-from isr_spectrum.inputs import config as cf
-
 
 @nb.njit(parallel=True)
 def trapzl(y, x):
@@ -17,7 +15,21 @@ def trapzl(y, x):
 
 
 @nb.njit(parallel=True)
-def inner_int(y, function):
+def inner_int(y: np.ndarray, function: np.ndarray):
+    """Calculate the Gordeyev integral of the F function.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        The axis of the F function.
+    function : np.ndarray
+        Function to integrate over.
+
+    Returns
+    -------
+    np.ndarray
+        The integrated function.
+    """
     array = np.zeros_like(cf.w, dtype=np.complex128)
     for idx in nb.prange(len(cf.w)):
         array[idx] = trapzl(np.exp(-1j * cf.w[idx] * y) * function, y)
@@ -25,38 +37,41 @@ def inner_int(y, function):
 
 
 def integrate(m, T, nu, y, function, kappa=1.0):
-    # f = function  # function.integrand()
-    # array = np.zeros_like(cf.w, dtype=np.complex128)
-    # a = np.zeros_like(cf.w, dtype=np.complex128)
-    # F = np.zeros_like(cf.w, dtype=np.complex128)
-    # for idx in nb.prange(len(cf.w)):
-    #     array[idx] = my_integration_function(cf.w[idx], y, function)
     array = inner_int(y, function.integrand())
     if function.the_type == "kappa":  # $\label{lst:gordeyev_scale}$
         a = array / (2 ** (kappa - 1 / 2) * math.gamma(kappa + 1 / 2))
-        # a = array / (2 ** (kappa - 1 / 2) * sps.gamma(kappa + 1 / 2))
     elif function.the_type == "a_vdf":
         # Characteristic velocity scaling
         a = 4 * np.pi * T * const.k * array / m * function.char_vel
-        # a = 4 * np.pi * T * const.k * array / m * function.char_vel
     else:
         a = array
     return a if function.the_type == "a_vdf" else 1 - (1j * cf.w + nu) * a
 
 
-@nb.njit
-def v_int_integrand(y, v, f, k_r, theta, w_c):
-    sin = np.sin(p(y, k_r, theta, w_c) * v)
-    val = v * sin * f
-    # res = si.simps(val, v)
-    return trapzl(val, v)
-
-
 @nb.njit(parallel=True)
-def integrate_velocity(y, v, f, k_r, theta, w_c):
+def integrate_velocity(
+    y: np.ndarray, v: np.ndarray, f: np.ndarray, k_r: float, theta: float, w_c: float
+):
+    """Calculate the velocity integral.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        The axis in frequency space.
+    v : np.ndarray
+        The axis in velocity space.
+    f : np.ndarray
+        The function to integrate.
+    k_r : float
+        The radar wavenumber.
+    theta : float
+        The radar aspect angle.
+    w_c : float
+        The gyro frequency.
+    """
     array = np.zeros_like(y)
     for idx in nb.prange(len(y)):
-        array[idx] = v_int_integrand(y[idx], v, f, k_r, theta, w_c)
+        array[idx] = trapzl(v * np.sin(p(y[idx], k_r, theta, w_c) * v) * f, v)
     return array
 
 
@@ -64,12 +79,17 @@ def integrate_velocity(y, v, f, k_r, theta, w_c):
 def p(y, k_r, theta, w_c):
     """From Mace [2003].
 
-    Args:
-        y {np.ndarray} -- parameter from Gordeyev integral
-        params {dict} -- plasma parameters
+    Parameters
+    ----------
+    y: np.ndarray
+        Parameter from Gordeyev integral
+    params: dict
+        Plasma parameters
 
-    Returns:
-        np.ndarray -- value of the `p` function
+    Returns
+    -------
+    np.ndarray
+        Value of the `p` function
     """
     k_perp = k_r * np.sin(theta)
     k_par = k_r * np.cos(theta)

@@ -2,21 +2,21 @@
 and other plasma parameters.
 """
 
+from abc import ABC
 import os
 import sys
-from typing import Tuple
+from typing import Tuple, Union
 
+import attr
 import numpy as np
 import scipy.constants as const
 import scipy.integrate as si
 
-from isr_spectrum.inputs import config as cf
 from isr_spectrum.utils import integrand_functions as intf
 from isr_spectrum.utils.njit import gordeyev_njit
-from isr_spectrum.utils.parallel import gordeyev_int_parallel
 
 
-class Particle:
+class Particle(ABC):
     def __init__(
         self,
         mass: float = const.m_e,
@@ -36,6 +36,125 @@ class Radar:
         self.aspect_angle = np.radians(45)
 
 
+def is_odd(_, attribute, value):
+    if value % 2 == 0:
+        raise ValueError(f"{attribute} must be odd")
+
+
+def is_positive(_, attribute, value):
+    if not isinstance(value, (int, float)):
+        raise ValueError(f"{attribute} must be a positive number")
+    if value <= 0:
+        raise ValueError(f"{attribute} must be positive")
+
+
+def is_range_tuple(_, attribute, value):
+    if not isinstance(value, tuple):
+        raise ValueError(f"{attribute} must be a tuple")
+    if len(value) != 2:
+        raise ValueError(f"{attribute} must be a tuple of length 2")
+    if isinstance(value[0], (int, float)) and isinstance(value[1], (int, float)):
+        if value[0] >= value[1]:
+            raise ValueError(f"{attribute} must be a tuple of increasing values")
+    else:
+        raise ValueError(f"{attribute} must be a tuple of int/floats")
+
+
+@attr.s(auto_attribs=True)
+class Parameters:
+    frequency_range: Tuple[float, float] = attr.ib(
+        default=(-2e6, 2e6),
+        validator=is_range_tuple,
+        on_setattr=attr.setters.validate,
+    )
+    frequency_size: int = attr.ib(
+        default=1e4 + 1,
+        validator=is_odd,
+        on_setattr=attr.setters.validate,
+        converter=int,
+    )
+    frequency_exp: int = attr.ib(
+        default=1,
+        validator=is_odd,
+        on_setattr=attr.setters.validate,
+        converter=int,
+    )
+    gordeyev_upper_lim_ion: Union[float, int] = attr.ib(
+        default=1.5e-2,
+        validator=is_positive,
+        on_setattr=attr.setters.validate,
+    )
+    gordeyev_upper_lim_electron: Union[float, int] = attr.ib(
+        default=1.5e-4,
+        validator=is_positive,
+        on_setattr=attr.setters.validate,
+    )
+    gordeyev_size: int = attr.ib(
+        default=8e4 + 1,
+        validator=is_odd,
+        on_setattr=attr.setters.validate,
+        converter=int,
+    )
+    gordeyev_exp: int = attr.ib(
+        default=3,
+        validator=is_odd,
+        on_setattr=attr.setters.validate,
+        converter=int,
+    )
+    velocity_upper_lim: Union[float, int] = attr.ib(
+        default=6e6,
+        validator=is_positive,
+        on_setattr=attr.setters.validate,
+    )
+    velocity_size: int = attr.ib(
+        default=4e4 + 1,
+        validator=is_odd,
+        on_setattr=attr.setters.validate,
+        converter=int,
+    )
+    velocity_exp: int = attr.ib(
+        default=3,
+        validator=is_odd,
+        on_setattr=attr.setters.validate,
+        converter=int,
+    )
+
+    def __attrs_post_init__(self):
+        self.linear_frequency: np.ndarray = (
+            np.linspace(
+                *self.frequency_range,
+                self.frequency_size,
+            )
+            / self.frequency_range[1]
+        ) ** self.frequency_exp * self.frequency_range[1]
+        self.angular_frequency = self.linear_frequency * 2 * np.pi
+        self.velocity_axis: np.ndarray = (
+            np.linspace(
+                0,
+                self.velocity_upper_lim ** (1 / self.velocity_exp),
+                self.velocity_size,
+            )
+        ) ** self.velocity_exp
+        self.gordeyev_axis_ion: np.ndarray = (
+            np.linspace(
+                0,
+                self.gordeyev_upper_lim_ion ** (1 / self.gordeyev_exp),
+                self.gordeyev_size,
+            )
+        ) ** self.gordeyev_exp
+        self.gordeyev_axis_electron: np.ndarray = (
+            np.linspace(
+                0,
+                self.gordeyev_upper_lim_electron ** (1 / self.gordeyev_exp),
+                self.gordeyev_size,
+            )
+        ) ** self.gordeyev_exp
+
+
+p = Parameters(velocity_size=int(4e4 + 1))
+p.velocity_upper_lim = 1e4
+
+
 class SpectrumCalculation:
     """Class containing the calculation of the power density spectrum."""
 
@@ -44,10 +163,9 @@ class SpectrumCalculation:
         self.e_int_func = intf.IntMaxwell()
         self._calulate_f = self._calulate_f_function
         self._susceptibility = self._susceptibility_function
-        self.params: dict
-        self.numba = True
+        self.params: Parameters
 
-    def set_params(self, params) -> None:
+    def set_params(self, params: Parameters) -> None:
         self.params = params
 
     def set_electron_integrand_function(self, int_func) -> None:
@@ -58,7 +176,7 @@ class SpectrumCalculation:
 
     def calculate_spectrum(self) -> Tuple[np.ndarray, np.ndarray]:
         if not hasattr(self, "params"):
-            raise ValueError("No parameters set.")
+            raise ValueError("No parameters set. Use set_params().")
         # m_i = self.params["MI"] * (const.m_p + const.m_n) / 2
         # wc_e = w_gyro(np.linalg.norm(self.params["B"], 2), const.m_e)
         # wc_i = w_gyro(np.linalg.norm(self.params["B"], 2), m_i)
@@ -74,8 +192,13 @@ class SpectrumCalculation:
             numerator1 = np.imag(-fe) * abs(1 + 2 * xp_i ** 2 * fi) ** 2
             numerator2 = 4 * xp_e ** 4 * np.imag(-fi) * abs(fe) ** 2
             numerator = numerator1 + numerator2
-            isr = self.params["NE"] / (np.pi * cf.w) * numerator / denominator
-        return cf.f, isr
+            isr = (
+                self.params["NE"]
+                / (np.pi * self.params.angular_frequency)
+                * numerator
+                / denominator
+            )
+        return self.params.linear_frequency, isr
 
     def set_calculate_f_function(self, f_func) -> None:
         self._calulate_f = f_func
@@ -98,11 +221,7 @@ class SpectrumCalculation:
             nu = self.params["NU_E"]
             m = const.m_e
         func.initialize(y, self.params)
-        if self.numba:
-            int_func = gordeyev_njit.integrate
-        else:
-            int_func = gordeyev_int_parallel.integrate
-        f = int_func(
+        return gordeyev_njit.integrate(
             m,
             temp,
             nu,
@@ -110,7 +229,6 @@ class SpectrumCalculation:
             function=func,
             kappa=kappa,
         )
-        return f
 
     def set_susceptibility_function(self, func) -> None:
         self._susceptibility = func
@@ -449,3 +567,9 @@ def kappa_check(kappa):
         kappa = int(kappa)
     except SystemError:
         sys.exit(print("You did not send in a valid kappa index."))
+
+
+if __name__ == "__main__":
+    sim = SpectrumCalculation()
+    sim.set_params(Parameters())
+    sim.calculate_spectrum()
