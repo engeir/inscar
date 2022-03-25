@@ -10,6 +10,7 @@ import scipy.special as sps
 
 from isr_spectrum.utils import vdfs
 from isr_spectrum.utils.njit import gordeyev_njit
+from isr_spectrum.utils import config
 
 
 class Integrand(ABC):
@@ -24,7 +25,7 @@ class Integrand(ABC):
         """The type of the intregrand implementation."""
 
     @abstractmethod
-    def initialize(self, y, params):
+    def initialize(self, params: config.Parameters, particle: config.Particle):
         """Needs an initialization method.
 
         Arguments:
@@ -33,7 +34,7 @@ class Integrand(ABC):
         """
 
     @abstractmethod
-    def integrand(self):
+    def integrand(self) -> np.ndarray:
         """Method that returns the np.ndarray that is used as the integrand."""
 
 
@@ -48,45 +49,51 @@ class IntKappa(Integrand):
     the_type = "kappa"
 
     def __init__(self):
-        self.y = np.array([])
-        self.params = {}
-        self.Z = float
-        self.Kn = float
+        self.params: config.Parameters
+        self.particle: config.Particle
+        self.gyro_frequency: float
+        self.Z: float
+        self.Kn: float
 
-    def initialize(self, y, params):
-        self.y = y
+    def initialize(self, params: config.Parameters, particle: config.Particle):
         self.params = params
+        self.particle = particle
+        self.gyro_frequency = (
+            const.e * self.params.magnetic_field_strength / self.particle.mass
+        )
         self.z_func()
 
     def z_func(self):
+        y = self.particle.gordeyev_axis
         theta_2 = (
             2
-            * ((self.params["kappa"] - 3 / 2) / self.params["kappa"])
-            * self.params["T"]
+            * ((self.particle.kappa - 3 / 2) / self.particle.kappa)
+            * self.particle.temperature
             * const.k
-            / self.params["m"]
+            / self.particle.mass
         )
-        self.Z = (2 * self.params["kappa"]) ** (1 / 2) * (
-            self.params["K_RADAR"] ** 2
-            * np.sin(self.params["THETA"]) ** 2
+        self.Z = (2 * self.particle.kappa) ** (1 / 2) * (
+            self.params.radar_wavenumber ** 2
+            * np.sin(self.params.aspect_angle) ** 2
             * theta_2
-            / self.params["w_c"] ** 2
-            * (1 - np.cos(self.params["w_c"] * self.y))
+            / self.gyro_frequency ** 2
+            * (1 - np.cos(self.gyro_frequency * y))
             + 1
             / 2
-            * self.params["K_RADAR"] ** 2
-            * np.cos(self.params["THETA"]) ** 2
+            * self.params.radar_wavenumber ** 2
+            * np.cos(self.params.aspect_angle) ** 2
             * theta_2
-            * self.y ** 2
+            * y ** 2
         ) ** (1 / 2)
-        self.Kn = sps.kv(self.params["kappa"] + 1 / 2, self.Z)
+        self.Kn = sps.kv(self.particle.kappa + 1 / 2, self.Z)
         self.Kn[self.Kn == np.inf] = 1
 
     def integrand(self):
+        y = self.particle.gordeyev_axis
         return (
-            self.Z ** (self.params["kappa"] + 0.5)
+            self.Z ** (self.particle.kappa + 0.5)
             * self.Kn
-            * np.exp(-self.y * self.params["nu"])
+            * np.exp(-y * self.particle.collision_frequency)
         )
 
 
@@ -102,32 +109,41 @@ class IntMaxwell(Integrand):
     the_type = "maxwell"
 
     def __init__(self):
-        self.y = np.array([])
-        self.params = {}
+        self.params: config.Parameters
+        self.particle: config.Particle
+        self.gyro_frequency: float
 
-    def initialize(self, y, params):
-        self.y = y
+    def initialize(self, params: config.Parameters, particle: config.Particle):
         self.params = params
+        self.particle = particle
+        self.gyro_frequency = (
+            const.e * self.params.magnetic_field_strength / self.particle.mass
+        )
 
     def integrand(self):
         return np.exp(
-            -self.y * self.params["nu"]
-            - self.params["K_RADAR"] ** 2
-            * np.sin(self.params["THETA"]) ** 2
-            * self.params["T"]
+            -self.particle.gordeyev_axis * self.particle.collision_frequency
+            - self.params.radar_wavenumber ** 2
+            * np.sin(self.params.aspect_angle) ** 2
+            * self.particle.temperature
             * const.k
-            / (self.params["m"] * self.params["w_c"] ** 2)
-            * (1 - np.cos(self.params["w_c"] * self.y))
+            / (self.particle.mass * self.gyro_frequency ** 2)
+            * (1 - np.cos(self.gyro_frequency * self.particle.gordeyev_axis))
             - 0.5
-            * (self.params["K_RADAR"] * np.cos(self.params["THETA"]) * self.y) ** 2
-            * self.params["T"]
+            * (
+                self.params.radar_wavenumber
+                * np.cos(self.params.aspect_angle)
+                * self.particle.gordeyev_axis
+            )
+            ** 2
+            * self.particle.temperature
             * const.k
-            / self.params["m"]
+            / self.particle.mass
         )
 
 
 class IntLong(Integrand):
-    """Implementation of the intregrand in the Gordeyev
+    """Implementation of the integrand in the Gordeyev
     integral for the isotropic distribution from Mace (2003).
 
     Arguments:
@@ -137,78 +153,86 @@ class IntLong(Integrand):
     the_type = "a_vdf"
 
     def __init__(self):
-        self.y = np.array([])
-        self.params = {}
-        self.char_vel = float
+        self.params: config.Parameters
+        self.particle: config.Particle
+        self.char_vel: float
         self.vdf = vdfs.VdfMaxwell
+        self.gyro_frequency: float
 
     def set_vdf(self, vdf):
         self.vdf = vdf
 
-    def initialize(self, y, params):
-        self.y = y
+    def initialize(self, params: config.Parameters, particle: config.Particle):
         self.params = params
+        self.particle = particle
+        self.gyro_frequency = (
+            const.e * self.params.magnetic_field_strength / self.particle.mass
+        )
 
     def v_int(self):
-        v = np.linspace(0, cf.V_MAX ** (1 / cf.ORDER), int(cf.V_N_POINTS)) ** cf.ORDER
-        # f = self.vdf(v, self.params)
-        if self.params["vdf"] == "kappa":
-            f = vdfs.VdfKappa(v, self.params)
-        elif self.params["vdf"] == "kappa_vol2":
-            f = vdfs.VdfKappa2(v, self.params)
-        elif self.params["vdf"] == "gauss_shell":
-            f = vdfs.VdfGaussShell(v, self.params)
-        elif self.params["vdf"] == "real_data":
-            f = vdfs.VdfRealData(v, self.params)
-        else:  # self.params["vdf"] == "maxwell":
-            f = vdfs.VdfMaxwell(v, self.params)
+        v = self.particle.velocity_axis
+        y = self.particle.gordeyev_axis
+        f = self.vdf(self.params, self.particle)
+        # if self.params["vdf"] == "kappa":
+        #     f = vdfs.VdfKappa(v, self.params)
+        # elif self.params["vdf"] == "kappa_vol2":
+        #     f = vdfs.VdfKappa2(v, self.params)
+        # elif self.params["vdf"] == "gauss_shell":
+        #     f = vdfs.VdfGaussShell(v, self.params)
+        # elif self.params["vdf"] == "real_data":
+        #     f = vdfs.VdfRealData(v, self.params)
+        # else:  # self.params["vdf"] == "maxwell":
+        #     f = vdfs.VdfMaxwell(v, self.params)
 
         # Compare the velocity integral to the Maxwellian case.
         # This way we make up for the change in characteristic velocity
         # and Debye length for different particle distributions.
-        res_maxwell = v_int_parallel.integrand(
-            self.y, self.params, v, vdfs.VdfMaxwell(v, self.params).f_0()
+        res_maxwell = gordeyev_njit.integrate_velocity(
+            self.particle.gordeyev_axis,
+            v,
+            vdfs.VdfMaxwell(self.params, self.particle).f_0(),
+            self.params.radar_wavenumber,
+            self.params.aspect_angle,
+            self.gyro_frequency,
         )
-        int_maxwell = si.simps(res_maxwell, self.y)
-        if cf.NJIT:
-            v_func = f.f_0()
-            res = gordeyev_njit.integrate_velocity(
-                self.y,
-                v,
-                v_func,
-                self.params["K_RADAR"],
-                self.params["THETA"],
-                self.params["w_c"],
-            )
-        else:
-            res = v_int_parallel.integrand(self.y, self.params, v, f.f_0())
-        int_res = si.simps(res, self.y)
+        int_maxwell = si.simps(res_maxwell, y)
+        v_func = f.f_0()
+        res = gordeyev_njit.integrate_velocity(
+            self.particle.gordeyev_axis,
+            v,
+            v_func,
+            self.params.radar_wavenumber,
+            self.params.aspect_angle,
+            self.gyro_frequency,
+        )
+        int_res = si.simps(res, y)
         # The scaling of the factor describing the characteristic velocity
         self.char_vel = int_maxwell / int_res
         print(
             f"Debye length of the current distribution is {self.char_vel}"
-            + "times the Maxwellian Debye length."
+            + " times the Maxwellian Debye length."
         )
         return res
 
     def p_d(self):
+        y = self.particle.gordeyev_axis
         # At $ y=0 $ we get $ 0/0 $, so we use
         # $ \lim_{y\rightarrow 0^+}\mathrm{d}p/\mathrm{d}y = |k| |w_c| / \sqrt(w_c^2) $ (from above, opposite sign from below)
-        cos_t = np.cos(self.params["THETA"])
-        sin_t = np.sin(self.params["THETA"])
-        w_c = self.params["w_c"]
+        cos_t = np.cos(self.params.aspect_angle)
+        sin_t = np.sin(self.params.aspect_angle)
+        w_c = self.gyro_frequency
         num = (
-            abs(self.params["K_RADAR"])
+            abs(self.params.radar_wavenumber)
             * abs(w_c)
-            * (cos_t ** 2 * w_c * self.y + sin_t ** 2 * np.sin(w_c * self.y))
+            * (cos_t ** 2 * w_c * y + sin_t ** 2 * np.sin(w_c * y))
         )
-        term1 = (cos_t * w_c * self.y) ** 2
-        term2 = -2 * sin_t ** 2 * np.cos(w_c * self.y)
+        term1 = (cos_t * w_c * y) ** 2
+        term2 = -2 * sin_t ** 2 * np.cos(w_c * y)
         term3 = 2 * sin_t ** 2
         den = w_c * (term1 + term2 + term3) ** 0.5
         # np.sign(y[-1]) takes care of weather the limit should be considered taken from above or below.
         # The last element of the np.ndarray is chosen since it is assumed y runs from 0 to some finite real number.
-        first = np.sign(self.y[-1]) * abs(self.params["K_RADAR"]) * abs(w_c) / abs(w_c)
+        first = np.sign(y[-1]) * abs(self.params.radar_wavenumber) * abs(w_c) / abs(w_c)
         with np.errstate(divide="ignore", invalid="ignore"):
             out = num / den
         out[np.where(den == 0.0)[0]] = first

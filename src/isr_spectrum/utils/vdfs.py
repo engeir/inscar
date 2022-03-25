@@ -12,8 +12,10 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
+from isr_spectrum.utils import config
 
-class VDF(ABC):
+
+class Vdf(ABC):
     """Base class for a VDF object.
 
     Arguments:
@@ -29,57 +31,60 @@ class VDF(ABC):
         """Return the values along the velocity axis of a VDF."""
 
 
-class VdfMaxwell(VDF):
+class VdfMaxwell(Vdf):
     """Create an object that make Maxwellian distribution functions.
 
     Arguments:
         VDF {ABC} -- abstract base class to make VDF objects
     """
 
-    def __init__(self, v, params):
-        self.v = v
+    def __init__(self, params: config.Parameters, particle: config.Particle):
         self.params = params
+        self.particle = particle
         self.normalize()
 
     def normalize(self):
-        self.A = (2 * np.pi * self.params["T"] * const.k / self.params["m"]) ** (-3 / 2)
+        self.A = (
+            2 * np.pi * self.particle.temperature * const.k / self.particle.mass
+        ) ** (-3 / 2)
 
     def f_0(self):
         return self.A * np.exp(
-            -self.v ** 2 / (2 * self.params["T"] * const.k / self.params["m"])
+            -self.particle.velocity_axis ** 2
+            / (2 * self.particle.temperature * const.k / self.particle.mass)
         )
 
 
-class VdfKappa(VDF):
+class VdfKappa(Vdf):
     """Create an object that make kappa distribution functions.
 
     Arguments:
         VDF {ABC} -- abstract base class to make VDF objects
     """
 
-    def __init__(self, v, params):
+    def __init__(self, params: config.Parameters, particle: config.Particle):
         """Initialize VDF parameters.
 
         Arguments:
             v {np.ndarray} -- 1D array with the sampled velocities
             params {dict} -- a dictionary with all needed plasma parameters
         """
-        self.v = v
         self.params = params
+        self.particle = particle
         self.normalize()
 
     def normalize(self):
         self.theta_2 = (
             2
-            * ((self.params["kappa"] - 3 / 2) / self.params["kappa"])
-            * self.params["T"]
+            * ((self.particle.kappa - 3 / 2) / self.particle.kappa)
+            * self.particle.temperature
             * const.k
-            / self.params["m"]
+            / self.particle.mass
         )
         self.A = (
-            (np.pi * self.params["kappa"] * self.theta_2) ** (-3 / 2)
-            * sps.gamma(self.params["kappa"] + 1)
-            / sps.gamma(self.params["kappa"] - 1 / 2)
+            (np.pi * self.particle.kappa * self.theta_2) ** (-3 / 2)
+            * sps.gamma(self.particle.kappa + 1)
+            / sps.gamma(self.particle.kappa - 1 / 2)
         )
 
     def f_0(self):
@@ -90,12 +95,12 @@ class VdfKappa(VDF):
         Returns:
             np.ndarray -- 1D array with the VDF values at the sampled points
         """
-        return self.A * (1 + self.v ** 2 / (self.params["kappa"] * self.theta_2)) ** (
-            -self.params["kappa"] - 1
+        return self.A * (1 + self.particle.velocity_axis ** 2 / (self.particle.kappa * self.theta_2)) ** (
+            -self.particle.kappa - 1
         )
 
 
-class VdfKappa2(VDF):
+class VdfKappa2(Vdf):
     """Create an object that make kappa vol. 2 distribution functions.
 
     Arguments:
@@ -136,7 +141,7 @@ class VdfKappa2(VDF):
         )
 
 
-class VdfGaussShell(VDF):
+class VdfGaussShell(Vdf):
     """Create an object that make Gauss shell distribution functions.
 
     Arguments:
@@ -176,24 +181,3 @@ class VdfGaussShell(VDF):
 
         return func / (1e4 + 1)
 
-
-class VdfRealData(VDF):
-    """Create an object that make distribution functions from
-    a 1D array.
-
-    Arguments:
-        VDF {ABC} -- abstract base class to make VDF objects
-    """
-
-    def __init__(self, v, params):
-        self.v = v
-        self.params = params
-        self.normalize()
-
-    def normalize(self):
-        func = read.interpolate_data(self.v, self.params)
-        f = func * self.v ** 2 * 4 * np.pi
-        self.A = 1 / si.simps(f, self.v)
-
-    def f_0(self):
-        return self.A * read.interpolate_data(self.v, self.params)

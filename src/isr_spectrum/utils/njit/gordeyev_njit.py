@@ -4,6 +4,8 @@ import numba as nb
 import numpy as np
 import scipy.constants as const
 
+from isr_spectrum.utils import config
+
 
 @nb.njit(parallel=True)
 def trapzl(y, x):
@@ -15,11 +17,13 @@ def trapzl(y, x):
 
 
 @nb.njit(parallel=True)
-def inner_int(y: np.ndarray, function: np.ndarray):
+def inner_int(w: np.ndarray, y: np.ndarray, function: np.ndarray):
     """Calculate the Gordeyev integral of the F function.
 
     Parameters
     ----------
+    w : ndarray
+        Angular frequency array.
     y : np.ndarray
         The axis of the F function.
     function : np.ndarray
@@ -30,22 +34,27 @@ def inner_int(y: np.ndarray, function: np.ndarray):
     np.ndarray
         The integrated function.
     """
-    array = np.zeros_like(cf.w, dtype=np.complex128)
-    for idx in nb.prange(len(cf.w)):
-        array[idx] = trapzl(np.exp(-1j * cf.w[idx] * y) * function, y)
+    array = np.zeros_like(w, dtype=np.complex128)
+    for idx in nb.prange(len(w)):
+        array[idx] = trapzl(np.exp(-1j * w[idx] * y) * function, y)
     return array
 
 
-def integrate(m, T, nu, y, function, kappa=1.0):
-    array = inner_int(y, function.integrand())
-    if function.the_type == "kappa":  # $\label{lst:gordeyev_scale}$
-        a = array / (2 ** (kappa - 1 / 2) * math.gamma(kappa + 1 / 2))
-    elif function.the_type == "a_vdf":
+def integrate(params: config.Parameters, particle: config.Particle, integrand: np.ndarray, the_type: str, char_vel: float):
+    y = particle.gordeyev_axis
+    temp = particle.temperature
+    mass = particle.mass
+    w = params.angular_frequency
+    nu = particle.collision_frequency
+    array = inner_int(w, y, integrand)
+    if the_type == "kappa":  # $\label{lst:gordeyev_scale}$
+        a = array / (2 ** (particle.kappa - 1 / 2) * math.gamma(particle.kappa + 1 / 2))
+    elif the_type == "a_vdf":
         # Characteristic velocity scaling
-        a = 4 * np.pi * T * const.k * array / m * function.char_vel
+        a = 4 * np.pi * temp * const.k * array / mass * char_vel
     else:
         a = array
-    return a if function.the_type == "a_vdf" else 1 - (1j * cf.w + nu) * a
+    return a if the_type == "a_vdf" else 1 - (1j * w + nu) * a
 
 
 @nb.njit(parallel=True)
