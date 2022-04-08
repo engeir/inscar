@@ -161,7 +161,7 @@ class PlotClass:
         plt.figure(figsize=(6, 3))
         if self.plasma:
             # Clip the frequency axis around the plasma frequency.
-            mask = self.find_p_line(freq * 10 ** exp, Is)
+            mask = self.find_p_line(freq * 10**exp, Is)
             freq = freq[mask]
         if func_type == "semilogy":
             plt.xlabel(f"Frequency [{p}Hz]")
@@ -271,7 +271,7 @@ class PlotClass:
                 f, params = self.only_ionline(f, params)
             p, freq, exp = self.scale_f(f)
             if self.plasma:
-                mask = self.find_p_line(freq * 10 ** exp, params)
+                mask = self.find_p_line(freq * 10**exp, params)
                 freq = freq[mask]
             # Make a new subplot / ridge
             ax_objs.append(fig.add_subplot(gs[j : j + 1, 0:]))
@@ -357,7 +357,7 @@ class PlotClass:
         """
         freq = np.copy(frequency)
         exp = sip.split(np.max(freq))[1]
-        freq /= 10 ** exp
+        freq /= 10**exp
         pre = sip.prefix(exp)
         return pre, freq, exp
 

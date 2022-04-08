@@ -115,7 +115,7 @@ class HelloKitty:
                 sys_set["NE"] = z
                 plasma_freq = (
                     sys_set["NE"]
-                    * const.elementary_charge ** 2
+                    * const.elementary_charge**2
                     / (const.m_e * const.epsilon_0)
                 ) ** 0.5 / (2 * np.pi)
                 cf.I_P["F_MIN"] = plasma_freq
