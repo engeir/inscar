@@ -79,13 +79,14 @@ class PlotClass:
 
         If a figure is created from file, the same file name is used.
         """
-        version = ""
-        for d in params:
-            if "version" in d:
-                if any(c.isalpha() for c in version):
-                    version += f'_{d["version"][0]}'
-                else:
-                    version += f'{d["version"][0]}'
+        version = "".join(
+            f'_{d["version"][0]}'
+            if any(c.isalpha() for c in version)
+            else f'{d["version"][0]}'
+            for d in params
+            if "version" in d
+        )
+
         if self.save_path is None:
             params.insert(
                 0,
@@ -107,7 +108,7 @@ class PlotClass:
         if self.save_path is None:
             self.save_path = f"{save_path}/{the_time}_{version}"
         else:
-            self.save_path = save_path + "/" + self.save_path
+            self.save_path = f'{save_path}/{self.save_path}'
         np.savez(
             f"{self.save_path}",
             frequency=f,
@@ -116,7 +117,7 @@ class PlotClass:
             ridge_txt=r_txt,
             meta=params,
         )
-        self.pdffig = PdfPages(str(self.save_path) + ".pdf")
+        self.pdffig = PdfPages(f'{str(self.save_path)}.pdf')
         metadata = self.pdffig.infodict()
         metadata["Title"] = f"ISR Spectrum w/ {version}"
         metadata["Author"] = "Eirik R. Enger"
@@ -125,7 +126,7 @@ class PlotClass:
         ] = f"IS spectrum made using a {version} distribution ' + \
                               'and Simpson's integration rule."
         metadata["Keywords"] = f"{params}"
-        metadata["ModDate"] = datetime.datetime.today()
+        metadata["ModDate"] = datetime.datetime.now()
 
     def plot_normal(self, f, Is, func_type, l_txt):
         """Make a plot using `f` as `x` axis and `Is` as `y` axis.
@@ -206,9 +207,7 @@ class PlotClass:
         if self.save in ["y", "yes"]:
             self.pdffig.attach_note(func_type)
             plt.savefig(self.pdffig, bbox_inches="tight", format="pdf", dpi=600)
-            plt.savefig(
-                str(self.save_path) + f"_page_{self.page}.pgf", bbox_inches="tight"
-            )
+            plt.savefig(f"{str(self.save_path)}_page_{self.page}.pgf", bbox_inches="tight")
             self.page += 1
 
     def plot_ridge(self, frequency, multi_parameters, func_type, l_txt, ridge_txt=None):
@@ -275,8 +274,7 @@ class PlotClass:
                 freq = freq[mask]
             # Make a new subplot / ridge
             ax_objs.append(fig.add_subplot(gs[j : j + 1, 0:]))
-            first = 0
-            for st, s, lab in zip(itertools.cycle(self.line_styles), params, l_txt):
+            for first, (st, s, lab) in enumerate(zip(itertools.cycle(self.line_styles), params, l_txt)):
                 if self.plasma:
                     s = s[mask]
                 plot_object = getattr(ax_objs[-1], func_type)
@@ -294,13 +292,13 @@ class PlotClass:
                     y0 = s[idx]
                     ax_objs[-1].text(
                         freq[idx],
-                        s[idx],
+                        y0,
                         ridge_txt[j],
                         fontsize=14,
                         ha="right",
                         va="bottom",
                     )
-                first += 1
+
                 if j == 0:
                     plt.legend(
                         loc="upper right",
@@ -318,9 +316,7 @@ class PlotClass:
         if self.save in ["y", "yes"]:
             self.pdffig.attach_note(func_type)
             plt.savefig(self.pdffig, bbox_inches="tight", format="pdf", dpi=600)
-            plt.savefig(
-                str(self.save_path) + f"_page_{self.page}.pgf", bbox_inches="tight"
-            )
+            plt.savefig(f"{str(self.save_path)}_page_{self.page}.pgf", bbox_inches="tight")
             self.page += 1
 
     @staticmethod
@@ -391,8 +387,7 @@ class PlotClass:
         lower, upper = f - 1e6, f + 1e6
 
         # Don't want the ion line to ruin the scaling of the y axis
-        if lower < 1e5:
-            lower = 1e5
+        lower = max(lower, 1e5)
         return (freq > lower) & (freq < upper)
 
     @staticmethod
@@ -448,7 +443,7 @@ class PlotClass:
         plt.text(
             x0,
             args[0] + int(np.ceil(diff / 10) * 5) / 2,
-            r"${}$".format(int(np.ceil(diff / 10) * 5)),
+            f"${int(np.ceil(diff / 10) * 5)}$",
             rotation=90,
             ha="right",
             va="center",

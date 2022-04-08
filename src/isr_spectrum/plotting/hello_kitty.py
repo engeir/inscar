@@ -71,10 +71,7 @@ class HelloKitty:
         save = input(
             'Press "y/yes" to save plot, ' + "any other key to dismiss.\t"
         ).lower()
-        if save in ["y", "yes"]:
-            self.save = True
-        else:
-            self.save = False
+        self.save = save in ["y", "yes"]
 
     def create_data(self):
         if self.vol == 1:
@@ -159,18 +156,22 @@ class HelloKitty:
             / const.eV
         )
         res = 0
-        if self.vol == 1:
-            if bool(15.58 < E_plasma < 18.42):
-                res = 1
-            elif bool(22.47 < E_plasma < 23.75):
-                res = 2
-        else:
-            if bool(20.29 < E_plasma < 22.05):
-                res = 1
-            elif bool(22.45 < E_plasma < 23.87):
-                res = 2
-            elif bool(25.38 < E_plasma < 27.14):
-                res = 3
+        if (
+            self.vol == 1
+            and 15.58 < E_plasma < 18.42
+            or self.vol != 1
+            and 20.29 < E_plasma < 22.05
+        ):
+            res = 1
+        elif (
+            self.vol == 1
+            and 22.47 < E_plasma < 23.75
+            or self.vol != 1
+            and 22.45 < E_plasma < 23.87
+        ):
+            res = 2
+        elif self.vol != 1 and 25.38 < E_plasma < 27.14:
+            res = 3
         return power, res, freq
 
     def plot_data(self):
@@ -232,7 +233,7 @@ class HelloKitty:
                 },
             )
 
-            pdffig = PdfPages(str(save_path) + ".pdf")
+            pdffig = PdfPages(f'{str(save_path)}.pdf')
             metadata = pdffig.infodict()
             metadata["Title"] = "Hello Kitty plot"
             metadata["Author"] = "Eirik R. Enger"
@@ -241,7 +242,7 @@ class HelloKitty:
             ] = "Plasma line power as a function of ' + \
                                   'electron number density and aspect angle."
             metadata["Keywords"] = f"{self.meta}"
-            metadata["ModDate"] = datetime.datetime.today()
+            metadata["ModDate"] = datetime.datetime.now()
             pdffig.attach_note("max(s), 100percent power")
             plt.savefig(pdffig, bbox_inches="tight", format="pdf", dpi=600)
             pdffig.close()

@@ -10,9 +10,7 @@ from isr_spectrum.utils import config
 @nb.njit(parallel=True)
 def trapzl(y, x):
     "Pure python version of trapezoid rule."
-    s = 0
-    for i in nb.prange(1, len(x)):
-        s += (x[i] - x[i - 1]) * (y[i] + y[i - 1])
+    s = sum((x[i] - x[i - 1]) * (y[i] + y[i - 1]) for i in nb.prange(1, len(x)))
     return s / 2
 
 
@@ -53,11 +51,11 @@ def integrate(
     w = params.angular_frequency
     nu = particle.collision_frequency
     array = inner_int(w, y, integrand)
-    if the_type == "kappa":  # $\label{lst:gordeyev_scale}$
-        a = array / (2 ** (particle.kappa - 1 / 2) * math.gamma(particle.kappa + 1 / 2))
-    elif the_type == "a_vdf":
+    if the_type == "a_vdf":
         # Characteristic velocity scaling
         a = 4 * np.pi * temp * const.k * array / mass * char_vel
+    elif the_type == "kappa":
+        a = array / (2 ** (particle.kappa - 1 / 2) * math.gamma(particle.kappa + 1 / 2))
     else:
         a = array
     return a if the_type == "a_vdf" else 1 - (1j * w + nu) * a
