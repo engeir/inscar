@@ -10,23 +10,20 @@ import scipy.constants as const
 import scipy.integrate as si
 
 import isr_spectrum as isr
-import isr_spectrum.utils.vdfs as vdfs
+from isr_spectrum import vdfs
 
 
 @attr.s
 class RealDataParticle(isr.Particle):
+    """Create a particle object for the data sets."""
+
     mat_file: str = attr.ib(default="fe_zmuE-07.mat")
     pitch_angle: Union[int, str] = attr.ib(default="all")
     z: int = attr.ib(default=300)
 
 
 class VdfRealData(vdfs.Vdf):
-    """Create an object that make distribution functions from
-    a 1D array.
-
-    Arguments:
-        VDF {ABC} -- abstract base class to make VDF objects
-    """
+    """Create an object that make distribution functions from a 1D array."""
 
     def __init__(self, params: isr.Parameters, particle: RealDataParticle):
         """Initialize VDF parameters.
@@ -43,16 +40,18 @@ class VdfRealData(vdfs.Vdf):
         self.normalize()
 
     def normalize(self):
+        """Normalize the distribution function."""
         v = self.particle.velocity_axis
         func = read.interpolate_data(self.particle)
         f = func * v**2 * 4 * np.pi
         self.A = 1 / si.simps(f, v)
 
     def f_0(self):
+        """Return the distribution function."""
         return self.A * read.interpolate_data(self.particle)
 
 
-def info():
+def _info():
     p = isr.Parameters(aspect_angle=45)
     print(p.aspect_angle)
     print(p.radar_wavenumber)
@@ -62,7 +61,7 @@ def info():
     print(p.aspect_angle)
 
 
-def ion_line():
+def _ion_line():
     e = isr.Particle(temperature=200, kappa=8)
     m_i = 29 * (const.m_p + const.m_n) / 2
     i = isr.Particle(
@@ -89,7 +88,7 @@ def ion_line():
     # plt.show()
 
 
-def ion_line_long():
+def _ion_line_long():
     e = isr.Particle(temperature=200, kappa=8)
     m_i = 29 * (const.m_p + const.m_n) / 2
     i = isr.Particle(
@@ -116,7 +115,7 @@ def ion_line_long():
     plt.show()
 
 
-def plasma_line():
+def _plasma_line():
     e = isr.Particle(temperature=5000, kappa=8)
     m_i = 16 * (const.m_p + const.m_n) / 2
     i = isr.Particle(
@@ -143,7 +142,7 @@ def plasma_line():
     plt.show()
 
 
-def gyro_line():
+def _gyro_line():
     e = isr.Particle(temperature=200, kappa=8, number_density=2e10)
     m_i = 16 * (const.m_p + const.m_n) / 2
     i = isr.Particle(
@@ -170,7 +169,7 @@ def gyro_line():
     plt.show()
 
 
-def real_data_custom_vdf():
+def _real_data_custom_vdf():
     e = RealDataParticle(
         temperature=200, kappa=8, velocity_size=10001, gordeyev_size=10001
     )
@@ -204,9 +203,9 @@ def real_data_custom_vdf():
 
 
 if __name__ == "__main__":
-    info()
-    ion_line()
-    ion_line_long()
-    plasma_line()
-    gyro_line()
-    real_data_custom_vdf()
+    _info()
+    _ion_line()
+    _ion_line_long()
+    _plasma_line()
+    _gyro_line()
+    _real_data_custom_vdf()
