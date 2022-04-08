@@ -10,7 +10,6 @@ import scipy.constants as const
 import scipy.integrate as si
 
 import isr_spectrum as isr
-from isr_spectrum import vdfs
 
 
 @attr.s
@@ -22,7 +21,7 @@ class RealDataParticle(isr.Particle):
     z: int = attr.ib(default=300)
 
 
-class VdfRealData(vdfs.Vdf):
+class VdfRealData(isr.Vdf):
     """Create an object that make distribution functions from a 1D array."""
 
     def __init__(self, params: isr.Parameters, particle: RealDataParticle):
@@ -52,13 +51,21 @@ class VdfRealData(vdfs.Vdf):
 
 
 def _info():
+    print("Setting aspect angle to 45 degrees.")
     p = isr.Parameters(aspect_angle=45)
-    print(p.aspect_angle)
-    print(p.radar_wavenumber)
+    print(f"\tp.aspect_angle = {p.aspect_angle}")
+    print("It's automatically converted to radians!\n")
+    print(
+        "Similarly, setting radar frequency to 430 MHz will "
+        + "automatically update radar wave number:"
+    )
+    print(f"\tp.radar_wavenumber = {p.radar_wavenumber}")
+    print("Changing radar frequency...")
     p.radar_frequency = 430e5
-    print(p.radar_wavenumber)
+    print(f"\tp.radar_wavenumber = {p.radar_wavenumber}\n")
+    print("Setting aspect angle to 360.5 degrees.")
     p.aspect_angle = 360.5
-    print(p.aspect_angle)
+    print(f"\tp.aspect_angle = {p.aspect_angle}")
 
 
 def _ion_line():
