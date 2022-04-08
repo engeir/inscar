@@ -10,6 +10,7 @@ __pycache__
 **/figures
 .python-version
 coverage.xml
+thesis_work/
 
 # Compiled source #
 ###################
