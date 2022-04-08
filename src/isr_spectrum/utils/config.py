@@ -1,7 +1,8 @@
 from typing import Tuple, Union
+
+import attr
 import numpy as np
 import scipy.constants as const
-import attr
 
 
 def is_odd(_, attribute, value):
@@ -113,7 +114,8 @@ class Particle:
             np.linspace(
                 0,
                 self.gordeyev_upper_lim ** (1 / self.gordeyev_exp),
-                self.gordeyev_size, dtype=np.double,
+                self.gordeyev_size,
+                dtype=np.double,
             )
         ) ** self.gordeyev_exp
 

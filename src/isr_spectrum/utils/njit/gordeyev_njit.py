@@ -16,7 +16,7 @@ def trapzl(y, x):
     return s / 2
 
 
-@nb.njit(parallel=True)
+@nb.njit()
 def inner_int(w: np.ndarray, y: np.ndarray, function: np.ndarray):
     """Calculate the Gordeyev integral of the F function.
 
@@ -40,7 +40,13 @@ def inner_int(w: np.ndarray, y: np.ndarray, function: np.ndarray):
     return array
 
 
-def integrate(params: config.Parameters, particle: config.Particle, integrand: np.ndarray, the_type: str, char_vel: float):
+def integrate(
+    params: config.Parameters,
+    particle: config.Particle,
+    integrand: np.ndarray,
+    the_type: str,
+    char_vel: float,
+):
     y = particle.gordeyev_axis
     temp = particle.temperature
     mass = particle.mass
@@ -57,7 +63,7 @@ def integrate(params: config.Parameters, particle: config.Particle, integrand: n
     return a if the_type == "a_vdf" else 1 - (1j * w + nu) * a
 
 
-@nb.njit(parallel=True)
+@nb.njit()
 def integrate_velocity(
     y: np.ndarray, v: np.ndarray, f: np.ndarray, k_r: float, theta: float, w_c: float
 ):
@@ -103,5 +109,5 @@ def p(y, k_r, theta, w_c):
     k_perp = k_r * np.sin(theta)
     k_par = k_r * np.cos(theta)
     return (
-        2 * k_perp ** 2 / w_c ** 2 * (1 - np.cos(y * w_c)) + k_par ** 2 * y ** 2
+        2 * k_perp**2 / w_c**2 * (1 - np.cos(y * w_c)) + k_par**2 * y**2
     ) ** 0.5

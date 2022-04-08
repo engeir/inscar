@@ -8,9 +8,8 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-from isr_spectrum.utils import vdfs
+from isr_spectrum.utils import config, vdfs
 from isr_spectrum.utils.njit import gordeyev_njit
-from isr_spectrum.utils import config
 
 
 class Integrand(ABC):
@@ -73,17 +72,17 @@ class IntKappa(Integrand):
             / self.particle.mass
         )
         self.Z = (2 * self.particle.kappa) ** (1 / 2) * (
-            self.params.radar_wavenumber ** 2
+            self.params.radar_wavenumber**2
             * np.sin(self.params.aspect_angle) ** 2
             * theta_2
-            / self.gyro_frequency ** 2
+            / self.gyro_frequency**2
             * (1 - np.cos(self.gyro_frequency * y))
             + 1
             / 2
-            * self.params.radar_wavenumber ** 2
+            * self.params.radar_wavenumber**2
             * np.cos(self.params.aspect_angle) ** 2
             * theta_2
-            * y ** 2
+            * y**2
         ) ** (1 / 2)
         self.Kn = sps.kv(self.particle.kappa + 1 / 2, self.Z)
         self.Kn[self.Kn == np.inf] = 1
@@ -123,11 +122,11 @@ class IntMaxwell(Integrand):
     def integrand(self):
         return np.exp(
             -self.particle.gordeyev_axis * self.particle.collision_frequency
-            - self.params.radar_wavenumber ** 2
+            - self.params.radar_wavenumber**2
             * np.sin(self.params.aspect_angle) ** 2
             * self.particle.temperature
             * const.k
-            / (self.particle.mass * self.gyro_frequency ** 2)
+            / (self.particle.mass * self.gyro_frequency**2)
             * (1 - np.cos(self.gyro_frequency * self.particle.gordeyev_axis))
             - 0.5
             * (
@@ -224,11 +223,11 @@ class IntLong(Integrand):
         num = (
             abs(self.params.radar_wavenumber)
             * abs(w_c)
-            * (cos_t ** 2 * w_c * y + sin_t ** 2 * np.sin(w_c * y))
+            * (cos_t**2 * w_c * y + sin_t**2 * np.sin(w_c * y))
         )
         term1 = (cos_t * w_c * y) ** 2
-        term2 = -2 * sin_t ** 2 * np.cos(w_c * y)
-        term3 = 2 * sin_t ** 2
+        term2 = -2 * sin_t**2 * np.cos(w_c * y)
+        term3 = 2 * sin_t**2
         den = w_c * (term1 + term2 + term3) ** 0.5
         # np.sign(y[-1]) takes care of weather the limit should be considered taken from above or below.
         # The last element of the np.ndarray is chosen since it is assumed y runs from 0 to some finite real number.

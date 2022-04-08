@@ -50,7 +50,7 @@ class VdfMaxwell(Vdf):
 
     def f_0(self):
         return self.A * np.exp(
-            -self.particle.velocity_axis ** 2
+            -self.particle.velocity_axis**2
             / (2 * self.particle.temperature * const.k / self.particle.mass)
         )
 
@@ -95,9 +95,9 @@ class VdfKappa(Vdf):
         Returns:
             np.ndarray -- 1D array with the VDF values at the sampled points
         """
-        return self.A * (1 + self.particle.velocity_axis ** 2 / (self.particle.kappa * self.theta_2)) ** (
-            -self.particle.kappa - 1
-        )
+        return self.A * (
+            1 + self.particle.velocity_axis**2 / (self.particle.kappa * self.theta_2)
+        ) ** (-self.particle.kappa - 1)
 
 
 class VdfKappa2(Vdf):
@@ -121,7 +121,7 @@ class VdfKappa2(Vdf):
     def normalize(self):
         self.v_th = np.sqrt(self.params["T"] * const.k / self.params["m"])
         self.A = (
-            (np.pi * self.params["kappa"] * self.v_th ** 2) ** (-3 / 2)
+            (np.pi * self.params["kappa"] * self.v_th**2) ** (-3 / 2)
             * sps.gamma(self.params["kappa"])
             / sps.gamma(self.params["kappa"] - 3 / 2)
         )
@@ -136,7 +136,7 @@ class VdfKappa2(Vdf):
         Returns:
             np.ndarray -- 1D array with the VDF values at the sampled points
         """
-        return self.A * (1 + self.v ** 2 / (self.params["kappa"] * self.v_th ** 2)) ** (
+        return self.A * (1 + self.v**2 / (self.params["kappa"] * self.v_th**2)) ** (
             -self.params["kappa"]
         )
 
@@ -163,9 +163,9 @@ class VdfGaussShell(Vdf):
             * (abs(self.v) - self.r) ** 2
             / (2 * self.params["T"] * const.k / self.params["m"])
         )
-        f = func * self.v ** 2 * 4 * np.pi
+        f = func * self.v**2 * 4 * np.pi
         self.A = 1 / si.simps(f, self.v)
-        ev = 0.5 * const.m_e * self.r ** 2 / const.eV
+        ev = 0.5 * const.m_e * self.r**2 / const.eV
         print(f"Gauss shell at E = {round(ev, 2)} eV")
 
     def f_0(self):
@@ -180,4 +180,3 @@ class VdfGaussShell(Vdf):
         )
 
         return func / (1e4 + 1)
-

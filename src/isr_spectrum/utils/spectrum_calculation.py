@@ -7,9 +7,9 @@ from typing import Tuple
 import numpy as np
 import scipy.constants as const
 
+from isr_spectrum.utils import config
 from isr_spectrum.utils import integrand_functions as intf
 from isr_spectrum.utils.njit import gordeyev_njit
-from isr_spectrum.utils import config
 
 
 class SpectrumCalculation:
@@ -62,10 +62,10 @@ class SpectrumCalculation:
         xp_e = self._susceptibility(self.electron, self.electron_integration_function)
 
         with np.errstate(divide="ignore", invalid="ignore"):
-            numerator1 = np.imag(-fe) * np.abs(1 + 2 * xp_i ** 2 * fi) ** 2
-            numerator2 = 4 * xp_e ** 4 * np.imag(-fi) * np.abs(fe) ** 2
+            numerator1 = np.imag(-fe) * np.abs(1 + 2 * xp_i**2 * fi) ** 2
+            numerator2 = 4 * xp_e**4 * np.imag(-fi) * np.abs(fe) ** 2
             numerator = numerator1 + numerator2
-            denominator = np.abs(1 + 2 * xp_e ** 2 * fe + 2 * xp_i ** 2 * fi) ** 2
+            denominator = np.abs(1 + 2 * xp_e**2 * fe + 2 * xp_i**2 * fi) ** 2
             spectrum = (
                 self.electron.number_density
                 / (np.pi * self.params.angular_frequency)
@@ -103,20 +103,18 @@ class SpectrumCalculation:
         if int_func.the_type == "maxwell":
             debye_length = L_Debye(particle.number_density, temp)
             xp = np.sqrt(
-                1 / (2 * debye_length ** 2 * self.params.radar_wavenumber ** 2)
+                1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
             )
         elif int_func.the_type == "kappa":
             debye_length = L_Debye(particle.number_density, temp, kappa=kappa)
             xp = np.sqrt(
-                1 / (2 * debye_length ** 2 * self.params.radar_wavenumber ** 2)
+                1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
             )
         elif int_func.the_type == "a_vdf":
             char_vel = getattr(int_func, "char_vel")
-            debye_length = L_Debye(
-                particle.number_density, temp, char_vel=char_vel
-            )
+            debye_length = L_Debye(particle.number_density, temp, char_vel=char_vel)
             xp = np.sqrt(
-                1 / (2 * debye_length ** 2 * self.params.radar_wavenumber ** 2)
+                1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
             )
         else:
             raise ValueError("Unknown function type.")
@@ -151,19 +149,18 @@ def L_Debye(*args, kappa=None, char_vel=None):
 
     if nargin < 3:
         if kappa is not None:
-            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e ** 2)) * np.sqrt(
+            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)) * np.sqrt(
                 (kappa - 3 / 2) / (kappa - 1 / 2)
             )
         elif char_vel is not None:
-            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e ** 2)) * np.sqrt(
+            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)) * np.sqrt(
                 char_vel
             )
         else:
-            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e ** 2))
+            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2))
     else:
         LD = np.sqrt(
-            Ep0 * const.k / ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e ** 2)
+            Ep0 * const.k / ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e**2)
         )
 
     return LD
-

@@ -1,15 +1,16 @@
 """Example usage of the library."""
 
 from typing import Union
+
+import attr
 import matplotlib.pyplot as plt
 import numpy as np
+import read
 import scipy.constants as const
 import scipy.integrate as si
-import attr
 
 import isr_spectrum as isr
 import isr_spectrum.utils.vdfs as vdfs
-import read
 
 
 @attr.s
@@ -44,7 +45,7 @@ class VdfRealData(vdfs.Vdf):
     def normalize(self):
         v = self.particle.velocity_axis
         func = read.interpolate_data(self.particle)
-        f = func * v ** 2 * 4 * np.pi
+        f = func * v**2 * 4 * np.pi
         self.A = 1 / si.simps(f, v)
 
     def f_0(self):
@@ -170,7 +171,9 @@ def gyro_line():
 
 
 def real_data_custom_vdf():
-    e = RealDataParticle(temperature=200, kappa=8, velocity_size=10001, gordeyev_size=10001)
+    e = RealDataParticle(
+        temperature=200, kappa=8, velocity_size=10001, gordeyev_size=10001
+    )
     m_i = 29 * (const.m_p + const.m_n) / 2
     i = isr.Particle(
         gordeyev_upper_lim=1.5e-2,
@@ -201,9 +204,9 @@ def real_data_custom_vdf():
 
 
 if __name__ == "__main__":
-    # info()
-    # ion_line()
-    # ion_line_long()
-    # plasma_line()
-    # gyro_line()
+    info()
+    ion_line()
+    ion_line_long()
+    plasma_line()
+    gyro_line()
     real_data_custom_vdf()
