@@ -1,5 +1,4 @@
-"""Script containing the integrands used in the Gordeyev integral.
-"""
+"""Script containing the integrands used in the Gordeyev integral."""
 
 from abc import ABC, abstractmethod, abstractproperty
 
@@ -8,8 +7,7 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-from isr_spectrum.utils import config, vdfs
-from isr_spectrum.utils.njit import gordeyev_njit
+from isr_spectrum import config, gordeyev_njit, vdfs
 
 
 class Integrand(ABC):
@@ -21,7 +19,7 @@ class Integrand(ABC):
 
     @abstractproperty
     def the_type(self) -> str:
-        """The type of the intregrand implementation."""
+        """Return the type of the intregrand implementation."""
 
     @abstractmethod
     def initialize(self, params: config.Parameters, particle: config.Particle):
@@ -34,15 +32,13 @@ class Integrand(ABC):
 
     @abstractmethod
     def integrand(self) -> np.ndarray:
-        """Method that returns the np.ndarray that is used as the integrand."""
+        """Return the `np.ndarray` that is used as the integrand."""
 
 
 class IntKappa(Integrand):
-    """Implementation of the integrand of the Gordeyev
-    integral for the kappa distribution from Mace (2003).
+    """Implementation of the integrand of the Gordeyev integral.
 
-    Arguments:
-        Integrand {ABC} -- base class used to create integrand objects
+    This implementation is for the kappa distribution described by Mace (2003).
     """
 
     the_type = "kappa"
@@ -97,12 +93,10 @@ class IntKappa(Integrand):
 
 
 class IntMaxwell(Integrand):
-    """Implementation of the intregrand in the Gordeyev
-    integral for the Maxwellian distribution from
-    e.g. Hagfors (1961) or Mace (2003).
+    """Implementation of the integrand of the Gordeyev integral.
 
-    Arguments:
-        Integrand {ABC} -- base class used to create integrand objects
+    This implementation is for the integral for the Maxwellian distribution from e.g.
+    Hagfors (1961) or Mace (2003).
     """
 
     the_type = "maxwell"
@@ -142,11 +136,10 @@ class IntMaxwell(Integrand):
 
 
 class IntLong(Integrand):
-    """Implementation of the integrand in the Gordeyev
-    integral for the isotropic distribution from Mace (2003).
+    """Implementation of the integrand of the Gordeyev integral.
 
-    Arguments:
-        Integrand {ABC} -- base class used to create integrand objects
+    This implementation is for the integral for the isotropic distribution from Mace
+    (2003).
     """
 
     the_type = "a_vdf"
@@ -172,16 +165,6 @@ class IntLong(Integrand):
         v = self.particle.velocity_axis
         y = self.particle.gordeyev_axis
         f = self.vdf(self.params, self.particle)
-        # if self.params["vdf"] == "kappa":
-        #     f = vdfs.VdfKappa(v, self.params)
-        # elif self.params["vdf"] == "kappa_vol2":
-        #     f = vdfs.VdfKappa2(v, self.params)
-        # elif self.params["vdf"] == "gauss_shell":
-        #     f = vdfs.VdfGaussShell(v, self.params)
-        # elif self.params["vdf"] == "real_data":
-        #     f = vdfs.VdfRealData(v, self.params)
-        # else:  # self.params["vdf"] == "maxwell":
-        #     f = vdfs.VdfMaxwell(v, self.params)
 
         # Compare the velocity integral to the Maxwellian case.
         # This way we make up for the change in characteristic velocity

@@ -1,22 +1,23 @@
+"""Implementation of integrals using numba for parallelization."""
 import math
 
 import numba as nb
 import numpy as np
 import scipy.constants as const
 
-from isr_spectrum.utils import config
+from isr_spectrum import config
 
 
 @nb.njit(parallel=True)
 def trapzl(y, x):
-    "Pure python version of trapezoid rule."
+    """Pure python version of trapezoid rule."""
     s = 0
     for i in nb.prange(1, len(x)):
         s += (x[i] - x[i - 1]) * (y[i] + y[i - 1])
     return s / 2
 
 
-@nb.njit()
+@nb.njit
 def inner_int(w: np.ndarray, y: np.ndarray, function: np.ndarray):
     """Calculate the Gordeyev integral of the F function.
 
@@ -47,6 +48,7 @@ def integrate(
     the_type: str,
     char_vel: float,
 ):
+    """Calculate the Gordeyev integral."""
     y = particle.gordeyev_axis
     temp = particle.temperature
     mass = particle.mass
@@ -63,7 +65,7 @@ def integrate(
     return a if the_type == "a_vdf" else 1 - (1j * w + nu) * a
 
 
-@nb.njit()
+@nb.njit
 def integrate_velocity(
     y: np.ndarray, v: np.ndarray, f: np.ndarray, k_r: float, theta: float, w_c: float
 ):

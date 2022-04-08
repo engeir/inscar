@@ -1,15 +1,11 @@
-"""Script containing the calculation of the power density spectrum
-and other plasma parameters.
-"""
+"""Calculate the power density spectrum and other plasma parameters."""
 
 from typing import Tuple
 
 import numpy as np
 import scipy.constants as const
 
-from isr_spectrum.utils import config
-from isr_spectrum.utils import integrand_functions as intf
-from isr_spectrum.utils.njit import gordeyev_njit
+from isr_spectrum import config, gordeyev_njit, integrand_functions
 
 
 class SpectrumCalculation:
@@ -18,8 +14,8 @@ class SpectrumCalculation:
     def __init__(self):
         self.ion: config.Particle
         self.electron: config.Particle
-        self.ion_integration_function: intf.Integrand
-        self.electron_integration_function: intf.Integrand
+        self.ion_integration_function: integrand_functions.Integrand
+        self.electron_integration_function: integrand_functions.Integrand
         self._calulate_f = self._calulate_f_function
         self._susceptibility = self._susceptibility_function
         self.params: config.Parameters
@@ -33,10 +29,14 @@ class SpectrumCalculation:
     def set_electron(self, electron: config.Particle) -> None:
         self.electron = electron
 
-    def set_ion_integration_function(self, function: intf.Integrand) -> None:
+    def set_ion_integration_function(
+        self, function: integrand_functions.Integrand
+    ) -> None:
         self.ion_integration_function = function
 
-    def set_electron_integration_function(self, function: intf.Integrand) -> None:
+    def set_electron_integration_function(
+        self, function: integrand_functions.Integrand
+    ) -> None:
         self.electron_integration_function = function
 
     def calculate_spectrum(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -78,7 +78,7 @@ class SpectrumCalculation:
         self._calulate_f = f_func
 
     def _calulate_f_function(
-        self, particle: config.Particle, int_func: intf.Integrand
+        self, particle: config.Particle, int_func: integrand_functions.Integrand
     ) -> np.ndarray:
         int_func.initialize(self.params, particle)
         the_type = int_func.the_type
@@ -96,7 +96,7 @@ class SpectrumCalculation:
         self._susceptibility = func
 
     def _susceptibility_function(
-        self, particle: config.Particle, int_func: intf.Integrand
+        self, particle: config.Particle, int_func: integrand_functions.Integrand
     ) -> float:
         kappa = getattr(particle, "kappa", 1)
         temp = particle.temperature

@@ -1,8 +1,6 @@
-"""Velocity distribution function used in the version a_vdf,
-one of the integrands available for use in the Gordeyev integral.
+"""Velocity distribution function to be used by the integrand class `a_vdf`.
 
-Any new VDF must be added as an option in
-the a_vdf function in integrand_functions.py.
+One of the integrands available for use in the Gordeyev integral.
 """
 
 from abc import ABC, abstractmethod
@@ -12,7 +10,7 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-from isr_spectrum.utils import config
+from isr_spectrum import config
 
 
 class Vdf(ABC):

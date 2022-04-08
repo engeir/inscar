@@ -1,3 +1,4 @@
+"""Objects used to configure the physical parameters of the system."""
 from typing import Tuple, Union
 
 import attr
@@ -6,11 +7,13 @@ import scipy.constants as const
 
 
 def is_odd(_, attribute, value):
+    """Verify that a value is odd."""
     if value % 2 == 0:
         raise ValueError(f"{attribute} must be odd")
 
 
 def is_positive(_, attribute, value):
+    """Verify that a value is positive."""
     if not isinstance(value, (int, float)):
         raise ValueError(f"{attribute} must be a positive number")
     if value <= 0:
@@ -18,6 +21,7 @@ def is_positive(_, attribute, value):
 
 
 def is_nonnegative(_, attribute, value):
+    """Verify that a value is non-negative."""
     if not isinstance(value, (int, float)):
         raise ValueError(f"{attribute} must be a non-negative number")
     if value < 0:
@@ -25,6 +29,7 @@ def is_nonnegative(_, attribute, value):
 
 
 def is_range_tuple(_, attribute, value):
+    """Verify that a value is a tuple of two numbers."""
     if not isinstance(value, tuple):
         raise ValueError(f"{attribute} must be a tuple")
     if len(value) != 2:
@@ -38,6 +43,8 @@ def is_range_tuple(_, attribute, value):
 
 @attr.s(auto_attribs=True)
 class Particle:
+    """Object used to configure the physical parameters of a particle."""
+
     gordeyev_upper_lim: Union[float, int] = attr.ib(
         default=1.5e-4,
         validator=is_positive,
@@ -100,6 +107,7 @@ class Particle:
 
     @property
     def velocity_axis(self) -> np.ndarray:
+        """Return the axis for the velocity integral."""
         return (
             np.linspace(
                 0,
@@ -110,6 +118,7 @@ class Particle:
 
     @property
     def gordeyev_axis(self) -> np.ndarray:
+        """Return the axis for the Gordeyev integral."""
         return (
             np.linspace(
                 0,
@@ -122,6 +131,8 @@ class Particle:
 
 @attr.s(auto_attribs=True)
 class Parameters:
+    """Object used to configure the physical parameters of the system."""
+
     radar_frequency: float = attr.ib(
         default=430e6,
         validator=is_positive,
@@ -158,6 +169,7 @@ class Parameters:
 
     @property
     def linear_frequency(self) -> np.ndarray:
+        """Return the linear frequency used for the power spectrum."""
         return (
             np.linspace(
                 self.frequency_range[0], self.frequency_range[1], self.frequency_size
@@ -167,8 +179,10 @@ class Parameters:
 
     @property
     def angular_frequency(self) -> np.ndarray:
+        """Return the angular frequency used for the power spectrum."""
         return self.linear_frequency * 2 * np.pi
 
     @property
     def radar_wavenumber(self) -> float:
+        """Return the radar wave number."""
         return -2 * self.radar_frequency * 2 * np.pi / const.c
