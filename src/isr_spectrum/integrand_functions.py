@@ -22,12 +22,15 @@ class Integrand(ABC):
         """Return the type of the intregrand implementation."""
 
     @abstractmethod
-    def initialize(self, params: config.Parameters, particle: config.Particle):
+    def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
         """Needs an initialization method.
 
-        Arguments:
-            y {np.ndarray} -- array for integration variable
-            params {dict} -- dictionary holding all needed parameters
+        Parameters
+        ----------
+        params : config.Parameters
+            The parameters object.
+        particle : config.Particle
+            The particle object.
         """
 
     @abstractmethod

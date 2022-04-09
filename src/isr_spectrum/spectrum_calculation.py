@@ -1,6 +1,6 @@
 """Calculate the power density spectrum and other plasma parameters."""
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 import scipy.constants as const
@@ -101,18 +101,20 @@ class SpectrumCalculation:
         kappa = getattr(particle, "kappa", 1)
         temp = particle.temperature
         if int_func.the_type == "maxwell":
-            debye_length = L_Debye(particle.number_density, temp)
+            debye_length = get_debye_length(particle.number_density, temp)
             xp = np.sqrt(
                 1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
             )
         elif int_func.the_type == "kappa":
-            debye_length = L_Debye(particle.number_density, temp, kappa=kappa)
+            debye_length = get_debye_length(particle.number_density, temp, kappa=kappa)
             xp = np.sqrt(
                 1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
             )
         elif int_func.the_type == "a_vdf":
             char_vel = getattr(int_func, "char_vel")
-            debye_length = L_Debye(particle.number_density, temp, char_vel=char_vel)
+            debye_length = get_debye_length(
+                particle.number_density, temp, char_vel=char_vel
+            )
             xp = np.sqrt(
                 1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
             )
@@ -121,46 +123,68 @@ class SpectrumCalculation:
         return xp
 
 
-def L_Debye(*args, kappa=None, char_vel=None):
+def get_debye_length(
+    number_density: float,
+    electron_temperature: float,
+    ion_temperature: Optional[float] = None,
+    kappa: Optional[float] = None,
+    char_vel: Optional[float] = None,
+) -> float:
     """Calculate the Debye length.
 
-    Input args may be
-        n_e -- electron number density
-        T_e -- electron temperature
-        T_i -- ion temperature
+    Parameters
+    ----------
+    number_density: float
+        The number density of the plasma.
+    electron_temperature: float
+        The electron temperature.
+    ion_temperature: float, optional
+        The ion temperature.
+    kappa: float, optional
+        Kappa parameter.
+    char_vel: float, optional
+        Characteristic velocity.
 
-    Returns:
-        float -- the Debye length
+    Returns
+    -------
+    float: float
+        Debye length.
     """
-    nargin = len(args)
-    if nargin == 1:
-        n_e = args[0]
-    elif nargin == 2:
-        n_e = args[0]
-        T_e = args[1]
-    elif nargin == 3:
-        n_e = args[0]
-        T_e = args[1]
-        T_i = args[2]
-    else:
-        raise ValueError("Invalid number of input arguments.")
+    vacuum_permittivity = 1e-09 / 36 / np.pi
 
-    Ep0 = 1e-09 / 36 / np.pi
-
-    if nargin < 3:
+    if ion_temperature is None:
         if kappa is not None:
-            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)) * np.sqrt(
-                (kappa - 3 / 2) / (kappa - 1 / 2)
-            )
+            length = np.sqrt(
+                vacuum_permittivity
+                * const.k
+                * electron_temperature
+                / (max(0, number_density) * const.e**2)
+            ) * np.sqrt((kappa - 3 / 2) / (kappa - 1 / 2))
         elif char_vel is not None:
-            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2)) * np.sqrt(
-                char_vel
-            )
+            length = np.sqrt(
+                vacuum_permittivity
+                * const.k
+                * electron_temperature
+                / (max(0, number_density) * const.e**2)
+            ) * np.sqrt(char_vel)
         else:
-            LD = np.sqrt(Ep0 * const.k * T_e / (max(0, n_e) * const.e**2))
+            length = np.sqrt(
+                vacuum_permittivity
+                * const.k
+                * electron_temperature
+                / (max(0, number_density) * const.e**2)
+            )
     else:
-        LD = np.sqrt(
-            Ep0 * const.k / ((max(0, n_e) / T_e + max(0, n_e) / T_i) / const.e**2)
+        length = np.sqrt(
+            vacuum_permittivity
+            * const.k
+            / (
+                (
+                    max(0, number_density) / electron_temperature
+                    + max(0, number_density) / ion_temperature
+                )
+                / const.e**2
+            )
         )
 
-    return LD
+    return length

@@ -37,21 +37,21 @@ repos:
     types: [python]
     exclude: setup.py
 
-  - id: mypy
-    name: mypy
-    stages: [commit]
-    language: system
-    entry: poetry run mypy
-    types: [python]
-    require_serial: true
-
-  - id: darglint
-    name: darglint
-    stages: [commit]
-    language: system
-    entry: poetry run darglint src
-    types: [python]
-    require_serial: true
+  # - id: mypy
+  #   name: mypy
+  #   stages: [commit]
+  #   language: system
+  #   entry: poetry run mypy
+  #   types: [python]
+  #   require_serial: true
+  #
+  # - id: darglint
+  #   name: darglint
+  #   stages: [commit]
+  #   language: system
+  #   entry: poetry run darglint src
+  #   types: [python]
+  #   require_serial: true
 
   - id: pyupgrade
     name: pyupgrade

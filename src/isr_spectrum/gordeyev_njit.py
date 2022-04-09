@@ -68,7 +68,7 @@ def integrate(
 @nb.njit
 def integrate_velocity(
     y: np.ndarray, v: np.ndarray, f: np.ndarray, k_r: float, theta: float, w_c: float
-):
+) -> np.ndarray:
     """Calculate the velocity integral.
 
     Parameters
@@ -85,6 +85,11 @@ def integrate_velocity(
         The radar aspect angle.
     w_c : float
         The gyro frequency.
+
+    Returns
+    -------
+    np.ndarray
+        The integrated function.
     """
     array = np.zeros_like(y)
     for idx in nb.prange(len(y)):
@@ -93,15 +98,19 @@ def integrate_velocity(
 
 
 @nb.njit
-def p(y, k_r, theta, w_c):
+def p(y: np.ndarray, k_r: float, theta: float, w_c: float):
     """From Mace [2003].
 
     Parameters
     ----------
     y: np.ndarray
         Parameter from Gordeyev integral
-    params: dict
-        Plasma parameters
+    k_r: float
+        The radar wave number.
+    theta: float
+        The radar aspect angle.
+    w_c: float
+        The gyro frequency.
 
     Returns
     -------
