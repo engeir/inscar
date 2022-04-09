@@ -31,7 +31,7 @@ def trapz(y, x) -> float:
     return s / 2
 
 
-@nb.njit
+@nb.njit(cache=True)
 def inner_int(w: np.ndarray, x: np.ndarray, function: np.ndarray) -> np.ndarray:
     """Calculate the Gordeyev integral of the F function.
 
@@ -102,7 +102,7 @@ def integrate(
     return a if the_type == "a_vdf" else 1 - (1j * w + nu) * a
 
 
-@nb.njit
+@nb.njit(cache=True)
 def integrate_velocity(
     y: np.ndarray, v: np.ndarray, f: np.ndarray, k_r: float, theta: float, w_c: float
 ) -> np.ndarray:
@@ -134,7 +134,7 @@ def integrate_velocity(
     return array
 
 
-@nb.njit
+@nb.njit(cache=True)
 def p(y: np.ndarray, k_r: float, theta: float, w_c: float):
     """From Mace [2003].
 

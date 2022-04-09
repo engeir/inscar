@@ -1,7 +1,5 @@
 """Test cases for the numba integration module."""
 
-import timeit
-
 import numpy as np
 
 import isr_spectrum as isr
@@ -14,12 +12,7 @@ def test_trapz() -> None:
     integral_np = np.trapz(values, axis)
     integral_nb = nb_int.trapz(values, axis)
     assert integral_np == 10
-    assert integral_np == integral_nb
-    axis = np.linspace(0, 20, int(4e4))
-    values = np.linspace(0, 1, int(4e4))
-    t1 = timeit.timeit(lambda: np.trapz(values, axis), number=10)
-    t2 = timeit.timeit(lambda: nb_int.trapz(values, axis), number=10)
-    print(f"Numpy is faster: {t1 < t2} (numpy: {t1}, numba: {t2})")
+    assert round(integral_np, 1) == round(integral_nb, 1)
 
 
 def _inner_int(w: np.ndarray, x: np.ndarray, function: np.ndarray) -> np.ndarray:
@@ -31,28 +24,11 @@ def _inner_int(w: np.ndarray, x: np.ndarray, function: np.ndarray) -> np.ndarray
 
 def test_inner_int() -> None:
     w = np.linspace(0, 10, 10)
-    x = np.linspace(0, 10, 10)
-    function = np.linspace(0, 1, 10)
+    x = np.linspace(0, 10, 100)
+    function = np.linspace(0, 1, 100)
     array_np = _inner_int(w, x, function)
     array_nb = nb_int.inner_int(w, x, function)
     assert np.allclose(array_np, array_nb)
-    # t1 = timeit.timeit(lambda: _inner_int(w, x, function), number=1000)
-    # t2 = timeit.timeit(lambda: nb_int.inner_int(w, x, function), number=1000)
-    # print(f"Numpy is faster: {t1 < t2} (numpy: {t1}, numba: {t2})")
-    w = np.linspace(0, 10, 1000)
-    x = np.linspace(0, 10, 100000)
-    function = np.linspace(0, 1, 100000)
-    # t1 = timeit.timeit(lambda: _inner_int(w, x, function), number=1)
-    # print("Halfway")
-    # t2 = timeit.timeit(lambda: nb_int.inner_int(w, x, function), number=1)
-    # print(f"Numpy is faster: {t1 < t2} (numpy: {t1}, numba: {t2})")
-    w = np.linspace(0, 10, 100000)
-    x = np.linspace(0, 10, 1000)
-    function = np.linspace(0, 1, 1000)
-    # t1 = timeit.timeit(lambda: _inner_int(w, x, function), number=1)
-    # print("Halfway")
-    # t2 = timeit.timeit(lambda: nb_int.inner_int(w, x, function), number=1)
-    # print(f"Numpy is faster: {t1 < t2} (numpy: {t1}, numba: {t2})")
 
 
 def test_integrate() -> None:
