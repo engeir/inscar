@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 import numpy as np
 import scipy.constants as const
 
-from isr_spectrum import config, gordeyev_njit, integrand_functions
+from isr_spectrum import config, integrand_functions, numba_integration
 
 
 class SpectrumCalculation:
@@ -84,7 +84,7 @@ class SpectrumCalculation:
         the_type = int_func.the_type
         integrand = int_func.integrand()
         characteristic_velocity = getattr(int_func, "char_vel", None)
-        return gordeyev_njit.integrate(
+        return numba_integration.integrate(
             self.params,
             particle,
             integrand,

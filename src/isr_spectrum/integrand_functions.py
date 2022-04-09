@@ -7,7 +7,7 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-from isr_spectrum import config, gordeyev_njit, vdfs
+from isr_spectrum import config, numba_integration, vdfs
 
 
 class Integrand(ABC):
@@ -169,10 +169,10 @@ class IntLong(Integrand):
         y = self.particle.gordeyev_axis
         f = self.vdf(self.params, self.particle)
 
-        # Compare the velocity integral to the Maxwellian case.
-        # This way we make up for the change in characteristic velocity
-        # and Debye length for different particle distributions.
-        res_maxwell = gordeyev_njit.integrate_velocity(
+        # Compare the velocity integral to the Maxwellian case. This way we make up for
+        # the change in characteristic velocity and Debye length for different particle
+        # distributions.
+        res_maxwell = numba_integration.integrate_velocity(
             self.particle.gordeyev_axis,
             v,
             vdfs.VdfMaxwell(self.params, self.particle).f_0(),
@@ -182,7 +182,7 @@ class IntLong(Integrand):
         )
         int_maxwell = si.simps(res_maxwell, y)
         v_func = f.f_0()
-        res = gordeyev_njit.integrate_velocity(
+        res = numba_integration.integrate_velocity(
             self.particle.gordeyev_axis,
             v,
             v_func,

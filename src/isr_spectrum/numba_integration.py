@@ -9,8 +9,8 @@ import scipy.constants as const
 from isr_spectrum import config
 
 
-@nb.njit(parallel=True)
-def trapzl(y, x) -> float:
+@nb.njit(parallel=True, cache=True)
+def trapz(y, x) -> float:
     """Pure python version of trapezoid rule.
 
     Parameters
@@ -51,7 +51,7 @@ def inner_int(w: np.ndarray, x: np.ndarray, function: np.ndarray) -> np.ndarray:
     """
     array = np.zeros_like(w, dtype=np.complex128)
     for idx in nb.prange(len(w)):
-        array[idx] = trapzl(np.exp(-1j * w[idx] * x) * function, x)
+        array[idx] = trapz(np.exp(-1j * w[idx] * x) * function, x)
     return array
 
 
@@ -62,7 +62,11 @@ def integrate(
     the_type: str,
     char_vel: Optional[float] = None,
 ) -> np.ndarray:
-    """Calculate the Gordeyev integral.
+    """Calculate the Gordeyev integral for each frequency.
+
+    This locates the Gordeyev axis of the particle object, and for each frequency
+    calculates the Gordeyev integral corresponding to it, returning an array of the same
+    length as the frequency array.
 
     Parameters
     ----------
@@ -88,7 +92,7 @@ def integrate(
     w = params.angular_frequency
     nu = particle.collision_frequency
     array = inner_int(w, y, integrand)
-    if the_type == "kappa":  # $\label{lst:gordeyev_scale}$
+    if the_type == "kappa":
         a = array / (2 ** (particle.kappa - 1 / 2) * math.gamma(particle.kappa + 1 / 2))
     elif the_type == "a_vdf":
         # Characteristic velocity scaling
@@ -126,7 +130,7 @@ def integrate_velocity(
     """
     array = np.zeros_like(y)
     for idx in nb.prange(len(y)):
-        array[idx] = trapzl(v * np.sin(p(y[idx], k_r, theta, w_c) * v) * f, v)
+        array[idx] = trapz(v * np.sin(p(y[idx], k_r, theta, w_c) * v) * f, v)
     return array
 
 

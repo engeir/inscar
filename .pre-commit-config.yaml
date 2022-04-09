@@ -61,10 +61,10 @@ repos:
     types: [python]
     require_serial: true
 
-  # - id: pytest
-  #   name: pytest
-  #   stages: [commit]
-  #   language: system
-  #   entry: poetry run pytest tests
-  #   types: [python]
-  #   pass_filenames: false
+  - id: pytest
+    name: pytest
+    stages: [commit]
+    language: system
+    entry: poetry run pytest tests
+    types: [python]
+    pass_filenames: false

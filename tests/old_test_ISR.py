@@ -1,22 +1,20 @@
-"""This script implements tests for
-functions used throughout the program.
+"""This script implements tests for functions used throughout the program.
 
 Run from directory `program` with command
 python -m unittest test.test_ISR -b
 """
 
 import multiprocessing as mp
+import unittest
+
+import numpy as np
+import scipy.constants as const
+import scipy.integrate as si
+
+import isr_spectrum as isr
+from isr_spectrum import vdfs
 
 mp.set_start_method("fork")
-
-import unittest  # pylint: disable=C0413
-
-import numpy as np  # pylint: disable=C0413
-import scipy.constants as const  # pylint: disable=C0413
-import scipy.integrate as si  # pylint: disable=C0413
-
-from isr_spectrum.utils import spectrum_calculation as isr  # pylint: disable=C0413
-from isr_spectrum.utils import vdfs  # pylint: disable=C0413
 
 
 class TestISR(unittest.TestCase):
@@ -130,7 +128,7 @@ class TestVDF(unittest.TestCase):
 
     def tearDown(self):
         # The function f is scaled with the Jacobian of cartesian to spherical
-        f = self.f.f_0() * self.v ** 2 * 4 * np.pi
+        f = self.f.f_0() * self.v**2 * 4 * np.pi
         res = si.simps(f, self.v)
         self.assertAlmostEqual(res, 1, places=6)
 
