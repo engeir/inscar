@@ -1,5 +1,6 @@
 """Implementation of integrals using numba for parallelization."""
 import math
+from typing import Optional
 
 import numba as nb
 import numpy as np
@@ -9,8 +10,21 @@ from isr_spectrum import config
 
 
 @nb.njit(parallel=True)
-def trapzl(y, x):
-    """Pure python version of trapezoid rule."""
+def trapzl(y, x) -> float:
+    """Pure python version of trapezoid rule.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        Function to integrate over.
+    x : np.ndarray
+        The axis to integrate along.
+
+    Returns
+    -------
+    float
+        The value of the integral.
+    """
     s = 0
     for i in nb.prange(1, len(x)):
         s += (x[i] - x[i - 1]) * (y[i] + y[i - 1])
@@ -18,14 +32,14 @@ def trapzl(y, x):
 
 
 @nb.njit
-def inner_int(w: np.ndarray, y: np.ndarray, function: np.ndarray):
+def inner_int(w: np.ndarray, x: np.ndarray, function: np.ndarray) -> np.ndarray:
     """Calculate the Gordeyev integral of the F function.
 
     Parameters
     ----------
     w : ndarray
         Angular frequency array.
-    y : np.ndarray
+    x : np.ndarray
         The axis of the F function.
     function : np.ndarray
         Function to integrate over.
@@ -37,7 +51,7 @@ def inner_int(w: np.ndarray, y: np.ndarray, function: np.ndarray):
     """
     array = np.zeros_like(w, dtype=np.complex128)
     for idx in nb.prange(len(w)):
-        array[idx] = trapzl(np.exp(-1j * w[idx] * y) * function, y)
+        array[idx] = trapzl(np.exp(-1j * w[idx] * x) * function, x)
     return array
 
 
@@ -46,9 +60,28 @@ def integrate(
     particle: config.Particle,
     integrand: np.ndarray,
     the_type: str,
-    char_vel: float,
-):
-    """Calculate the Gordeyev integral."""
+    char_vel: Optional[float] = None,
+) -> np.ndarray:
+    """Calculate the Gordeyev integral.
+
+    Parameters
+    ----------
+    params : config.Parameters
+        Parameters object with simulation parameters.
+    particle : config.Particle
+        Particles object with particle parameters.
+    integrand : np.ndarray
+        Function to integrate over.
+    the_type : str
+        Defines which type of `Integrand` class that is used.
+    char_vel : float, optional
+        Characteristic velocity of the particle.
+
+    Returns
+    -------
+    np.ndarray
+        The integral evaluated along the whole Gordeyev frequency axis of the particle.
+    """
     y = particle.gordeyev_axis
     temp = particle.temperature
     mass = particle.mass

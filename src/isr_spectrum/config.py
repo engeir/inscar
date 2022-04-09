@@ -41,6 +41,11 @@ def is_range_tuple(_, attribute, value):
         raise ValueError(f"{attribute} must be a tuple of int/floats")
 
 
+def to_radians(value) -> float:
+    """Convert degrees to radians."""
+    return value * np.pi / 180
+
+
 @attr.s(auto_attribs=True)
 class Particle:
     """Object used to configure the physical parameters of a particle."""
@@ -51,7 +56,7 @@ class Particle:
         on_setattr=attr.setters.validate,
     )
     gordeyev_size: int = attr.ib(
-        default=8e4 + 1,
+        default=int(8e4 + 1),
         validator=is_odd,
         on_setattr=[attr.setters.convert, attr.setters.validate],
         converter=int,
@@ -68,7 +73,7 @@ class Particle:
         on_setattr=attr.setters.validate,
     )
     velocity_size: int = attr.ib(
-        default=4e4 + 1,
+        default=int(4e4 + 1),
         validator=is_odd,
         on_setattr=[attr.setters.convert, attr.setters.validate],
         converter=int,
@@ -144,7 +149,7 @@ class Parameters:
         on_setattr=attr.setters.validate,
     )
     frequency_size: int = attr.ib(
-        default=1e4 + 1,
+        default=int(1e4 + 1),
         validator=is_odd,
         on_setattr=[attr.setters.convert, attr.setters.validate],
         converter=int,
@@ -164,7 +169,7 @@ class Parameters:
         default=45,
         validator=attr.validators.instance_of((int, float)),
         on_setattr=[attr.setters.convert, attr.setters.validate],
-        converter=np.radians,
+        converter=to_radians,
     )
 
     @property

@@ -31,7 +31,7 @@ class VdfRealData(isr.Vdf):
         ----------
         params: isr.Parameters
             Parameters object.
-        particle: isr.particle
+        particle: RealDataParticle
             Particle object.
         """
         self.params = params
@@ -91,8 +91,10 @@ def _ion_line():
     sim.set_ion_integration_function(isr.IntMaxwell())
     sim.set_electron_integration_function(isr.IntMaxwell())
     x, y = sim.calculate_spectrum()
+
+    plt.figure()
+    plt.title("Ion line")
     plt.plot(x, y)
-    # plt.show()
 
 
 def _ion_line_long():
@@ -118,8 +120,10 @@ def _ion_line_long():
     sim.set_ion_integration_function(isr.IntMaxwell())
     sim.set_electron_integration_function(isr.IntLong())
     x, y = sim.calculate_spectrum()
+
+    plt.figure()
+    plt.title("Ion line long")
     plt.plot(x, y)
-    plt.show()
 
 
 def _plasma_line():
@@ -145,8 +149,10 @@ def _plasma_line():
     sim.set_ion_integration_function(isr.IntMaxwell())
     sim.set_electron_integration_function(isr.IntMaxwell())
     x, y = sim.calculate_spectrum()
+
+    plt.figure()
+    plt.title("Plasma line")
     plt.plot(x, y)
-    plt.show()
 
 
 def _gyro_line():
@@ -172,8 +178,10 @@ def _gyro_line():
     sim.set_ion_integration_function(isr.IntMaxwell())
     sim.set_electron_integration_function(isr.IntMaxwell())
     x, y = sim.calculate_spectrum()
+
+    plt.figure()
+    plt.title("Gyro-line")
     plt.semilogy(x, y)
-    plt.show()
 
 
 def _real_data_custom_vdf():
@@ -205,8 +213,10 @@ def _real_data_custom_vdf():
     electron_int_func.set_vdf(VdfRealData)
     sim.set_electron_integration_function(electron_int_func)
     x, y = sim.calculate_spectrum()
+
+    plt.figure()
+    plt.title("Real data")
     plt.plot(x, y)
-    plt.show()
 
 
 if __name__ == "__main__":
@@ -216,3 +226,4 @@ if __name__ == "__main__":
     _plasma_line()
     _gyro_line()
     _real_data_custom_vdf()
+    plt.show()
