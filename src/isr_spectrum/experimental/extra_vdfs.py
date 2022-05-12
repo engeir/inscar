@@ -26,6 +26,7 @@ class VdfKappa2(isr.Vdf):
         self.normalize()
 
     def normalize(self) -> None:
+        """Calculate the normalization for the velocity distribution function."""
         self.v_th = np.sqrt(self.particle.temperature * const.k / self.particle.mass)
         self.A = (
             (np.pi * self.particle.kappa * self.v_th**2) ** (-3 / 2)
@@ -74,6 +75,7 @@ class VdfGaussShell(isr.Vdf):
         self.normalize()
 
     def normalize(self) -> None:
+        """Calculate the normalization for the velocity distribution function."""
         func = np.exp(
             -self.steep
             * (abs(self.particle.velocity_axis) - self.r) ** 2
@@ -85,6 +87,15 @@ class VdfGaussShell(isr.Vdf):
         print(f"Gauss shell at E = {round(ev, 2)} eV")
 
     def f_0(self) -> np.ndarray:
+        """Return the values along velocity `v` of a Gaussian shell VDF.
+
+        This implementation need more testing and refining.
+
+        Returns
+        -------
+        np.ndarray
+            1D array with the VDF values at the sampled points
+        """
         func = (
             self.A
             * np.exp(

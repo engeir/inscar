@@ -23,7 +23,7 @@ class Integrand(ABC):
 
     @abstractmethod
     def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
-        """Needs an initialization method.
+        """Initialise the kappa integrand object.
 
         Parameters
         ----------
@@ -46,22 +46,23 @@ class IntKappa(Integrand):
 
     the_type = "kappa"
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Set the attributes of the class."""
         self.params: config.Parameters
         self.particle: config.Particle
         self.gyro_frequency: float
-        self.Z: float
-        self.Kn: float
+        self.Z: np.ndarray
+        self.Kn: np.ndarray
 
-    def initialize(self, params: config.Parameters, particle: config.Particle):
+    def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
         self.params = params
         self.particle = particle
         self.gyro_frequency = (
             const.e * self.params.magnetic_field_strength / self.particle.mass
         )
-        self.z_func()
+        self._z_func()
 
-    def z_func(self):
+    def _z_func(self) -> None:
         y = self.particle.gordeyev_axis
         theta_2 = (
             2
@@ -86,7 +87,7 @@ class IntKappa(Integrand):
         self.Kn = sps.kv(self.particle.kappa + 1 / 2, self.Z)
         self.Kn[self.Kn == np.inf] = 1
 
-    def integrand(self):
+    def integrand(self) -> np.ndarray:
         y = self.particle.gordeyev_axis
         return (
             self.Z ** (self.particle.kappa + 0.5)
@@ -104,19 +105,20 @@ class IntMaxwell(Integrand):
 
     the_type = "maxwell"
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Set the attributes of the class."""
         self.params: config.Parameters
         self.particle: config.Particle
         self.gyro_frequency: float
 
-    def initialize(self, params: config.Parameters, particle: config.Particle):
+    def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
         self.params = params
         self.particle = particle
         self.gyro_frequency = (
             const.e * self.params.magnetic_field_strength / self.particle.mass
         )
 
-    def integrand(self):
+    def integrand(self) -> np.ndarray:
         return np.exp(
             -self.particle.gordeyev_axis * self.particle.collision_frequency
             - self.params.radar_wavenumber**2
@@ -147,24 +149,25 @@ class IntLong(Integrand):
 
     the_type = "a_vdf"
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Set the attributes of the class."""
         self.params: config.Parameters
         self.particle: config.Particle
         self.char_vel: float
         self.vdf = vdfs.VdfMaxwell
         self.gyro_frequency: float
 
-    def set_vdf(self, vdf):
+    def set_vdf(self, vdf) -> None:
         self.vdf = vdf
 
-    def initialize(self, params: config.Parameters, particle: config.Particle):
+    def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
         self.params = params
         self.particle = particle
         self.gyro_frequency = (
             const.e * self.params.magnetic_field_strength / self.particle.mass
         )
 
-    def v_int(self):
+    def _v_int(self) -> np.ndarray:
         v = self.particle.velocity_axis
         y = self.particle.gordeyev_axis
         f = self.vdf(self.params, self.particle)
@@ -199,7 +202,7 @@ class IntLong(Integrand):
         )
         return res
 
-    def p_d(self):
+    def _p_d(self) -> np.ndarray:
         y = self.particle.gordeyev_axis
         # At $ y=0 $ we get $ 0/0 $, so we use
         # $ \lim_{y\rightarrow 0^+}\mathrm{d}p/\mathrm{d}y = |k| |w_c| / \sqrt(w_c^2) $ (from above, opposite sign from below)
@@ -224,5 +227,5 @@ class IntLong(Integrand):
 
         return out
 
-    def integrand(self):
-        return self.p_d() * self.v_int()
+    def integrand(self) -> np.ndarray:
+        return self._p_d() * self._v_int()

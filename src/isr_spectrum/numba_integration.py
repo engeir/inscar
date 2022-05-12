@@ -135,7 +135,7 @@ def integrate_velocity(
 
 
 @nb.njit(cache=True)
-def p(y: np.ndarray, k_r: float, theta: float, w_c: float):
+def p(y: np.ndarray, k_r: float, theta: float, w_c: float) -> np.ndarray:
     """From Mace [2003].
 
     Parameters

@@ -1,6 +1,6 @@
 """Calculate the power density spectrum and other plasma parameters."""
 
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import numpy as np
 import scipy.constants as const
@@ -12,6 +12,7 @@ class SpectrumCalculation:
     """Class containing the calculation of the power density spectrum."""
 
     def __init__(self):
+        """Create the basic spectrum calculation object with empty attributes."""
         self.ion: config.Particle
         self.electron: config.Particle
         self.ion_integration_function: integrand_functions.Integrand
@@ -21,25 +22,73 @@ class SpectrumCalculation:
         self.params: config.Parameters
 
     def set_params(self, params: config.Parameters) -> None:
+        """Set the plasma parameters.
+
+        Parameters
+        ----------
+        params: config.Parameters
+            An instance of the config.Parameters class.
+        """
         self.params = params
 
     def set_ion(self, ion: config.Particle) -> None:
+        """Set the ion particles to use.
+
+        Parameters
+        ----------
+        ion: config.Particle
+            An instance of the config.Particle class, representing ions.
+        """
         self.ion = ion
 
     def set_electron(self, electron: config.Particle) -> None:
+        """Set the electron particles to use.
+
+        Parameters
+        ----------
+        electron: config.Particle
+            An instance of the config.Particle class, representing electrons.
+        """
         self.electron = electron
 
     def set_ion_integration_function(
         self, function: integrand_functions.Integrand
     ) -> None:
+        """Set the ion integration method to use.
+
+        Parameters
+        ----------
+        function: integrand_functions.Integrand
+            An object of type integrand_functions.Integrand, representing the ions.
+        """
         self.ion_integration_function = function
 
     def set_electron_integration_function(
         self, function: integrand_functions.Integrand
     ) -> None:
+        """Set the electron integration method to use.
+
+        Parameters
+        ----------
+        function: integrand_functions.Integrand
+            An object of type integrand_functions.Integrand, representing the electrons.
+        """
         self.electron_integration_function = function
 
     def calculate_spectrum(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Calculate a spectrum based on the given parameters and calculation methods.
+
+        Returns
+        -------
+        np.ndarray
+            The frequency axis in the first position and the values along the axis in
+            the second position.
+
+        Raises
+        ------
+        ValueError
+            If any of the needed attribute objects are not set.
+        """
         if not hasattr(self, "params"):
             raise ValueError("No parameters set. Use set_params().")
         if not hasattr(self, "ion"):
@@ -74,7 +123,17 @@ class SpectrumCalculation:
             )
         return self.params.linear_frequency, spectrum
 
-    def set_calculate_f_function(self, f_func) -> None:
+    def set_calculate_f_function(
+        self, f_func: Callable[[config.Particle, integrand_functions.Integrand], float]
+    ) -> None:
+        """Set what function to use to calculate the F function.
+
+        Parameters
+        ----------
+        f_func: Callable[[config.Particle, integrand_functions.Integrand], float]
+            A function that take a particle and an integrand function as input, and that
+            calculates the F function based on these, returning a numpy array.
+        """
         self._calulate_f = f_func
 
     def _calulate_f_function(
@@ -92,7 +151,18 @@ class SpectrumCalculation:
             characteristic_velocity,
         )
 
-    def set_susceptibility_function(self, func) -> None:
+    def set_susceptibility_function(
+        self, func: Callable[[config.Particle, integrand_functions.Integrand], float]
+    ) -> None:
+        """Set what function to use to calculate the susceptibility function.
+
+        Parameters
+        ----------
+        func: Callable[[config.Particle, integrand_functions.Integrand], float]
+            A function that take a particle and an integrand function as input, and that
+            calculates the susceptibility function based on these, returning a single
+            float.
+        """
         self._susceptibility = func
 
     def _susceptibility_function(
