@@ -54,53 +54,31 @@ def interpolate_data(particle: examples.RealDataParticle) -> np.ndarray:
         If `pitch_angle` has incompatible values
     """
     v = particle.velocity_axis
-    if os.path.basename(os.path.realpath(sys.argv[0])) != "main.py":
-        path = "data/arecibo/"
+    path = "data/arecibo/"
+    if os.path.basename(os.path.realpath(sys.argv[0])) == "main.py":
         if not os.path.exists(path):
             path = "src/isr_spectrum/data/arecibo/"
-        x = loadmat(path + particle.mat_file)
-        data = x["fe_zmuE"]
-        if isinstance(particle.pitch_angle, list):
-            if all(isinstance(x, int) for x in particle.pitch_angle):
-                sum_over_pitch = data[:, particle.pitch_angle, :]
-                norm = len(particle.pitch_angle)
-            else:
-                raise ValueError("pitch_angle must be a list of integers")
-        else:
-            norm = 18
-        sum_over_pitch = (
-            np.einsum("ijk->ik", data) / norm
-        )  # removes j-dimansion through dot-product
-        idx = int(np.argwhere(read_dat_file("z4fe.dat") == particle.z))
-        f_1 = sum_over_pitch[idx, :]
-        energies = read_dat_file("E4fe.dat")
+    elif not os.path.exists(path):
+        path = "src/isr_spectrum/data/arecibo/"
+    x = loadmat(path + particle.mat_file)
+    data = x["fe_zmuE"]
+    if isinstance(particle.pitch_angle, list):
+        if not all(isinstance(x, int) for x in particle.pitch_angle):
+            raise ValueError("pitch_angle must be a list of integers")
+        sum_over_pitch = data[:, particle.pitch_angle, :]
+        norm = len(particle.pitch_angle)
     else:
-        path = "data/arecibo/"
-        if not os.path.exists(path):
-            path = "src/isr_spectrum/data/arecibo/"
-        x = loadmat(path + particle.mat_file)
-        data = x["fe_zmuE"]
-        if isinstance(particle.pitch_angle, list):
-            if all(isinstance(x, int) for x in particle.pitch_angle):
-                sum_over_pitch = data[:, particle.pitch_angle, :]
-                norm = len(particle.pitch_angle)
-            else:
-                raise ValueError("pitch_angle must be a list of integers")
-        else:
-            norm = 18
-        sum_over_pitch = (
-            np.einsum("ijk->ik", data) / norm
-        )  # removes j-dimansion through dot-product
-        idx = int(np.argwhere(read_dat_file("z4fe.dat") == particle.z))
-        f_1 = sum_over_pitch[idx, :]
-        energies = read_dat_file("E4fe.dat")
-
+        norm = 18
+    sum_over_pitch = (
+        np.einsum("ijk->ik", data) / norm
+    )  # removes j-dimansion through dot-product
+    idx = int(np.argwhere(read_dat_file("z4fe.dat") == particle.z))
+    f_1 = sum_over_pitch[idx, :]
+    energies = read_dat_file("E4fe.dat")
     velocities = (2 * energies * const.eV / particle.mass) ** 0.5
     new_f1 = np.interp(v, velocities, f_1)
     f_0 = f_0_maxwell(particle)
-    f0_f1 = f_0 + new_f1
-
-    return f0_f1
+    return f_0 + new_f1
 
 
 def read_dat_file(file) -> np.ndarray:
