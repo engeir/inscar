@@ -7,6 +7,7 @@ import isr_spectrum as isr
 
 
 def test_missing_objects() -> None:
+    """Test the initialisation of a new spectrum calculation."""
     sim = isr.SpectrumCalculation()
 
     params = isr.Parameters()

@@ -5,11 +5,11 @@ description = ""
 authors = ["engeir <eirroleng@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.10"
+python = ">=3.8,<3.11"
 numpy = "^1.20.2"
 matplotlib = "^3.4.1"
 scipy = "^1.6.2"
-numba = "^0.53.1"
+numba = "^0.55.1"
 attrs = "^21.4.0"
 
 [tool.poetry.dev-dependencies]

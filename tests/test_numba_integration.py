@@ -7,6 +7,7 @@ from isr_spectrum import numba_integration as nb_int
 
 
 def test_trapz() -> None:
+    """Test the `trapz` function."""
     axis = np.linspace(0, 20, 20)
     values = np.linspace(0, 1, 20)
     integral_np = np.trapz(values, axis)
@@ -23,6 +24,7 @@ def _inner_int(w: np.ndarray, x: np.ndarray, function: np.ndarray) -> np.ndarray
 
 
 def test_inner_int() -> None:
+    """Test the `inner_int` function."""
     w = np.linspace(0, 10, 10)
     x = np.linspace(0, 10, 100)
     function = np.linspace(0, 1, 100)
@@ -32,6 +34,7 @@ def test_inner_int() -> None:
 
 
 def test_integrate() -> None:
+    """Test the `integrate` function."""
     # TODO: Check numerical precision
     e = isr.Particle()
     params = isr.Parameters(
@@ -45,8 +48,3 @@ def test_integrate() -> None:
     int_func = isr.IntMaxwell()
     int_func.initialize(params, e)
     nb_int.integrate(params, e, int_func.integrand(), int_func.the_type)
-
-
-if __name__ == "__main__":
-    test_trapz()
-    test_inner_int()
