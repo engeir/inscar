@@ -181,7 +181,7 @@ class SpectrumCalculation:
                 1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
             )
         elif int_func.the_type == "a_vdf":
-            char_vel = getattr(int_func, "char_vel")
+            char_vel = getattr(int_func, "char_vel", 1)
             debye_length = get_debye_length(
                 particle.number_density, temp, char_vel=char_vel
             )

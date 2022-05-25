@@ -19,7 +19,8 @@ class Integrand(ABC):
 
     @abstractproperty
     def the_type(self) -> str:
-        """Return the type of the intregrand implementation."""
+        """Return the type of the integrand implementation."""
+        ...
 
     @abstractmethod
     def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
@@ -44,7 +45,9 @@ class IntKappa(Integrand):
     This implementation is for the kappa distribution described by Mace (2003).
     """
 
-    the_type = "kappa"
+    @property
+    def the_type(self) -> str:
+        return "kappa"
 
     def __init__(self) -> None:
         """Set the attributes of the class."""
@@ -103,7 +106,9 @@ class IntMaxwell(Integrand):
     Hagfors (1961) or Mace (2003).
     """
 
-    the_type = "maxwell"
+    @property
+    def the_type(self) -> str:
+        return "maxwell"
 
     def __init__(self) -> None:
         """Set the attributes of the class."""
@@ -147,7 +152,9 @@ class IntLong(Integrand):
     (2003).
     """
 
-    the_type = "a_vdf"
+    @property
+    def the_type(self) -> str:
+        return "a_vdf"
 
     def __init__(self) -> None:
         """Set the attributes of the class."""
