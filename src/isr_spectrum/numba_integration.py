@@ -1,4 +1,5 @@
-"""Implementation of integrals using numba for parallelization."""
+"""Implementation of integrals using `numba` for parallelization."""
+
 import math
 from typing import Optional
 
@@ -10,7 +11,7 @@ from isr_spectrum import config
 
 
 @nb.njit(parallel=True, cache=True)
-def trapz(y, x) -> float:
+def trapz(y, x):
     """Pure python version of trapezoid rule.
 
     Parameters
@@ -32,7 +33,7 @@ def trapz(y, x) -> float:
 
 
 @nb.njit(cache=True)
-def inner_int(w: np.ndarray, x: np.ndarray, function: np.ndarray) -> np.ndarray:
+def inner_int(w, x, function):
     """Calculate the Gordeyev integral of the F function.
 
     Parameters
@@ -103,9 +104,7 @@ def integrate(
 
 
 @nb.njit(cache=True)
-def integrate_velocity(
-    y: np.ndarray, v: np.ndarray, f: np.ndarray, k_r: float, theta: float, w_c: float
-) -> np.ndarray:
+def integrate_velocity(y, v, f, k_r, theta, w_c):
     """Calculate the velocity integral.
 
     Parameters
@@ -135,7 +134,7 @@ def integrate_velocity(
 
 
 @nb.njit(cache=True)
-def p(y: np.ndarray, k_r: float, theta: float, w_c: float) -> np.ndarray:
+def p(y, k_r, theta, w_c):
     """From Mace [2003].
 
     Parameters
