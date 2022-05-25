@@ -212,7 +212,8 @@ class IntLong(Integrand):
     def _p_d(self) -> np.ndarray:
         y = self.particle.gordeyev_axis
         # At $ y=0 $ we get $ 0/0 $, so we use
-        # $ \lim_{y\rightarrow 0^+}\mathrm{d}p/\mathrm{d}y = |k| |w_c| / \sqrt(w_c^2) $ (from above, opposite sign from below)
+        # $ \lim_{y\rightarrow 0^+}\mathrm{d}p/\mathrm{d}y = |k| |w_c| / \sqrt(w_c^2) $
+        # (from above, opposite sign from below)
         cos_t = np.cos(self.params.aspect_angle)
         sin_t = np.sin(self.params.aspect_angle)
         w_c = self.gyro_frequency
@@ -225,8 +226,9 @@ class IntLong(Integrand):
         term2 = -2 * sin_t**2 * np.cos(w_c * y)
         term3 = 2 * sin_t**2
         den = w_c * (term1 + term2 + term3) ** 0.5
-        # np.sign(y[-1]) takes care of weather the limit should be considered taken from above or below.
-        # The last element of the np.ndarray is chosen since it is assumed y runs from 0 to some finite real number.
+        # np.sign(y[-1]) takes care of weather the limit should be considered taken from
+        # above or below. The last element of the np.ndarray is chosen since it is
+        # assumed y runs from 0 to some finite real number.
         first = np.sign(y[-1]) * abs(self.params.radar_wavenumber) * abs(w_c) / abs(w_c)
         with np.errstate(divide="ignore", invalid="ignore"):
             out = num / den

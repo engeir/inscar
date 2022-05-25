@@ -8,9 +8,8 @@ from isr_spectrum import numba_integration as nb_int
 
 
 def _print_time(t1, t2):
-    print(
-        f"{'Numpy' if t2>t1 else 'Mine'} is {t2 / t1 if t2 > t1 else t1/t2}x faster. (numpy: {t1}, numba: {t2})"
-    )
+    v = "Numpy" if t2 > t1 else "Mine"
+    print(f"{v} is {t2 / t1 if t2 > t1 else t1/t2}x faster. (numpy: {t1}, numba: {t2})")
 
 
 def _trapz() -> None:
