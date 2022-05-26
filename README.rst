@@ -1,5 +1,7 @@
-ISR Spectrum
-============
+inscar
+======
+
+    INcoherent SCAtter Radar spectrum
 
 |PyPI| |Status| |Python Version| |License| |Read the Docs| |Tests| |Codecov| |DOI|
 |pre-commit| |Black|
@@ -49,7 +51,7 @@ Calculates an incoherent scatter radar spectrum based on the theory presented in
 Installing
 ----------
 
-You can install *ISR Spectrum* via pip_ from PyPI_:
+You can install *inscar* via pip_ from PyPI_:
 
 .. code:: console
 
