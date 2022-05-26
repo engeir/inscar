@@ -262,6 +262,7 @@ def docs_build(session: Session) -> None:
     if build_dir.exists():
         shutil.rmtree(build_dir)
 
+    session.run("sphinx-apidoc", "-o", "docs", "src")
     session.run("sphinx-build", *args)
 
 
@@ -282,4 +283,5 @@ def docs(session: Session) -> None:
     if build_dir.exists():
         shutil.rmtree(build_dir)
 
+    session.run("sphinx-apidoc", "-o", "docs", "src")
     session.run("sphinx-autobuild", *args)

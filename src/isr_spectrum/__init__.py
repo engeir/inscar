@@ -1,4 +1,4 @@
-"""Initialize the isr_spectrum package."""
+"""ISR Spectrum."""
 
 from importlib_metadata import version
 

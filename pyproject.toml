@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "isr-spectrum"
 version = "3.0.0"
-description = ""
+description = "Calculate an incoherent scatter spectrum with arbitrary isotropic electron velocity distributions and radar pointing at oblique angles to the magnetic field"
 authors = ["engeir <eirroleng@gmail.com>"]
+readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
@@ -11,6 +12,7 @@ matplotlib = "^3.4.1"
 scipy = "^1.6.2"
 numba = "^0.55.1"
 attrs = "^21.4.0"
+importlib-metadata = "^4.11.4"
 
 [tool.poetry.dev-dependencies]
 lmfit = "^1.0.3"
@@ -28,7 +30,9 @@ pyupgrade = "^2.32.0"
 xdoctest = "^1.0.0"
 types-attrs = "^19.1.0"
 mypy = "^0.950"
-importlib-metadata = "^4.11.4"
+Sphinx = "^4.5.0"
+sphinx-autobuild = "^2021.3.14"
+sphinx-rtd-theme = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

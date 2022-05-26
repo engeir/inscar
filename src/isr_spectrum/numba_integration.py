@@ -7,7 +7,7 @@ import numba as nb
 import numpy as np
 import scipy.constants as const
 
-from isr_spectrum import config
+import isr_spectrum as isr
 
 
 @nb.njit(parallel=True, cache=True)
@@ -38,7 +38,7 @@ def inner_int(w, x, function):
 
     Parameters
     ----------
-    w : ndarray
+    w : np.ndarray
         Angular frequency array.
     x : np.ndarray
         The axis of the F function.
@@ -57,8 +57,8 @@ def inner_int(w, x, function):
 
 
 def integrate(
-    params: config.Parameters,
-    particle: config.Particle,
+    params: isr.Parameters,
+    particle: isr.Particle,
     integrand: np.ndarray,
     the_type: str,
     char_vel: Optional[float] = None,
@@ -71,14 +71,14 @@ def integrate(
 
     Parameters
     ----------
-    params : config.Parameters
+    params : isr.Parameters
         Parameters object with simulation parameters.
-    particle : config.Particle
+    particle : isr.Particle
         Particles object with particle parameters.
     integrand : np.ndarray
         Function to integrate over.
     the_type : str
-        Defines which type of `Integrand` class that is used.
+        Defines which type of `isr.Integrand` class that is used.
     char_vel : float, optional
         Characteristic velocity of the particle.
 
