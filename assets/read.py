@@ -116,7 +116,7 @@ def read_dat_file(file) -> np.ndarray:
     np.ndarray
         Contents of the .dat file
     """
-    ell = np.array([])
+    ell: np.ndarray = np.array([])
     path = "data/arecibo/"
     if not os.path.exists(path):
         path = "src/isr_spectrum/data/arecibo/"
