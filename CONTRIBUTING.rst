@@ -13,9 +13,9 @@ Here is a list of important resources for contributors:
 - `Code of Conduct`_
 
 .. _MIT: https://opensource.org/licenses/MIT
-.. _Source Code: https://github.com/engeir/isr-spectrum
-.. _Documentation: https://isr-spectrum.readthedocs.io/
-.. _Issue Tracker: https://github.com/engeir/isr-spectrum/issues
+.. _Source Code: https://github.com/engeir/inscar
+.. _Documentation: https://inscar.readthedocs.io/
+.. _Issue Tracker: https://github.com/engeir/inscar/issues
 
 How to report a bug
 -------------------
@@ -61,7 +61,7 @@ or the command-line interface:
 .. code:: console
 
    $ poetry run python
-   $ poetry run isr-spectrum
+   $ poetry run inscar
 
 .. _Poetry: https://python-poetry.org/
 .. _Nox: https://nox.thea.codes/
@@ -118,6 +118,6 @@ To run linting and code formatting checks before commiting your change, you can 
 It is recommended to open an issue before starting work on anything.
 This will allow a chance to talk it over with the owners and validate your approach.
 
-.. _pull request: https://github.com/engeir/isr-spectrum/pulls
+.. _pull request: https://github.com/engeir/inscar/pulls
 .. github-only
 .. _Code of Conduct: CODE_OF_CONDUCT.rst

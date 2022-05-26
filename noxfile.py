@@ -9,8 +9,8 @@ from typing import Any
 import nox
 from nox_poetry import Session, session
 
-package = "isr_spectrum"
-owner, repository = "engeir", "isr-spectrum"
+package = "inscar"
+owner, repository = "engeir", "inscar"
 python_versions = ["3.8", "3.9", "3.10"]
 nox.options.sessions = (
     "pre-commit",

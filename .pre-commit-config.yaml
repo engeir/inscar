@@ -10,11 +10,13 @@ repos:
 
 - repo: local
   hooks:
-  - id: check-added-large-files
-    name: Check for added large files
-    stages: [commit]
-    entry: check-added-large-files
-    language: system
+
+  # - id: check-added-large-files
+  #   name: Check for added large files
+  #   stages: [commit]
+  #   entry: check-added-large-files
+  #   language: system
+
   - id: isort
     name: isort
     stages: [commit]

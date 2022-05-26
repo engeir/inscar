@@ -4,26 +4,26 @@ ISR Spectrum
 |PyPI| |Status| |Python Version| |License| |Read the Docs| |Tests| |Codecov| |DOI|
 |pre-commit| |Black|
 
-.. |PyPI| image:: https://img.shields.io/pypi/v/isr-spectrum.svg
-   :target: https://pypi.org/project/isr-spectrum/
+.. |PyPI| image:: https://img.shields.io/pypi/v/inscar.svg
+   :target: https://pypi.org/project/inscar/
    :alt: PyPI
-.. |Status| image:: https://img.shields.io/pypi/status/isr-spectrum.svg
-   :target: https://pypi.org/project/isr-spectrum/
+.. |Status| image:: https://img.shields.io/pypi/status/inscar.svg
+   :target: https://pypi.org/project/inscar/
    :alt: Status
-.. |Python Version| image:: https://img.shields.io/pypi/pyversions/isr-spectrum
-   :target: https://pypi.org/project/isr-spectrum
+.. |Python Version| image:: https://img.shields.io/pypi/pyversions/inscar
+   :target: https://pypi.org/project/inscar
    :alt: Python Version
 .. |License| image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
    :alt: License
-.. |Read the Docs| image:: https://img.shields.io/readthedocs/isr-spectrum/latest.svg?label=Read%20the%20Docs
-   :target: https://isr-spectrum.readthedocs.io/
+.. |Read the Docs| image:: https://img.shields.io/readthedocs/inscar/latest.svg?label=Read%20the%20Docs
+   :target: https://inscar.readthedocs.io/
    :alt: Read the documentation at https://ncdump-rich.readthedocs.io/
-.. |Tests| image:: https://github.com/engeir/isr-spectrum/workflows/Tests/badge.svg
-   :target: https://github.com/engeir/isr-spectrum/actions?workflow=Tests
+.. |Tests| image:: https://github.com/engeir/inscar/workflows/Tests/badge.svg
+   :target: https://github.com/engeir/inscar/actions?workflow=Tests
    :alt: Tests
-.. |Codecov| image:: https://codecov.io/gh/engeir/isr-spectrum/branch/master/graph/badge.svg?token=P8S18UILSB
-   :target: https://codecov.io/gh/engeir/isr-spectrum
+.. |Codecov| image:: https://codecov.io/gh/engeir/inscar/branch/master/graph/badge.svg?token=P8S18UILSB
+   :target: https://codecov.io/gh/engeir/inscar
    :alt: Codecov
 .. |DOI| image:: https://zenodo.org/badge/233043566.svg
    :target: https://zenodo.org/badge/latestdoi/233043566
@@ -35,8 +35,8 @@ ISR Spectrum
    :target: https://github.com/psf/black
    :alt: Black
 
-.. [![release](https://img.shields.io/github/release/engeir/isr_spectrum.svg)](https://github.com/engeir/isr_spectrum/releases/latest)
-.. ![CodeQL](https://github.com/engeir/isr_spectrum/workflows/CodeQL/badge.svg)
+.. [![release](https://img.shields.io/github/release/engeir/inscar.svg)](https://github.com/engeir/inscar/releases/latest)
+.. ![CodeQL](https://github.com/engeir/inscar/workflows/CodeQL/badge.svg)
 
 .. image:: ./img/normal_is_spectra.png
 
@@ -53,7 +53,7 @@ You can install *ISR Spectrum* via pip_ from PyPI_:
 
 .. code:: console
 
-   $ pip install isr-spectrum
+   $ pip install inscar
 
 Usage
 -----
@@ -101,4 +101,4 @@ kappa distribution, in addition to any arbitrary isotropic distribution.
 .. _pip: https://pip.pypa.io/
 .. github-only
 .. _Contributor Guide: CONTRIBUTING.rst
-.. _Modules: https://isr-spectrum.readthedocs.io/en/latest/modules.html
+.. _Modules: https://inscar.readthedocs.io/en/latest/modules.html

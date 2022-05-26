@@ -9,7 +9,7 @@ import read
 import scipy.constants as const
 import scipy.integrate as si
 
-import isr_spectrum as isr
+import inscar as isr
 
 
 @attr.s

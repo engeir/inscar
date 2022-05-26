@@ -57,7 +57,7 @@ def interpolate_data(particle: examples.RealDataParticle) -> np.ndarray:
     if os.path.basename(os.path.realpath(sys.argv[0])) != "main.py":
         path = "data/arecibo/"
         if not os.path.exists(path):
-            path = "src/isr_spectrum/data/arecibo/"
+            path = "src/inscar/data/arecibo/"
         x = loadmat(path + particle.mat_file)
         data = x["fe_zmuE"]
         if isinstance(particle.pitch_angle, list):
@@ -77,7 +77,7 @@ def interpolate_data(particle: examples.RealDataParticle) -> np.ndarray:
     else:
         path = "data/arecibo/"
         if not os.path.exists(path):
-            path = "src/isr_spectrum/data/arecibo/"
+            path = "src/inscar/data/arecibo/"
         x = loadmat(path + particle.mat_file)
         data = x["fe_zmuE"]
         if isinstance(particle.pitch_angle, list):
@@ -119,7 +119,7 @@ def read_dat_file(file) -> np.ndarray:
     ell: np.ndarray = np.array([])
     path = "data/arecibo/"
     if not os.path.exists(path):
-        path = "src/isr_spectrum/data/arecibo/"
+        path = "src/inscar/data/arecibo/"
     with open(path + file) as f:
         ll = f.readlines()
         ll = [x.strip() for x in ll]

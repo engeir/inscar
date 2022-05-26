@@ -5,7 +5,7 @@ from typing import Callable, Optional, Tuple
 import numpy as np
 import scipy.constants as const
 
-from isr_spectrum import config, integrand_functions, numba_integration
+from inscar import config, integrand_functions, numba_integration
 
 
 class SpectrumCalculation:

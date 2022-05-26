@@ -5,7 +5,7 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-import isr_spectrum as isr
+import inscar as isr
 
 
 class VdfKappa2(isr.Vdf):

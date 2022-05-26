@@ -9,7 +9,7 @@ import numpy as np
 import scipy.constants as const
 import scipy.special as sps
 
-from isr_spectrum import config
+from inscar import config
 
 
 class Vdf(ABC):

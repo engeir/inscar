@@ -3,7 +3,7 @@
 import pytest
 import scipy.constants as const
 
-import isr_spectrum as isr
+import inscar as isr
 
 
 def test_missing_objects() -> None:

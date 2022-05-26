@@ -3,7 +3,7 @@
 import numpy as np
 import scipy.constants as const
 
-import isr_spectrum as isr
+import inscar as isr
 
 
 def test_parameters() -> None:

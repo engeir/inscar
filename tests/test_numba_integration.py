@@ -2,8 +2,8 @@
 
 import numpy as np
 
-import isr_spectrum as isr
-from isr_spectrum import numba_integration as nb_int
+import inscar as isr
+from inscar import numba_integration as nb_int
 
 
 def test_trapz() -> None:

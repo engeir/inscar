@@ -4,7 +4,7 @@ import timeit
 
 import numpy as np
 
-from isr_spectrum import numba_integration as nb_int
+from inscar import numba_integration as nb_int
 
 
 def _print_time(t1, t2):

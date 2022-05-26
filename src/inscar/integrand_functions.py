@@ -7,7 +7,7 @@ import scipy.constants as const
 import scipy.integrate as si
 import scipy.special as sps
 
-from isr_spectrum import config, numba_integration, vdfs
+from inscar import config, numba_integration, vdfs
 
 
 class Integrand(ABC):

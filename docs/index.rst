@@ -22,7 +22,7 @@
    contributing
    codeofconduct
    license
-   Changelog <https://github.com/engeir/isr-spectrum/releases>
+   Changelog <https://github.com/engeir/inscar/releases>
 
 
 
