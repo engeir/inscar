@@ -1,12 +1,22 @@
 # See https://pre-commit.com/ for usage and config
 repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+
+  - id: check-yaml
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+
 - repo: local
   hooks:
+
   # - id: check-added-large-files
   #   name: Check for added large files
   #   stages: [commit]
   #   entry: check-added-large-files
   #   language: system
+
   - id: isort
     name: isort
     stages: [commit]
@@ -29,6 +39,30 @@ repos:
     types: [python]
     exclude: setup.py
 
+  - id: mypy
+    name: mypy
+    stages: [commit]
+    language: system
+    entry: poetry run mypy
+    types: [python]
+    require_serial: true
+
+  - id: darglint
+    name: darglint
+    stages: [commit]
+    language: system
+    entry: poetry run darglint src
+    types: [python]
+    require_serial: true
+
+  - id: pyupgrade
+    name: pyupgrade
+    stages: [commit]
+    language: system
+    entry: poetry run pyupgrade
+    types: [python]
+    require_serial: true
+
   - id: pytest
     name: pytest
     stages: [commit]
@@ -36,4 +70,3 @@ repos:
     entry: poetry run pytest tests
     types: [python]
     pass_filenames: false
-
