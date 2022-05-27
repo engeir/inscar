@@ -13,8 +13,10 @@ from inscar import config, numba_integration, vdfs
 class Integrand(ABC):
     """Base class for an integrand object.
 
-    Arguments:
-        ABC {ABC} -- abstract base class
+    Parameters
+    ----------
+    ABC: ABC
+        Abstract base class
     """
 
     @abstractproperty
@@ -28,10 +30,10 @@ class Integrand(ABC):
 
         Parameters
         ----------
-        params : config.Parameters
-            The parameters object.
-        particle : config.Particle
-            The particle object.
+        params : Parameters
+            A `Parameters` object.
+        particle : Particle
+            A `Particle` object.
         """
 
     @abstractmethod

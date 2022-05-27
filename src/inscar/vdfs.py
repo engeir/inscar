@@ -51,9 +51,9 @@ class VdfMaxwell(Vdf):
         Parameters
         ----------
         params : Parameters
-            Parameters object with the parameters of the simulation.
+            `Parameters` object with the parameters of the simulation.
         particle : Particle
-            Particle object with the parameters of the particle.
+            `Particle` object with the parameters of the particle.
         """
         self.params = params
         self.particle = particle
@@ -84,9 +84,9 @@ class VdfKappa(Vdf):
         Parameters
         ----------
         params : Parameters
-            Parameters object with the parameters of the simulation.
+            `Parameters` object with the parameters of the simulation.
         particle : Particle
-            Particle object with the parameters of the particle.
+            `Particle` object with the parameters of the particle.
         """
         self.params = params
         self.particle = particle

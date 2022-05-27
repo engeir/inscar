@@ -26,8 +26,8 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        params: config.Parameters
-            An instance of the config.Parameters class.
+        params: Parameters
+            An instance of the `Parameters` class.
         """
         self.params = params
 
@@ -36,8 +36,8 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        ion: config.Particle
-            An instance of the config.Particle class, representing ions.
+        ion: Particle
+            An instance of the `Particle` class, representing ions.
         """
         self.ion = ion
 
@@ -46,8 +46,8 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        electron: config.Particle
-            An instance of the config.Particle class, representing electrons.
+        electron: Particle
+            An instance of the `Particle` class, representing electrons.
         """
         self.electron = electron
 
@@ -58,8 +58,8 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        function: integrand_functions.Integrand
-            An object of type integrand_functions.Integrand, representing the ions.
+        function: Integrand
+            An object of type `Integrand`, representing the ions.
         """
         self.ion_integration_function = function
 
@@ -70,8 +70,8 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        function: integrand_functions.Integrand
-            An object of type integrand_functions.Integrand, representing the electrons.
+        function: Integrand
+            An object of type `Integrand`, representing the electrons.
         """
         self.electron_integration_function = function
 
@@ -80,9 +80,9 @@ class SpectrumCalculation:
 
         Returns
         -------
-        np.ndarray
-            The frequency axis in the first position and the values along the axis in
-            the second position.
+        Tuple[np.ndarray, np.ndarray]
+            The frequency axis in the first position and the spectrum values along the
+            axis in the second position.
 
         Raises
         ------
@@ -130,7 +130,7 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        f_func: Callable[[config.Particle, integrand_functions.Integrand], float]
+        f_func: Callable[[Particle, Integrand], float]
             A function that take a particle and an integrand function as input, and that
             calculates the F function based on these, returning a numpy array.
         """
@@ -158,7 +158,7 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        func: Callable[[config.Particle, integrand_functions.Integrand], float]
+        func: Callable[[Particle, Integrand], float]
             A function that take a particle and an integrand function as input, and that
             calculates the susceptibility function based on these, returning a single
             float.

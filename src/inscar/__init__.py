@@ -1,4 +1,4 @@
-"""ISR Spectrum."""
+"""INcoherent SCAtter Radar spectrum."""
 
 from importlib_metadata import version
 
