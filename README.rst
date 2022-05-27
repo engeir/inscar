@@ -69,21 +69,21 @@ Physical environment
 
 The plasma parameters that are supported natively by the program are
 
-* Radar frequency [Hz]
+* Radar frequency ``[Hz]``
 
-  * This will also set the radar wave number (= -4pi(radar frequency)/(speed of light))
+  * This will also set the radar wave number ``(= -4pi(radar frequency)/(speed of light))``
 
-* Magnetic field strength [T]
-* Aspect angle [1]
-* Electron temperature [K]
-* Ion temperature [K]
-* Electron collision frequency [Hz]
-* Ion collision frequency [Hz]
-* Electron mass in atomic mass units [u]
-* Ion mass in atomic mass units [u]
-* Electron number density [m^(-3)]
-* Ion number density [m^(-3)]
-* Kappa value for the kappa velocity distribution function
+* Magnetic field strength ``[T]``
+* Aspect angle ``[1]``
+* Electron temperature ``[K]``
+* Ion temperature ``[K]``
+* Electron collision frequency ``[Hz]``
+* Ion collision frequency ``[Hz]``
+* Electron mass in atomic mass units ``[u]``
+* Ion mass in atomic mass units ``[u]``
+* Electron number density ``[m^(-3)]``
+* Ion number density ``[m^(-3)]``
+* Kappa value for the kappa velocity distribution function ``[1]``
 
 Custom simulation set-ups can be made by inheriting from the different classes. Say you
 want a ``Particle`` class that also carries information about the temperature of a
@@ -92,7 +92,7 @@ inherit from ``Particle`` and decorate it with the ``@attr.s`` object:
 
 .. code:: python
 
-   @attr.s
+    @attr.s
     class RealDataParticle(isr.Particle):
         """Create a particle object with extra attributes."""
 
