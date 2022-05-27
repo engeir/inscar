@@ -70,7 +70,9 @@ Physical environment
 The plasma parameters that are supported natively by the program are
 
 * Radar frequency [Hz]
+
   * This will also set the radar wave number (= -4pi(radar frequency)/(speed of light))
+
 * Magnetic field strength [T]
 * Aspect angle [1]
 * Electron temperature [K]
