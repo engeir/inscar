@@ -23,12 +23,3 @@
    codeofconduct
    license
    Changelog <https://github.com/engeir/inscar/releases>
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
