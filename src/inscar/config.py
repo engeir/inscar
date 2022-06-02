@@ -140,7 +140,7 @@ class Parameters:
 
     See also
     --------
-    src.inscar.config.Particle
+    Particle
 
     Examples
     --------

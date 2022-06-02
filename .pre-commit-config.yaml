@@ -47,6 +47,14 @@ repos:
     types: [python]
     require_serial: true
 
+  - id: xdoctest
+    name: xdoctest
+    stages: [commit]
+    language: system
+    entry: poetry run xdoctest src
+    types: [python]
+    require_serial: true
+
   - id: darglint
     name: darglint
     stages: [commit]
