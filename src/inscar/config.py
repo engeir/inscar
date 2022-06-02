@@ -147,7 +147,7 @@ class Parameters:
     >>> from inscar import config
     >>> p = config.Parameters(aspect_angle=45)
     >>> print(f"p.aspect_angle = {p.aspect_angle:.4f}")
-    p.aspect_angle = 0.7854
+    p.aspect_angl = 0.7854
     >>> print(f"p.radar_wavenumber = {p.radar_wavenumber:.4f}")
     p.radar_wavenumber = -18.0243
     >>> p.radar_frequency = 430e5

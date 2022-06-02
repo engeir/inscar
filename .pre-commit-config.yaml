@@ -11,11 +11,11 @@ repos:
 - repo: local
   hooks:
 
-  # - id: check-added-large-files
-  #   name: Check for added large files
-  #   stages: [commit]
-  #   entry: check-added-large-files
-  #   language: system
+  - id: check-added-large-files
+    name: Check for added large files
+    stages: [commit]
+    entry: check-added-large-files
+    language: system
 
   - id: isort
     name: isort
@@ -44,14 +44,6 @@ repos:
     stages: [commit]
     language: system
     entry: poetry run mypy
-    types: [python]
-    require_serial: true
-
-  - id: xdoctest
-    name: xdoctest
-    stages: [commit]
-    language: system
-    entry: poetry run xdoctest src
     types: [python]
     require_serial: true
 
