@@ -154,7 +154,7 @@ class Parameters:
     >>> print(f"p.radar_wavenumber = {p.radar_wavenumber:.4f}")
     p.radar_wavenumber = -1.8024
     >>> p.aspect_angle = 360.5
-    >>> print(f"\tp.aspect_angle = {p.aspect_angle:.4f}")
+    >>> print(f"p.aspect_angle = {p.aspect_angle:.4f}")
     p.aspect_angle = 6.2919
     """
 
