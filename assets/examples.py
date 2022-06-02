@@ -53,19 +53,19 @@ class VdfRealData(isr.Vdf):
 def _info():
     print("Setting aspect angle to 45 degrees.")
     p = isr.Parameters(aspect_angle=45)
-    print(f"\tp.aspect_angle = {p.aspect_angle}")
+    print(f"\tp.aspect_angle = {p.aspect_angle:.4f}")
     print("It's automatically converted to radians!\n")
     print(
         "Similarly, setting radar frequency to 430 MHz will "
         + "automatically update radar wave number:"
     )
-    print(f"\tp.radar_wavenumber = {p.radar_wavenumber}")
+    print(f"\tp.radar_wavenumber = {p.radar_wavenumber:.4f}")
     print("Changing radar frequency...")
     p.radar_frequency = 430e5
-    print(f"\tp.radar_wavenumber = {p.radar_wavenumber}\n")
+    print(f"\tp.radar_wavenumber = {p.radar_wavenumber:.4f}\n")
     print("Setting aspect angle to 360.5 degrees.")
     p.aspect_angle = 360.5
-    print(f"\tp.aspect_angle = {p.aspect_angle}")
+    print(f"\tp.aspect_angle = {p.aspect_angle:.4f}")
 
 
 def _ion_line():

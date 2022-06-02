@@ -136,7 +136,27 @@ class Particle:
 
 @attr.s(auto_attribs=True)
 class Parameters:
-    """Object used to configure the physical parameters of the system."""
+    """Object used to configure the physical parameters of the system.
+
+    See also
+    --------
+    src.inscar.config.Particle
+
+    Examples
+    --------
+    >>> from inscar import config
+    >>> p = config.Parameters(aspect_angle=45)
+    >>> print(f"p.aspect_angle = {p.aspect_angle:.4f}")
+    p.aspect_angle = 0.7854
+    >>> print(f"p.radar_wavenumber = {p.radar_wavenumber:.4f}")
+    p.radar_wavenumber = -18.0243
+    >>> p.radar_frequency = 430e5
+    >>> print(f"p.radar_wavenumber = {p.radar_wavenumber:.4f}")
+    p.radar_wavenumber = -1.8024
+    >>> p.aspect_angle = 360.5
+    >>> print(f"\tp.aspect_angle = {p.aspect_angle:.4f}")
+    p.aspect_angle = 6.2919
+    """
 
     radar_frequency: float = attr.ib(
         default=430e6,
