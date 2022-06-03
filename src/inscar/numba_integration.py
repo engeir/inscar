@@ -135,7 +135,7 @@ def integrate_velocity(y, v, f, k_r, theta, w_c):
 
 @nb.njit(cache=True)
 def p(y, k_r, theta, w_c):
-    """From Mace [2003].
+    """Calculate the `p` function.
 
     Parameters
     ----------
@@ -152,6 +152,16 @@ def p(y, k_r, theta, w_c):
     -------
     np.ndarray
         Value of the `p` function
+
+    Notes
+    -----
+    Implementation of the `p` function from Mace [1]_.
+
+    References
+    ----------
+    .. [1] R. L. Mace, "A Gordeyev integral for electrostatic waves in a magnetized
+        plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
+        pp. 2101-2193, 2003.
     """
     k_perp = k_r * np.sin(theta)
     k_par = k_r * np.cos(theta)

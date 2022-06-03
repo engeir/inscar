@@ -74,8 +74,15 @@ class VdfMaxwell(Vdf):
 class VdfKappa(Vdf):
     """Create an object that make kappa distribution functions.
 
-    Kappa VDF used in Gordeyev paper by Mace (2003).
+    Notes
+    -----
+    Kappa VDF used in Gordeyev paper by Mace [1]_.
 
+    References
+    ----------
+    .. [1] R. L. Mace, "A Gordeyev integral for electrostatic waves in a magnetized
+        plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
+        pp. 2101-2193, 2003.
     """
 
     def __init__(self, params: config.Parameters, particle: config.Particle):

@@ -104,8 +104,19 @@ class IntKappa(Integrand):
 class IntMaxwell(Integrand):
     """Implementation of the integrand of the Gordeyev integral.
 
+    Notes
+    -----
     This implementation is for the integral for the Maxwellian distribution from e.g.
-    Hagfors (1961) or Mace (2003).
+    Hagfors [1]_ or Mace [2]_.
+
+    References
+    ----------
+    .. [1] T. Hagfors, "Density Fluctuations in a Plasma in a Magnetic Field, with
+        Applications to the Ionosphere," Journal of Geophysical Research, vol. 66, pp.
+        1699-1712, 1961.
+    .. [2] R. L. Mace, "A Gordeyev integral for electrostatic waves in a magnetized
+        plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
+        pp. 2101-2193, 2003.
     """
 
     @property
@@ -150,8 +161,16 @@ class IntMaxwell(Integrand):
 class IntLong(Integrand):
     """Implementation of the integrand of the Gordeyev integral.
 
+    Notes
+    -----
     This implementation is for the integral for the isotropic distribution from Mace
-    (2003).
+    [1]_.
+
+    References
+    ----------
+    .. [1] R. L. Mace, "A Gordeyev integral for electrostatic waves in a magnetized
+        plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
+        pp. 2101-2193, 2003.
     """
 
     @property

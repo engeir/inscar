@@ -48,7 +48,12 @@ def to_radians(value) -> float:
 
 @attr.s(auto_attribs=True)
 class Particle:
-    """Object used to configure the physical parameters of a particle."""
+    """Object used to configure the physical parameters of a particle.
+
+    See also
+    --------
+    Parameters
+    """
 
     gordeyev_upper_lim: Union[float, int] = attr.ib(
         default=1.5e-4,
@@ -145,14 +150,25 @@ class Parameters:
     Examples
     --------
     >>> from inscar import config
+
+    Setting aspect angle to 45 degrees.
+
     >>> p = config.Parameters(aspect_angle=45)
     >>> print(f"p.aspect_angle = {p.aspect_angle:.4f}")
     p.aspect_angle = 0.7854
+
+    It's automatically converted to radians! Similarly, setting radar frequency to 430
+    MHz will automatically update radar wave number:
+
     >>> print(f"p.radar_wavenumber = {p.radar_wavenumber:.4f}")
     p.radar_wavenumber = -18.0243
+    >>> # Changing radar frequency...
     >>> p.radar_frequency = 430e5
     >>> print(f"p.radar_wavenumber = {p.radar_wavenumber:.4f}")
     p.radar_wavenumber = -1.8024
+
+    Setting aspect angle to 360.5 degrees.
+
     >>> p.aspect_angle = 360.5
     >>> print(f"p.aspect_angle = {p.aspect_angle:.4f}")
     p.aspect_angle = 6.2919
