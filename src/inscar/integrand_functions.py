@@ -51,8 +51,8 @@ class IntKappa(Integrand):
     References
     ----------
     .. [1] R. L. Mace, "A Gordeyev integral for electrostatic waves in a magnetized
-        plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
-        pp. 2101-2193, 2003.
+       plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
+       pp. 2101-2193, 2003.
     """
 
     @property
@@ -120,11 +120,11 @@ class IntMaxwell(Integrand):
     References
     ----------
     .. [1] T. Hagfors, "Density Fluctuations in a Plasma in a Magnetic Field, with
-        Applications to the Ionosphere," Journal of Geophysical Research, vol. 66, no.
-        9, pp. 1699-1712, 1961.
+       Applications to the Ionosphere," Journal of Geophysical Research, vol. 66, no.
+       9, pp. 1699-1712, 1961.
     .. [2] R. L. Mace, "A Gordeyev integral for electrostatic waves in a magnetized
-        plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
-        pp. 2101-2193, 2003.
+       plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
+       pp. 2101-2193, 2003.
     """
 
     @property
@@ -177,8 +177,8 @@ class IntLong(Integrand):
     References
     ----------
     .. [1] R. L. Mace, "A Gordeyev integral for electrostatic waves in a magnetized
-        plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
-        pp. 2101-2193, 2003.
+       plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
+       pp. 2101-2193, 2003.
     """
 
     @property

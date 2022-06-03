@@ -160,8 +160,8 @@ def p(y, k_r, theta, w_c):
     References
     ----------
     .. [1] R. L. Mace, "A Gordeyev integral for electrostatic waves in a magnetized
-        plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
-        pp. 2101-2193, 2003.
+       plasma with a kappa velocity distribution," Physics of plasmas, vol. 10, no. 6,
+       pp. 2101-2193, 2003.
     """
     k_perp = k_r * np.sin(theta)
     k_par = k_r * np.cos(theta)
