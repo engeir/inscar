@@ -1,4 +1,4 @@
-"""Velocity distribution function to be used by the integrand class `a_vdf`.
+"""Velocity distribution function to be used by the integrand class ``a_vdf``.
 
 One of the integrands available for use in the Gordeyev integral.
 """
