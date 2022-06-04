@@ -11,8 +11,20 @@ import inscar as isr
 class VdfKappa2(isr.Vdf):
     """Create an object that make kappa vol. 2 distribution functions.
 
-    Kappa VDF used in dispersion relation paper by Ziebell, Gaelzer and Simoes
-    (2017). Defined by Leubner (2002) (sec 3.2).
+    Notes
+    -----
+    Kappa VDF used in dispersion relation paper by Ziebell, Gaelzer and Simões
+    [1]_. Defined by Leubner [2]_.
+
+    References
+    ----------
+    .. [1] L. Ziebell, R. Gaelzer, & F. Simões, "Dispersion relation for electrostatic
+       waves in plasmas with isotropic and anisotropic Kappa distributions for electrons
+       and ions," Journal of Plasma Physics, vol. 83, no. 5, pp. 905830503, 2017.
+       doi:10.1017/S0022377817000733
+    .. [2] M. P. Leubner, "A nonextensive entropy approach to Kappa-distributions,"
+       Astrophysics and Space Science, vol. 282, no. 3, pp. 573-579, 2002.
+       doi:10.1029/2000JA000425
     """
 
     def __init__(self, params: isr.Parameters, particle: isr.Particle):

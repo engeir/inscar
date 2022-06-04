@@ -27,7 +27,7 @@ class SpectrumCalculation:
         Parameters
         ----------
         params: Parameters
-            An instance of the `Parameters` class.
+            An instance of the ``Parameters`` class.
         """
         self.params = params
 
@@ -37,7 +37,7 @@ class SpectrumCalculation:
         Parameters
         ----------
         ion: Particle
-            An instance of the `Particle` class, representing ions.
+            An instance of the ``Particle`` class, representing ions.
         """
         self.ion = ion
 
@@ -47,7 +47,7 @@ class SpectrumCalculation:
         Parameters
         ----------
         electron: Particle
-            An instance of the `Particle` class, representing electrons.
+            An instance of the ``Particle`` class, representing electrons.
         """
         self.electron = electron
 
@@ -59,7 +59,7 @@ class SpectrumCalculation:
         Parameters
         ----------
         function: Integrand
-            An object of type `Integrand`, representing the ions.
+            An object of type ``Integrand``, representing the ions.
         """
         self.ion_integration_function = function
 
@@ -71,7 +71,7 @@ class SpectrumCalculation:
         Parameters
         ----------
         function: Integrand
-            An object of type `Integrand`, representing the electrons.
+            An object of type ``Integrand``, representing the electrons.
         """
         self.electron_integration_function = function
 
@@ -126,13 +126,19 @@ class SpectrumCalculation:
     def set_calculate_f_function(
         self, f_func: Callable[[config.Particle, integrand_functions.Integrand], float]
     ) -> None:
-        """Set what function to use to calculate the F function.
+        """Set what function to use to calculate the :math:`F` function.
+
+        See also
+        --------
+        inscar.numba_integration.integrate
 
         Parameters
         ----------
         f_func: Callable[[Particle, Integrand], float]
             A function that take a particle and an integrand function as input, and that
-            calculates the F function based on these, returning a numpy array.
+            calculates the :math:`F` function based on these, returning a numpy array.
+            By default, the ``integrate`` function from the ``numba_integration`` module
+            is used.
         """
         self._calulate_f = f_func
 
