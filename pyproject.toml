@@ -16,7 +16,7 @@ importlib-metadata = "^4.11.4"
 
 [tool.poetry.dev-dependencies]
 lmfit = "^1.0.3"
-tqdm = "^4.59.0"
+tqdm = "^4.64.1"
 si-prefix = "^1.2.2"
 isort = "^5.8.0"
 flake8 = "^3.9.0"
