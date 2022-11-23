@@ -14,7 +14,7 @@ owner, repository = "engeir", "inscar"
 python_versions = ["3.8", "3.9", "3.10"]
 nox.options.sessions = (
     "pre-commit",
-    "safety",
+    # "safety",
     "mypy",
     "tests",
     "typeguard",
@@ -139,18 +139,18 @@ def precommit(session: Session) -> None:
         activate_virtualenv_in_precommit_hooks(session)
 
 
-@session(python="3.10")
-def safety(session: Session) -> None:
-    """Scan dependencies for insecure packages.
-
-    Parameters
-    ----------
-    session: Session
-        The Session object.
-    """
-    requirements = session.poetry.export_requirements()
-    session.install("safety")
-    session.run("safety", "check", f"--file={requirements}", "--bare")
+# @session(python="3.10")
+# def safety(session: Session) -> None:
+#     """Scan dependencies for insecure packages.
+#
+#     Parameters
+#     ----------
+#     session: Session
+#         The Session object.
+#     """
+#     requirements = session.poetry.export_requirements()
+#     session.install("safety")
+#     session.run("safety", "check", f"--file={requirements}", "--bare")
 
 
 @session(python=python_versions)
