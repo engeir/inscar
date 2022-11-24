@@ -32,7 +32,7 @@ Sphinx = "^5.1.1"
 sphinx-autobuild = "^2021.3.14"
 sphinx-rtd-theme = "^1.0.0"
 pre-commit = "^2.20.0"
-pre-commit-hooks = "^4.3.0"
+pre-commit-hooks = "^4.4.0"
 sphinx-autodoc-typehints = "^1.19.2"
 
 [build-system]
