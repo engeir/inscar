@@ -8,7 +8,7 @@ python-versions = "*"
 
 [[package]]
 name = "asteval"
-version = "0.9.27"
+version = "0.9.28"
 description = "Safe, minimalistic evaluator of python expression using ast module"
 category = "dev"
 optional = false
@@ -296,17 +296,23 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "lmfit"
-version = "1.0.3"
+version = "1.1.0"
 description = "Least-Squares Minimization with Bounds and Constraints"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
-asteval = ">=0.9.22"
-numpy = ">=1.18"
-scipy = ">=1.4"
-uncertainties = ">=3.0.1"
+asteval = ">=0.9.28"
+numpy = ">=1.19"
+scipy = ">=1.6"
+uncertainties = ">=3.1.4"
+
+[package.extras]
+all = ["Pillow", "Sphinx", "build", "cairosvg", "check-wheel-contents", "codecov", "corner", "coverage", "dill", "emcee (>=3.0.0)", "flaky", "jupyter-sphinx (>=0.2.4)", "matplotlib", "numdifftools", "pandas", "pre-commit", "pycairo", "pytest", "pytest-cov", "sphinx-gallery (>=0.10)", "sphinxcontrib-svg2pdfconverter", "sympy", "twine"]
+dev = ["build", "check-wheel-contents", "pre-commit", "twine"]
+doc = ["Pillow", "Sphinx", "cairosvg", "corner", "dill", "emcee (>=3.0.0)", "jupyter-sphinx (>=0.2.4)", "matplotlib", "numdifftools", "pandas", "pycairo", "sphinx-gallery (>=0.10)", "sphinxcontrib-svg2pdfconverter", "sympy"]
+test = ["codecov", "coverage", "flaky", "pytest", "pytest-cov"]
 
 [[package]]
 name = "markupsafe"
@@ -941,7 +947,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "0656a9313df663702598a03d669c9e77f4e75bd82783363ed5a1e54b1c87fa7b"
+content-hash = "7d51423b499e52589b311ae841eb76995ea4fe6d4048c2b53866a1fdbeb5eea2"
 
 [metadata.files]
 alabaster = [
@@ -949,8 +955,8 @@ alabaster = [
     {file = "alabaster-0.7.12.tar.gz", hash = "sha256:a661d72d58e6ea8a57f7a86e37d86716863ee5e92788398526d58b26a4e4dc02"},
 ]
 asteval = [
-    {file = "asteval-0.9.27-py3-none-any.whl", hash = "sha256:c31678db0e1c758a47d776c693a63709eb898f8af8065eb6201c65d68c3f7a3f"},
-    {file = "asteval-0.9.27.tar.gz", hash = "sha256:de838c33aed4c9bb25737eadbb7d1edaaf875e2bab505cc079f1a4b35de03e47"},
+    {file = "asteval-0.9.28-py3-none-any.whl", hash = "sha256:c263d25bcc76d5fbeae68b7954b6f7bb16067232b515e4da01e3653e2ec01341"},
+    {file = "asteval-0.9.28.tar.gz", hash = "sha256:91bc7d7826bb9c33f4a5a3ef0a8a50fbd5a4695001944ff1d4e0163c413c0a91"},
 ]
 attrs = [
     {file = "attrs-22.1.0-py2.py3-none-any.whl", hash = "sha256:86efa402f67bf2df34f51a335487cf46b1ec130d02b8d39fd248abfd30da551c"},
@@ -1137,7 +1143,8 @@ llvmlite = [
     {file = "llvmlite-0.39.1.tar.gz", hash = "sha256:b43abd7c82e805261c425d50335be9a6c4f84264e34d6d6e475207300005d572"},
 ]
 lmfit = [
-    {file = "lmfit-1.0.3.tar.gz", hash = "sha256:d067c3ea501f035af5d3c079e6e6e35dc3cc1ac7d439429a425b0aeb5a7858a2"},
+    {file = "lmfit-1.1.0-py3-none-any.whl", hash = "sha256:29f0540f94b3969a23db2b51abf309f327af8ea3667443ac4cd93d07fdfdb14f"},
+    {file = "lmfit-1.1.0.tar.gz", hash = "sha256:a2755b708ad7bad010178da28f082f55cbee7a084a625b452632e2d77b5391fb"},
 ]
 markupsafe = [
     {file = "MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:86b1f75c4e7c2ac2ccdaec2b9022845dbb81880ca318bb7a0a01fbf7813e3812"},
