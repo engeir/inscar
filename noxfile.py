@@ -14,7 +14,6 @@ owner, repository = "engeir", "inscar"
 python_versions = ["3.8", "3.9", "3.10"]
 nox.options.sessions = (
     "pre-commit",
-    # "safety",
     "mypy",
     "tests",
     "typeguard",
@@ -45,13 +44,14 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
         session.run(
             "poetry",
             "export",
-            "--dev",
+            "--with",
+            "dev",
             "--without-hashes",
             "--format=requirements.txt",
             f"--output={requirements.name}",
             external=True,
         )
-        session.install(f"--constraint={requirements.name}", *args, **kwargs)
+        session.install(*args, **kwargs)
 
 
 def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
@@ -139,20 +139,6 @@ def precommit(session: Session) -> None:
         activate_virtualenv_in_precommit_hooks(session)
 
 
-# @session(python="3.10")
-# def safety(session: Session) -> None:
-#     """Scan dependencies for insecure packages.
-#
-#     Parameters
-#     ----------
-#     session: Session
-#         The Session object.
-#     """
-#     requirements = session.poetry.export_requirements()
-#     session.install("safety")
-#     session.run("safety", "check", f"--file={requirements}", "--bare")
-
-
 @session(python=python_versions)
 def mypy(session: Session) -> None:
     """Type-check using mypy.
@@ -199,22 +185,11 @@ def coverage(session: Session) -> None:
     session: Session
         The Session object.
     """
-    # Do not use session.posargs unless this is the only session.
-    # nsessions = len(session._runner.manifest)  # type: ignore[attr-defined]
-    # has_args = session.posargs and nsessions == 1
-    # args = session.posargs if has_args else ["report"]
-
-    # session.install("coverage[toml]")
-
     install_with_constraints(session, "coverage[toml]", "codecov")
-    # if not has_args and any(Path().glob(".coverage.*")):
-    #     session.run("coverage", "combine", "--fail-under=0")
 
     session.run("coverage", "combine")
     session.run("coverage", "xml", "--fail-under=0")
     session.run("codecov", *session.posargs)
-    # session.run("codecov", *args)
-    # session.run("coverage", *args)
 
 
 @session(python=python_versions)
