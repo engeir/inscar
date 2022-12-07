@@ -120,7 +120,7 @@ Aside
 
 This program was developed during my master thesis. For a more detailed explanation of
 the mathematical derivations and an analysis of the numerical precision of the program,
-please see the thesis at `munin.uit.no`_.
+please refer to the thesis that can be found at `munin.uit.no`_.
 
 .. _Hagfors (1961): https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699
 .. _Mace (2003): https://aip.scitation.org/doi/pdf/10.1063/1.1570828
