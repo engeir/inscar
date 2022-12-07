@@ -115,8 +115,16 @@ arbitrary isotropic distribution (``IntLong`` class) which can take any ``Vdf`` 
 particle velocity distribution (default is ``VdfMaxwell``). An example showing how a new
 ``Vdf`` class can be made is given in assets_ (``VdfRealData``).
 
+Aside
+^^^^^
+
+This program was developed during my master thesis. For a more detailed explanation of
+the mathematical derivations and an analysis of the numerical precision of the program,
+please see the thesis at `munin.uit.no`_.
+
 .. _Hagfors (1961): https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699
 .. _Mace (2003): https://aip.scitation.org/doi/pdf/10.1063/1.1570828
+.. _munin.uit.no: https://hdl.handle.net/10037/19542
 .. _PyPI: https://pypi.org/
 .. _pip: https://pip.pypa.io/
 .. _assets: https://github.com/engeir/inscar/tree/main/assets
