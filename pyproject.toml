@@ -14,7 +14,8 @@ numba = ">=0.55.1,<0.57.0"
 attrs = ">=21.4,<23.0"
 importlib-metadata = ">=4.11.4,<6.0.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
+matplotlib = "^3.6.2"
 lmfit = "^1.1.0"
 tqdm = "^4.64.1"
 si-prefix = "^1.2.2"
