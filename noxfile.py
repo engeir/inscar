@@ -25,11 +25,11 @@ nox.options.sessions = (
 def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> None:
     """Install packages constrained by Poetry's lock file.
 
-    This function is a wrapper for nox.sessions.Session.install. It invokes pip to install
-    packages inside of the session's virtualenv. Additionally, pip is passed a constraints
-    file generated from Poetry's lock file, to ensure that the packages are pinned to the
-    versions specified in poetry.lock. This allows you to manage the packages as Poetry
-    development dependencies.
+    This function is a wrapper for nox.sessions.Session.install. It invokes pip to
+    install packages inside of the session's virtualenv. Additionally, pip is passed a
+    constraints file generated from Poetry's lock file, to ensure that the packages are
+    pinned to the versions specified in poetry.lock. This allows you to manage the
+    packages as Poetry development dependencies.
 
     Parameters
     ----------
@@ -57,9 +57,9 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
 def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
     """Activate virtualenv in hooks installed by pre-commit.
 
-    This function patches git hooks installed by pre-commit to activate the
-    session's virtual environment. This allows pre-commit to locate hooks in
-    that environment when invoked from git.
+    This function patches git hooks installed by pre-commit to activate the session's
+    virtual environment. This allows pre-commit to locate hooks in that environment when
+    invoked from git.
 
     Parameters
     ----------
@@ -121,10 +121,7 @@ def precommit(session: Session) -> None:
     session.install(
         "black",
         "darglint",
-        "flake8",
-        "flake8-bandit",
-        "flake8-bugbear",
-        "flake8-rst-docstrings",
+        "ruff",
         "isort",
         "mypy",
         "pep8-naming",
