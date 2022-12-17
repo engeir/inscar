@@ -31,13 +31,12 @@ repos:
     entry: poetry run black src
     types: [python]
 
-  - id: flake8
-    name: flake8
+  - id: ruff
+    name: ruff
     stages: [commit]
     language: system
-    entry: poetry run flake8 src
+    entry: poetry run ruff src
     types: [python]
-    exclude: setup.py
 
   - id: mypy
     name: mypy
