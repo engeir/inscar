@@ -101,7 +101,8 @@ class SpectrumCalculation:
             )
         if not hasattr(self, "electron_integration_function"):
             raise ValueError(
-                "No electron integration function set. Use set_electron_integration_function()."
+                "No electron integration function set. "
+                + "Use set_electron_integration_function()."
             )
 
         fi = self._calulate_f(self.ion, self.ion_integration_function)
