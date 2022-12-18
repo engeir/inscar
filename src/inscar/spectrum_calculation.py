@@ -1,6 +1,6 @@
 """Calculate the power density spectrum and other plasma parameters."""
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Union
 
 import numpy as np
 import scipy.constants as const
@@ -13,7 +13,7 @@ class SpectrumCalculation:
 
     def __init__(self):
         """Create the basic spectrum calculation object with empty attributes."""
-        self.ion: tuple[config.Particle | tuple[config.Particle], ...]
+        self.ion: tuple[Union[config.Particle, tuple[config.Particle]], ...]
         self.electron: config.Particle
         self.ion_integration_function: integrand_functions.Integrand
         self.electron_integration_function: integrand_functions.Integrand
@@ -31,7 +31,7 @@ class SpectrumCalculation:
         """
         self.params = params
 
-    def set_ion(self, *ion: config.Particle | tuple[config.Particle]) -> None:
+    def set_ion(self, *ion: Union[config.Particle, tuple[config.Particle]]) -> None:
         """Set the ion particles to use.
 
         Parameters
