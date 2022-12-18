@@ -1,6 +1,6 @@
 """Calculate the power density spectrum and other plasma parameters."""
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Union
 
 import numpy as np
 import scipy.constants as const
@@ -13,7 +13,7 @@ class SpectrumCalculation:
 
     def __init__(self):
         """Create the basic spectrum calculation object with empty attributes."""
-        self.ion: config.Particle
+        self.ion: tuple[Union[config.Particle, tuple[config.Particle]], ...]
         self.electron: config.Particle
         self.ion_integration_function: integrand_functions.Integrand
         self.electron_integration_function: integrand_functions.Integrand
@@ -31,13 +31,14 @@ class SpectrumCalculation:
         """
         self.params = params
 
-    def set_ion(self, ion: config.Particle) -> None:
+    def set_ion(self, *ion: Union[config.Particle, tuple[config.Particle]]) -> None:
         """Set the ion particles to use.
 
         Parameters
         ----------
         ion: Particle
-            An instance of the ``Particle`` class, representing ions.
+            An instance of the ``Particle`` class, representing ions. Any number of ions
+            can be given.
         """
         self.ion = ion
 
@@ -88,6 +89,8 @@ class SpectrumCalculation:
         ------
         ValueError
             If any of the needed attribute objects are not set.
+        TypeError
+            If the provided ions are not a Particle or a tuple of Particle objects.
         """
         if not hasattr(self, "params"):
             raise ValueError("No parameters set. Use set_params().")
@@ -105,10 +108,27 @@ class SpectrumCalculation:
                 + "Use set_electron_integration_function()."
             )
 
-        fi = self._calulate_f(self.ion, self.ion_integration_function)
-        fe = self._calulate_f(self.electron, self.electron_integration_function)
+        if isinstance(self.ion, config.Particle):
+            fi = self._calulate_f(self.ion, self.ion_integration_function)
+            xp_i = self._susceptibility(self.ion, self.ion_integration_function)
+        elif isinstance(self.ion, tuple):
+            fi = sum(
+                self._calulate_f(fi_, self.ion_integration_function)
+                for fi_ in self.ion
+                if isinstance(fi_, config.Particle)
+            )
+            xp_i = sum(
+                self._susceptibility(xp_i_, self.ion_integration_function)
+                for xp_i_ in self.ion
+                if isinstance(xp_i_, config.Particle)
+            )
+        else:
+            raise TypeError(
+                "The ions must be a Particle or a list of Particles, "
+                + f"but was {type(self.ion)}"
+            )
 
-        xp_i = self._susceptibility(self.ion, self.ion_integration_function)
+        fe = self._calulate_f(self.electron, self.electron_integration_function)
         xp_e = self._susceptibility(self.electron, self.electron_integration_function)
 
         with np.errstate(divide="ignore", invalid="ignore"):
