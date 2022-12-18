@@ -157,7 +157,7 @@ def _plasma_line():
 
 def _gyro_line():
     e = isr.Particle(temperature=200, kappa=8, number_density=2e10)
-    m_i = 16 * (const.m_p + const.m_n) / 2
+    m_i = 18 * (const.m_p + const.m_n) / 2
     i = isr.Particle(
         gordeyev_upper_lim=1.5e-2,
         temperature=200,
@@ -174,6 +174,39 @@ def _gyro_line():
     sim = isr.SpectrumCalculation()
     sim.set_params(params)
     sim.set_ion(i)
+    sim.set_electron(e)
+    sim.set_ion_integration_function(isr.IntMaxwell())
+    sim.set_electron_integration_function(isr.IntMaxwell())
+    x, y = sim.calculate_spectrum()
+
+    plt.figure()
+    plt.title("Gyro-line")
+    plt.semilogy(x, y)
+
+
+def _gyro_line_two_species():
+    e = isr.Particle(temperature=200, kappa=8, number_density=2e10)
+    i1 = isr.Particle(
+        gordeyev_upper_lim=1.5e-2,
+        temperature=200,
+        mass=16 * (const.m_p + const.m_n) / 2,
+    )
+    i2 = isr.Particle(
+        gordeyev_upper_lim=1.5e-2,
+        temperature=200,
+        mass=1 * (const.m_p + const.m_n) / 2,
+    )
+    params = isr.Parameters(
+        frequency_range=(-2e6, 2e6),
+        frequency_size=int(1e4 + 1),
+        radar_frequency=430e6,
+        magnetic_field_strength=3.5e-5,
+        aspect_angle=(360 + 135),
+    )
+
+    sim = isr.SpectrumCalculation()
+    sim.set_params(params)
+    sim.set_ion(i1, i2)
     sim.set_electron(e)
     sim.set_ion_integration_function(isr.IntMaxwell())
     sim.set_electron_integration_function(isr.IntMaxwell())
@@ -225,5 +258,6 @@ if __name__ == "__main__":
     _ion_line_long()
     _plasma_line()
     _gyro_line()
+    _gyro_line_two_species()
     _real_data_custom_vdf()
     plt.show()
