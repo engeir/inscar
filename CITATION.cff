@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Enger"
+  given-names: "Eirik R."
+  orcid: "https://orcid.org/0000-0001-6709-8688"
+title: "inscar"
+version: v3.0.3
+doi: 10.5281/zenodo.6587001
+date-released: 2022-05-27
+url: "https://doi.org/10.5281/zenodo.6587001"
+preferred-citation:
+  type: software
+  authors:
+  - family-names: "Enger"
+    given-names: "Eirik R."
+    orcid: "https://orcid.org/0000-0001-6709-8688"
+  doi: "10.5281/zenodo.6587001"
+  journal: "Zenodo"
+  month: 5
+  # start: 1 # First page number
+  # end: 10 # Last page number
+  title: "inscar"
+  # issue: 1
+  # volume: 1
+  year: 2022
