@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "inscar"
-version = "3.0.3"
+version = "3.0.4"
 description = "Calculate an incoherent scatter spectrum with arbitrary isotropic electron velocity distributions and radar pointing at oblique angles to the magnetic field"
 authors = ["engeir <eirroleng@gmail.com>"]
 readme = "README.rst"
