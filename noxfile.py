@@ -11,7 +11,7 @@ from nox_poetry import Session, session
 
 package = "inscar"
 owner, repository = "engeir", "inscar"
-python_versions = ["3.8", "3.9", "3.10"]
+python_versions = ["3.8", "3.9", "3.10", "3.11"]
 nox.options.sessions = (
     "pre-commit",
     "mypy",
@@ -107,7 +107,7 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
         hook.write_text("\n".join(lines))
 
 
-@session(name="pre-commit", python="3.10")
+@session(name="pre-commit", python="3.11")
 def precommit(session: Session) -> None:
     """Lint using pre-commit.
 
@@ -170,7 +170,7 @@ def tests(session: Session) -> None:
             session.notify("coverage")
 
 
-@session(python="3.10")
+@session(python="3.11")
 def coverage(session: Session) -> None:
     """Produce the coverage report.
 
@@ -215,7 +215,7 @@ def xdoctest(session: Session) -> None:
     session.run("python", "-m", "xdoctest", package, *args)
 
 
-@session(name="docs-build", python="3.10")
+@session(name="docs-build", python="3.11")
 def docs_build(session: Session) -> None:
     """Build the documentation.
 
@@ -236,7 +236,7 @@ def docs_build(session: Session) -> None:
     session.run("sphinx-build", *args)
 
 
-@session(python="3.10")
+@session(python="3.11")
 def docs(session: Session) -> None:
     """Build and serve the documentation with live reloading on file changes.
 
