@@ -26,7 +26,7 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        params: Parameters
+        params : Parameters
             An instance of the ``Parameters`` class.
         """
         self.params = params
@@ -36,7 +36,7 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        ion: Particle
+        ion : Particle
             An instance of the ``Particle`` class, representing ions.
         """
         self.ion = ion
@@ -46,7 +46,7 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        electron: Particle
+        electron : Particle
             An instance of the ``Particle`` class, representing electrons.
         """
         self.electron = electron
@@ -58,7 +58,7 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        function: Integrand
+        function : Integrand
             An object of type ``Integrand``, representing the ions.
         """
         self.ion_integration_function = function
@@ -70,7 +70,7 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        function: Integrand
+        function : Integrand
             An object of type ``Integrand``, representing the electrons.
         """
         self.electron_integration_function = function
@@ -129,17 +129,17 @@ class SpectrumCalculation:
     ) -> None:
         """Set what function to use to calculate the :math:`F` function.
 
-        See also
-        --------
-        inscar.numba_integration.integrate
-
         Parameters
         ----------
-        f_func: Callable[[Particle, Integrand], float]
+        f_func : Callable[[Particle, Integrand], float]
             A function that take a particle and an integrand function as input, and that
             calculates the :math:`F` function based on these, returning a numpy array.
             By default, the ``integrate`` function from the ``numba_integration`` module
             is used.
+
+        See Also
+        --------
+        inscar.numba_integration.integrate
         """
         self._calulate_f = f_func
 
@@ -165,7 +165,7 @@ class SpectrumCalculation:
 
         Parameters
         ----------
-        func: Callable[[Particle, Integrand], float]
+        func : Callable[[Particle, Integrand], float]
             A function that take a particle and an integrand function as input, and that
             calculates the susceptibility function based on these, returning a single
             float.
@@ -179,22 +179,16 @@ class SpectrumCalculation:
         temp = particle.temperature
         if int_func.the_type == "maxwell":
             debye_length = get_debye_length(particle.number_density, temp)
-            xp = np.sqrt(
-                1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
-            )
+            xp = np.sqrt(1 / (2 * debye_length**2 * self.params.radar_wavenumber**2))
         elif int_func.the_type == "kappa":
             debye_length = get_debye_length(particle.number_density, temp, kappa=kappa)
-            xp = np.sqrt(
-                1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
-            )
+            xp = np.sqrt(1 / (2 * debye_length**2 * self.params.radar_wavenumber**2))
         elif int_func.the_type == "a_vdf":
             char_vel = getattr(int_func, "char_vel", 1)
             debye_length = get_debye_length(
                 particle.number_density, temp, char_vel=char_vel
             )
-            xp = np.sqrt(
-                1 / (2 * debye_length**2 * self.params.radar_wavenumber**2)
-            )
+            xp = np.sqrt(1 / (2 * debye_length**2 * self.params.radar_wavenumber**2))
         else:
             raise ValueError("Unknown function type.")
         return xp
@@ -211,20 +205,20 @@ def get_debye_length(
 
     Parameters
     ----------
-    number_density: float
+    number_density : float
         The number density of the plasma.
-    electron_temperature: float
+    electron_temperature : float
         The electron temperature.
-    ion_temperature: float, optional
+    ion_temperature : float, optional
         The ion temperature.
-    kappa: float, optional
+    kappa : float, optional
         Kappa parameter.
-    char_vel: float, optional
+    char_vel : float, optional
         Characteristic velocity.
 
     Returns
     -------
-    float: float
+    float : float
         Debye length.
     """
     vacuum_permittivity = 1e-09 / 36 / np.pi

@@ -19,12 +19,9 @@ matplotlib = "^3.6.2"
 lmfit = "^1.1.0"
 tqdm = "^4.64.1"
 si-prefix = "^1.2.2"
-isort = "^5.8.0"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
-black = ">=22.10,<24.0"
 darglint = "^1.8.1"
-pyupgrade = "^3.3.1"
 xdoctest = "^1.1.0"
 types-attrs = "^19.1.0"
 mypy = ">=0.991,<1.6"
@@ -35,7 +32,118 @@ pre-commit = ">=2.20,<4.0"
 pre-commit-hooks = "^4.4.0"
 sphinx-autodoc-typehints = "^1.19.2"
 ruff = ">=0.0.185,<0.1.4"
+pydocstringformatter = "^0.7.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+select = [ # https://docs.astral.sh/ruff/rules/
+  "B",  # flake8-bugbear
+  "D",  # pydocstyle
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "I",  # isort
+  "PL", # pylint
+  "Q",  # flake8-quotes
+  "UP", # pyupgrade
+]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+# select = ["E4", "E7", "E9", "F"]  # These are the default
+# https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+ignore = [
+  # "COM812", # Since we don't select COM, this is already ignored
+  # "COM819", # Since we don't select COM, this is already ignored
+  "D206",
+  "D300",
+  "E111",
+  "E114",
+  "E117",
+  "E266",
+  "E501",
+  # "ISC001", # Since we don't select ISC, this is already ignored
+  # "ISC002", # Since we don't select ISC, this is already ignored
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
+  # "W191",  # Since we don't select W, this is already ignored
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "venv",
+]
+per-file-ignores = {}
+
+# Same as Black.
+line-length = 88
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.11
+target-version = "py38"
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+ignore-decorators = ["typing.overload"]
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.flake8-import-conventions]
+[tool.ruff.flake8-import-conventions.aliases]
+# Declare the default aliases.
+"matplotlib.pyplot" = "plt"
+numpy = "np"
+scipy = "sp"
+xarray = "xr"
+ensemble_run_analysis = "era"
+
+[tool.ruff.isort]
+case-sensitive = true
+known-local-folder = ["src", "inscar"]
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+profile = "black"
+combine_as_imports = true
+
+[tool.pydocstringformatter]
+write = true
+strip-whitespaces = true
+split-summary-body = false
+numpydoc-section-hyphen-length = false
+style = ["pep257", "numpydoc"]

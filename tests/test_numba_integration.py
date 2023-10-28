@@ -12,7 +12,8 @@ def test_trapz() -> None:
     values = np.linspace(0, 1, 20)
     integral_np = np.trapz(values, axis)
     integral_nb = nb_int.trapz(values, axis)
-    assert integral_np == 10
+    int_value = 10
+    assert integral_np == int_value
     assert round(integral_np, 1) == round(integral_nb, 1)
 
 

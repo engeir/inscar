@@ -29,9 +29,9 @@ class VdfRealData(isr.Vdf):
 
         Parameters
         ----------
-        params: isr.Parameters
+        params : isr.Parameters
             Parameters object.
-        particle: RealDataParticle
+        particle : RealDataParticle
             Particle object.
         """
         self.params = params

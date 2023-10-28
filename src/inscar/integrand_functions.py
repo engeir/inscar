@@ -15,7 +15,7 @@ class Integrand(ABC):
 
     Parameters
     ----------
-    ABC: ABC
+    ABC : ABC
         Abstract base class
     """
 
@@ -57,6 +57,7 @@ class IntKappa(Integrand):
 
     @property
     def the_type(self) -> str:
+        """Return the type of the VDF that is being used."""
         return "kappa"
 
     def __init__(self) -> None:
@@ -68,6 +69,7 @@ class IntKappa(Integrand):
         self.Kn: np.ndarray
 
     def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
+        """Initialize the integration."""
         self.params = params
         self.particle = particle
         self.gyro_frequency = (
@@ -101,6 +103,7 @@ class IntKappa(Integrand):
         self.Kn[self.Kn == np.inf] = 1
 
     def integrand(self) -> np.ndarray:
+        """Return the integrand that goes into the Gordeyev integral."""
         y = self.particle.gordeyev_axis
         return (
             self.Z ** (self.particle.kappa + 0.5)
@@ -129,6 +132,7 @@ class IntMaxwell(Integrand):
 
     @property
     def the_type(self) -> str:
+        """Return the type of the VDF that is being used."""
         return "maxwell"
 
     def __init__(self) -> None:
@@ -138,6 +142,7 @@ class IntMaxwell(Integrand):
         self.gyro_frequency: float
 
     def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
+        """Initialize the integration."""
         self.params = params
         self.particle = particle
         self.gyro_frequency = (
@@ -145,6 +150,7 @@ class IntMaxwell(Integrand):
         )
 
     def integrand(self) -> np.ndarray:
+        """Return the integrand that goes into the Gordeyev integral."""
         return np.exp(
             -self.particle.gordeyev_axis * self.particle.collision_frequency
             - self.params.radar_wavenumber**2
@@ -183,6 +189,7 @@ class IntLong(Integrand):
 
     @property
     def the_type(self) -> str:
+        """Return the type of the VDF that is being used."""
         return "a_vdf"
 
     def __init__(self) -> None:
@@ -194,9 +201,11 @@ class IntLong(Integrand):
         self.gyro_frequency: float
 
     def set_vdf(self, vdf) -> None:
+        """Assign a new VDF that is used in the integration."""
         self.vdf = vdf
 
     def initialize(self, params: config.Parameters, particle: config.Particle) -> None:
+        """Initialize the integration."""
         self.params = params
         self.particle = particle
         self.gyro_frequency = (
@@ -261,9 +270,11 @@ class IntLong(Integrand):
         first = np.sign(y[-1]) * abs(self.params.radar_wavenumber) * abs(w_c) / abs(w_c)
         with np.errstate(divide="ignore", invalid="ignore"):
             out = num / den
-        out[np.where(den == 0.0)[0]] = first
+        zero = 0.0
+        out[np.where(den == zero)[0]] = first
 
         return out
 
     def integrand(self) -> np.ndarray:
+        """Return the integrand that goes into the Gordeyev integral."""
         return self._p_d() * self._v_int()

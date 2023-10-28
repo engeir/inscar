@@ -19,7 +19,7 @@ def f_0_maxwell(particle: examples.RealDataParticle) -> np.ndarray:
 
     Parameters
     ----------
-    particle: examples.RealDataParticle
+    particle : examples.RealDataParticle
         Update Particles object with attributes specific to this script.
 
     Returns
@@ -40,7 +40,7 @@ def interpolate_data(particle: examples.RealDataParticle) -> np.ndarray:
 
     Parameters
     ----------
-    particle: examples.RealDataParticle
+    particle : examples.RealDataParticle
         Update Particles object with attributes specific to this script.
 
     Returns
@@ -108,7 +108,7 @@ def read_dat_file(file) -> np.ndarray:
 
     Parameters
     ----------
-    file: str
+    file : str
         The file name of the .dat file
 
     Returns

@@ -41,7 +41,7 @@ class VdfMaxwell(Vdf):
 
     Parameters
     ----------
-    VDF: ABC
+    VDF : ABC
         Abstract base class to make VDF objects
     """
 
@@ -60,13 +60,15 @@ class VdfMaxwell(Vdf):
         self.normalize()
 
     def normalize(self) -> None:
+        """Normalize the distribution function."""
         self.A = (
             2 * np.pi * self.particle.temperature * const.k / self.particle.mass
         ) ** (-3 / 2)
 
     def f_0(self) -> np.ndarray:
+        """Return the values along the velocity axis of a VDF."""
         return self.A * np.exp(
-            -self.particle.velocity_axis**2
+            -(self.particle.velocity_axis**2)
             / (2 * self.particle.temperature * const.k / self.particle.mass)
         )
 
@@ -100,6 +102,7 @@ class VdfKappa(Vdf):
         self.normalize()
 
     def normalize(self) -> None:
+        """Normalize the distribution function."""
         self.theta_2 = (
             2
             * ((self.particle.kappa - 3 / 2) / self.particle.kappa)
@@ -114,6 +117,7 @@ class VdfKappa(Vdf):
         )
 
     def f_0(self) -> np.ndarray:
+        """Return the values along the velocity axis of a VDF."""
         return self.A * (
             1 + self.particle.velocity_axis**2 / (self.particle.kappa * self.theta_2)
         ) ** (-self.particle.kappa - 1)

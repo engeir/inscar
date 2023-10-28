@@ -63,7 +63,7 @@ def integrate(
     the_type: str,
     char_vel: Optional[float] = None,
 ) -> np.ndarray:
-    """Calculate the Gordeyev integral for each frequency.
+    r"""Calculate the Gordeyev integral for each frequency.
 
     This locates the Gordeyev axis of the particle object, and for each frequency
     calculates the Gordeyev integral corresponding to it, returning an array of the same
@@ -87,7 +87,7 @@ def integrate(
     np.ndarray
         The integral evaluated along the whole Gordeyev frequency axis of the particle.
 
-    See also
+    See Also
     --------
     inscar.spectrum_calculation.SpectrumCalculation.set_calculate_f_function
 
@@ -117,18 +117,18 @@ def integrate(
     w = params.angular_frequency
     nu = particle.collision_frequency
     array = inner_int(w, y, integrand)
-    if the_type == "kappa":
-        a = array / (2 ** (particle.kappa - 1 / 2) * math.gamma(particle.kappa + 1 / 2))
-    elif the_type == "a_vdf":
+    if the_type == "a_vdf":
         # Characteristic velocity scaling
         a = 4 * np.pi * temp * const.k * array / mass * char_vel
+    elif the_type == "kappa":
+        a = array / (2 ** (particle.kappa - 1 / 2) * math.gamma(particle.kappa + 1 / 2))
     else:
         a = array
     return a if the_type == "a_vdf" else 1 - (1j * w + nu) * a
 
 
 @nb.njit(cache=True)
-def integrate_velocity(y, v, f, k_r, theta, w_c):
+def integrate_velocity(y, v, f, k_r, theta, w_c):  # noqa: PLR0913
     """Calculate the velocity integral.
 
     Parameters
@@ -163,13 +163,13 @@ def p(y, k_r, theta, w_c):
 
     Parameters
     ----------
-    y: np.ndarray
+    y : np.ndarray
         Parameter from Gordeyev integral
-    k_r: float
+    k_r : float
         The radar wave number.
-    theta: float
+    theta : float
         The radar aspect angle.
-    w_c: float
+    w_c : float
         The gyro frequency.
 
     Returns
@@ -189,6 +189,4 @@ def p(y, k_r, theta, w_c):
     """
     k_perp = k_r * np.sin(theta)
     k_par = k_r * np.cos(theta)
-    return (
-        2 * k_perp**2 / w_c**2 * (1 - np.cos(y * w_c)) + k_par**2 * y**2
-    ) ** 0.5
+    return (2 * k_perp**2 / w_c**2 * (1 - np.cos(y * w_c)) + k_par**2 * y**2) ** 0.5

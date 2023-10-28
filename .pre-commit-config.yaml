@@ -17,26 +17,20 @@ repos:
     entry: check-added-large-files
     language: system
 
-  - id: isort
-    name: isort
+  - id: ruff_format
+    name: ruff_format
     stages: [commit]
     language: system
-    entry: poetry run isort src
-    types: [python]
-
-  - id: black
-    name: black
-    stages: [commit]
-    language: system
-    entry: poetry run black src
+    entry: poetry run ruff format src tests assets
     types: [python]
 
   - id: ruff
     name: ruff
     stages: [commit]
     language: system
-    entry: poetry run ruff src
+    entry: poetry run ruff src tests assets
     types: [python]
+    args: [ --fix, --exit-non-zero-on-fix ]
 
   - id: mypy
     name: mypy
@@ -50,17 +44,16 @@ repos:
     name: darglint
     stages: [commit]
     language: system
-    entry: poetry run darglint src
+    entry: poetry run darglint src tests assets
     types: [python]
     require_serial: true
 
-  - id: pyupgrade
-    name: pyupgrade
+  - id: pydocstringformatter
+    name: pydocstringformatter
     stages: [commit]
     language: system
-    entry: poetry run pyupgrade
+    entry: poetry run pydocstringformatter src tests assets
     types: [python]
-    require_serial: true
 
   - id: pytest
     name: pytest
