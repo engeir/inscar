@@ -116,14 +116,14 @@ particle velocity distribution (default is ``VdfMaxwell``). An example showing h
 ``Vdf`` class can be made is given in assets_ (``VdfRealData``).
 
 Aside
-^^^^^
+-----
 
 This program was developed during my master thesis. For a more detailed explanation of
 the mathematical derivations and an analysis of the numerical precision of the program,
 please refer to the thesis found at `munin.uit.no`_.
 
 Contributing
-^^^^^^^^^^^^
+------------
 
 To contribute to the project, clone and install the full development version (uses
 poetry_ for dependencies). There is also a `.rtx.toml` file that installs and sets up
