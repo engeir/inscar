@@ -121,6 +121,7 @@ def precommit(session: Session) -> None:
     session.install(
         "darglint",
         "ruff",
+        "pydocstringformatter",
         "mypy",
         "pep8-naming",
         "pre-commit",
