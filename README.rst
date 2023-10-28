@@ -116,18 +116,48 @@ particle velocity distribution (default is ``VdfMaxwell``). An example showing h
 ``Vdf`` class can be made is given in assets_ (``VdfRealData``).
 
 Aside
-^^^^^
+-----
 
 This program was developed during my master thesis. For a more detailed explanation of
 the mathematical derivations and an analysis of the numerical precision of the program,
 please refer to the thesis found at `munin.uit.no`_.
 
+Contributing
+------------
+
+To contribute to the project, clone and install the full development version (uses
+poetry_ for dependencies). There is also a `.rtx.toml` file that installs and sets up
+an appropriate virtual environment if rtx_ is available on
+your system (it's really good, check it out!).
+
+.. code:: console
+
+    $ git clone https://github.com/engeir/inscar.git
+    $ cd inscar
+    $ # Set up a virtual environment, for example with rtx
+    $ rtx i
+    $ poetry install
+    $ pre-commit install
+
+Before committing new changes to a branch you may run command
+
+.. code:: console
+
+    $ nox
+
+to run the full test suite. You will need Poetry_, nox_ and nox-poetry_ installed for
+this.
+
 .. _Hagfors (1961): https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699
 .. _Mace (2003): https://aip.scitation.org/doi/pdf/10.1063/1.1570828
-.. _munin.uit.no: https://hdl.handle.net/10037/19542
 .. _PyPI: https://pypi.org/
-.. _pip: https://pip.pypa.io/
 .. _assets: https://github.com/engeir/inscar/tree/main/assets
+.. _munin.uit.no: https://hdl.handle.net/10037/19542
+.. _nox-poetry: https://nox-poetry.readthedocs.io/
+.. _nox: https://nox.thea.codes/en/stable/
+.. _pip: https://pip.pypa.io/
+.. _poetry: https://python-poetry.org
+.. _rtx: https://github.com/jdx/rtx
 .. github-only
 .. _Contributor Guide: CONTRIBUTING.rst
 .. _Modules: https://inscar.readthedocs.io/en/latest/modules.html
