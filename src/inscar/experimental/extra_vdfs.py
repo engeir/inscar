@@ -42,6 +42,7 @@ class VdfKappa2(isr.Vdf):
         self.normalize()
 
     def normalize(self) -> None:
+        """Normalize the VDF."""
         self.v_th = np.sqrt(self.particle.temperature * const.k / self.particle.mass)
         self.A = (
             (np.pi * self.particle.kappa * self.v_th**2) ** (-3 / 2)
@@ -50,9 +51,9 @@ class VdfKappa2(isr.Vdf):
         )
 
     def f_0(self) -> np.ndarray:
+        """Define the phase space velocity distribution."""
         return self.A * (
-            1
-            + self.particle.velocity_axis**2 / (self.particle.kappa * self.v_th**2)
+            1 + self.particle.velocity_axis**2 / (self.particle.kappa * self.v_th**2)
         ) ** (-self.particle.kappa)
 
 
@@ -82,6 +83,7 @@ class VdfGaussShell(isr.Vdf):
         self.normalize()
 
     def normalize(self) -> None:
+        """Normalize the VDF."""
         func = np.exp(
             -self.steep
             * (abs(self.particle.velocity_axis) - self.r) ** 2
@@ -93,6 +95,7 @@ class VdfGaussShell(isr.Vdf):
         print(f"Gauss shell at E = {round(ev, 2)} eV")
 
     def f_0(self) -> np.ndarray:
+        """Define the phase space velocity distribution."""
         func = (
             self.A
             * np.exp(

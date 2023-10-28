@@ -30,9 +30,10 @@ def is_nonnegative(_, attribute, value):
 
 def is_range_tuple(_, attribute, value):
     """Verify that a value is a tuple of two numbers."""
+    two_tuple = 2
     if not isinstance(value, tuple):
         raise ValueError(f"{attribute} must be a tuple")
-    if len(value) != 2:
+    if len(value) != two_tuple:
         raise ValueError(f"{attribute} must be a tuple of length 2")
     if isinstance(value[0], (int, float)) and isinstance(value[1], (int, float)):
         if value[0] >= value[1]:
@@ -50,10 +51,10 @@ def to_radians(value) -> float:
 class Particle:
     """Object used to configure the physical parameters of a particle.
 
-    See also
+    See Also
     --------
     Parameters
-    """
+    """  # noqa: D410, D407, D411, D414
 
     gordeyev_upper_lim: Union[float, int] = attr.ib(
         default=1.5e-4,
@@ -143,7 +144,7 @@ class Particle:
 class Parameters:
     """Object used to configure the physical parameters of the system.
 
-    See also
+    See Also
     --------
     Particle
 
