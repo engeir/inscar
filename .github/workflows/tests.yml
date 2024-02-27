@@ -21,13 +21,14 @@ jobs:
           - { python-version: "3.10", os: ubuntu-latest, session: "tests" }
           - { python-version: "3.11", os: ubuntu-latest, session: "mypy" }
           - { python-version: "3.11", os: ubuntu-latest, session: "tests" }
-          - { python-version: "3.11", os: macos-latest, session: "tests" }
-          - { python-version: "3.11", os: windows-latest, session: "tests" }
-          - { python-version: "3.11", os: ubuntu-latest, session: "docs-build" }
-          - { python-version: "3.11", os: ubuntu-latest, session: "pre-commit" }
-          # - { python-version: "3.11", os: ubuntu-latest, session: "safety" }
-          - { python-version: "3.11", os: ubuntu-latest, session: "typeguard" }
-          - { python-version: "3.11", os: ubuntu-latest, session: "xdoctest" }
+          - { python-version: "3.12", os: ubuntu-latest, session: "mypy" }
+          - { python-version: "3.12", os: ubuntu-latest, session: "tests" }
+          - { python-version: "3.12", os: macos-latest, session: "tests" }
+          # - { python-version: "3.12", os: windows-latest, session: "tests" }
+          - { python-version: "3.12", os: ubuntu-latest, session: "docs-build" }
+          - { python-version: "3.12", os: ubuntu-latest, session: "pre-commit" }
+          - { python-version: "3.12", os: ubuntu-latest, session: "typeguard" }
+          - { python-version: "3.12", os: ubuntu-latest, session: "xdoctest" }
 
     env:
       NOXSESSION: ${{ matrix.session }}
@@ -49,15 +50,15 @@ jobs:
           pip install --constraint=.github/workflows/constraints.txt pip
           pip --version
 
-      - name: Install Poetry
+      - name: Install Rye
         run: |
-          pipx install --pip-args=--constraint=.github/workflows/constraints.txt poetry
-          poetry --version
+          curl -sSf https://rye-up.com/get | RYE_INSTALL_OPTION="--yes" bash
+          source "$HOME/.rye/env"
+          rye --version
 
       - name: Install Nox
         run: |
           pipx install --pip-args=--constraint=.github/workflows/constraints.txt nox
-          pipx inject --pip-args=--constraint=.github/workflows/constraints.txt nox nox-poetry
           nox --version
 
       - name: Compute pre-commit cache key
@@ -84,6 +85,7 @@ jobs:
 
       - name: Run Nox
         run: |
+          source "$HOME/.rye/env"
           nox --force-color --python=${{ matrix.python-version }}
 
       - name: Upload coverage data
@@ -107,27 +109,28 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Upgrade pip
         run: |
           pip install --constraint=.github/workflows/constraints.txt pip
           pip --version
 
-      - name: Install Poetry
+      - name: Install Rye
         run: |
-          pip install --constraint=.github/workflows/constraints.txt poetry
-          poetry --version
+          curl -sSf https://rye-up.com/get | RYE_INSTALL_OPTION="--yes" bash
+          source "$HOME/.rye/env"
+          rye --version
 
       - name: Install Nox
         run: |
-          pip install --constraint=.github/workflows/constraints.txt nox nox-poetry
+          pip install --constraint=.github/workflows/constraints.txt nox
           nox --version
 
       - name: Run codecov session
-        run: nox --sessions tests-3.11 coverage
+        run: nox --sessions tests-3.12 coverage
         env:
           CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
