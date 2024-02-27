@@ -18,17 +18,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Upgrade pip
         run: |
           pip install --constraint=.github/workflows/constraints.txt pip
           pip --version
 
-      - name: Install Poetry
+      - name: Install Rye
         run: |
-          pip install --constraint=.github/workflows/constraints.txt poetry
-          poetry --version
+          curl -sSf https://rye-up.com/get | RYE_INSTALL_OPTION="--yes" bash
+          source "$HOME/.rye/env"
+          rye --version
 
       - name: Check if there is a parent commit
         id: check-parent-commit
@@ -41,18 +42,20 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@v2.0.3
         with:
           version-command: |
-            bash -o pipefail -c "poetry version | awk '{ print \$2 }'"
+            bash -o pipefail -c "source $HOME/.rye/env && rye version"
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          poetry version patch &&
-          version=$(poetry version | awk '{ print $2 }') &&
-          poetry version $version.dev.$(date +%s)
+          source "$HOME/.rye/env"
+          rye version -b patch &&
+          version=$(rye version) &&
+          rye version $version.dev.$(date +%s)
 
       - name: Build package
         run: |
-          poetry build --ansi
+          source "$HOME/.rye/env"
+          rye build
 
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag

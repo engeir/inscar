@@ -16,14 +16,14 @@ repos:
     name: ruff_format
     stages: [commit]
     language: system
-    entry: poetry run ruff format src tests assets
+    entry: ruff format src tests assets
     types: [python]
 
   - id: ruff
     name: ruff
     stages: [commit]
     language: system
-    entry: poetry run ruff src tests assets
+    entry: ruff src tests assets
     types: [python]
     args: [ --fix, --exit-non-zero-on-fix ]
 
@@ -31,15 +31,7 @@ repos:
     name: mypy
     stages: [commit]
     language: system
-    entry: poetry run mypy
-    types: [python]
-    require_serial: true
-
-  - id: darglint
-    name: darglint
-    stages: [commit]
-    language: system
-    entry: poetry run darglint src tests assets
+    entry: mypy
     types: [python]
     require_serial: true
 
@@ -47,13 +39,13 @@ repos:
     name: pydocstringformatter
     stages: [commit]
     language: system
-    entry: poetry run pydocstringformatter src tests assets
+    entry: pydocstringformatter src tests assets
     types: [python]
 
   - id: pytest
     name: pytest
     stages: [commit]
     language: system
-    entry: poetry run pytest tests
+    entry: pytest tests
     types: [python]
     pass_filenames: false

@@ -1,44 +1,92 @@
-[tool.poetry]
+[project]
 name = "inscar"
-version = "3.1.1"
+version = "3.2.0"
 description = "Calculate an incoherent scatter spectrum with arbitrary isotropic electron velocity distributions and radar pointing at oblique angles to the magnetic field"
-authors = ["engeir <eirroleng@gmail.com>"]
+authors = [{ name = "Eirik Enger", email = "engeir@pm.me" }]
 readme = "README.rst"
+requires-python = ">= 3.8"
+dependencies = [
+    "attrs>=23.2.0",
+    "numba>=0.58.1",
+    "numpy>=1.24.4",
+    "scipy>=1.10.1",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+changelog = "https://github.com/engeir/inscar/releases"
+homepage = "https://github.com/engeir/inscar"
+repository = "https://github.com/engeir/inscar"
 documentation = "https://inscar.readthedocs.io"
 
-[tool.poetry.dependencies]
-python = ">=3.8,<3.12"
-numpy = "^1.20.2"
-scipy = "^1.6.2"
-numba = ">=0.55.1,<0.59.0"
-attrs = ">=21.4,<24.0"
-importlib-metadata = ">=4.11.4,<8.0.0"
-
-[tool.poetry.group.dev.dependencies]
-matplotlib = "^3.6.2"
-lmfit = "^1.1.0"
-tqdm = "^4.64.1"
-si-prefix = "^1.2.2"
-pytest = ">=7.2,<9.0"
-pytest-cov = "^4.0.0"
-darglint = "^1.8.1"
-xdoctest = "^1.1.0"
-types-attrs = "^19.1.0"
-mypy = ">=0.991,<1.9"
-Sphinx = ">=5.1.1,<8.0.0"
-sphinx-autobuild = "^2021.3.14"
-sphinx-rtd-theme = ">=1,<3"
-pre-commit = ">=2.20,<4.0"
-pre-commit-hooks = "^4.4.0"
-sphinx-autodoc-typehints = ">=1.19.2,<3.0.0"
-ruff = ">=0.0.185,<0.2.2"
-pydocstringformatter = "^0.7.3"
-
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool]
+rye = { dev-dependencies = [
+    "lmfit>=1.2.2",
+    "mypy>=1.8.0",
+    "pre-commit-hooks>=4.5.0",
+    "pydocstringformatter>=0.7.3",
+    "pytest>=8.0.2",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.2.2",
+    "sphinx-autodoc-typehints>=2.0.0",
+    "tqdm>=4.66.2",
+    "types-attrs>=19.1.0",
+    "xdoctest>=1.1.3",
+    "sphinx-rtd-theme>=2.0.0",
+    "matplotlib>=3.7.5",
+    "pre-commit>=3.5.0",
+    "sphinx>=7.1.2",
+    "sphinx-autobuild>=2021.3.14",
+] }
 
 [tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".git-rewrite",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "venv",
+]
+
+# Same as Black.
+line-length = 88
+
+# Assume Python 3.11
+target-version = "py38"
+
+[tool.ruff.lint]
+per-file-ignores = {}
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
 select = [ # https://docs.astral.sh/ruff/rules/
   "B",  # flake8-bugbear
   "D",  # pydocstyle
@@ -77,50 +125,15 @@ ignore = [
 fixable = ["ALL"]
 unfixable = []
 
-# Exclude a variety of commonly ignored directories.
-exclude = [
-  ".bzr",
-  ".direnv",
-  ".eggs",
-  ".git",
-  ".git-rewrite",
-  ".hg",
-  ".mypy_cache",
-  ".nox",
-  ".pants.d",
-  ".pytype",
-  ".ruff_cache",
-  ".svn",
-  ".tox",
-  ".venv",
-  "__pypackages__",
-  "_build",
-  "buck-out",
-  "build",
-  "dist",
-  "node_modules",
-  "venv",
-]
-per-file-ignores = {}
-
-# Same as Black.
-line-length = 88
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-# Assume Python 3.11
-target-version = "py38"
-
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 ignore-decorators = ["typing.overload"]
 
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 
-[tool.ruff.flake8-import-conventions]
-[tool.ruff.flake8-import-conventions.aliases]
+[tool.ruff.lint.flake8-import-conventions]
+[tool.ruff.lint.flake8-import-conventions.aliases]
 # Declare the default aliases.
 "matplotlib.pyplot" = "plt"
 numpy = "np"
