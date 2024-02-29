@@ -43,29 +43,27 @@ Request features on the `Issue Tracker`_.
 How to set up your development environment
 ------------------------------------------
 
-You need Python 3.6+ and the following tools:
+You need Python 3.8+ and the following tools:
 
-- Poetry_
+- Rye_
 - Nox_
-- nox-poetry_
 
 Install the package with development requirements:
 
 .. code:: console
 
-   $ poetry install
+   $ rye install
 
 You can now run an interactive Python session,
 or the command-line interface:
 
 .. code:: console
 
-   $ poetry run python
-   $ poetry run inscar
+   $ rye run python
+   $ rye run inscar
 
-.. _Poetry: https://python-poetry.org/
+.. _Rye: https://rye-up.com/
 .. _Nox: https://nox.thea.codes/
-.. _nox-poetry: https://nox-poetry.readthedocs.io/
 
 
 How to test the project

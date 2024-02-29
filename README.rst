@@ -126,17 +126,14 @@ Contributing
 ------------
 
 To contribute to the project, clone and install the full development version (uses
-poetry_ for dependencies). There is also a `.rtx.toml` file that installs and sets up
-an appropriate virtual environment if rtx_ is available on
-your system (it's really good, check it out!).
+rye_ for dependencies). Optionally, you may also install the pre-commit_ hooks to
+automatically format the code and run the tests before committing.
 
 .. code:: console
 
     $ git clone https://github.com/engeir/inscar.git
     $ cd inscar
-    $ # Set up a virtual environment, for example with rtx
-    $ rtx i
-    $ poetry install
+    $ rye install
     $ pre-commit install
 
 Before committing new changes to a branch you may run command
@@ -145,19 +142,17 @@ Before committing new changes to a branch you may run command
 
     $ nox
 
-to run the full test suite. You will need Poetry_, nox_ and nox-poetry_ installed for
-this.
+to run the full test suite. You will need Rye_ and nox_ installed for this.
 
 .. _Hagfors (1961): https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699
 .. _Mace (2003): https://aip.scitation.org/doi/pdf/10.1063/1.1570828
 .. _PyPI: https://pypi.org/
 .. _assets: https://github.com/engeir/inscar/tree/main/assets
 .. _munin.uit.no: https://hdl.handle.net/10037/19542
-.. _nox-poetry: https://nox-poetry.readthedocs.io/
 .. _nox: https://nox.thea.codes/en/stable/
 .. _pip: https://pip.pypa.io/
-.. _poetry: https://python-poetry.org
-.. _rtx: https://github.com/jdx/rtx
+.. _rye: https://rye-up.com
+.. _pre-commit: https://pre-commit.com/
 .. github-only
 .. _Contributor Guide: CONTRIBUTING.rst
 .. _Modules: https://inscar.readthedocs.io/en/latest/modules.html
