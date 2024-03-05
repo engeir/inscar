@@ -1,4 +1,5 @@
 """Objects used to configure the physical parameters of the system."""
+
 from typing import Tuple, Union
 
 import attr
