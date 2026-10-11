@@ -3,12 +3,13 @@
 from typing import Union
 
 import attr
-import inscar as isr
 import matplotlib.pyplot as plt
 import numpy as np
 import read
 import scipy.constants as const
 import scipy.integrate as si
+
+import inscar as isr
 
 
 @attr.s
@@ -42,7 +43,7 @@ class VdfRealData(isr.Vdf):
         v = self.particle.velocity_axis
         func = read.interpolate_data(self.particle)
         f = func * v**2 * 4 * np.pi
-        self.A = 1 / si.simps(f, v)
+        self.A = 1 / si.simpson(f, v)
 
     def f_0(self):
         """Return the distribution function."""

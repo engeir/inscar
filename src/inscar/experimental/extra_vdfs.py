@@ -89,7 +89,7 @@ class VdfGaussShell(isr.Vdf):
             / (2 * self.particle.temperature * const.k / self.particle.mass)
         )
         f = func * self.particle.velocity_axis**2 * 4 * np.pi
-        self.A = 1 / si.simps(f, self.particle.velocity_axis)
+        self.A = 1 / si.simpson(f, self.particle.velocity_axis)
         ev = 0.5 * const.m_e * self.r**2 / const.eV
         print(f"Gauss shell at E = {round(ev, 2)} eV")
 

@@ -228,7 +228,7 @@ class IntLong(Integrand):
             self.params.aspect_angle,
             self.gyro_frequency,
         )
-        int_maxwell = si.simps(res_maxwell, y)
+        int_maxwell = si.simpson(res_maxwell, y)
         v_func = f.f_0()
         res = numba_integration.integrate_velocity(
             self.particle.gordeyev_axis,
@@ -238,7 +238,7 @@ class IntLong(Integrand):
             self.params.aspect_angle,
             self.gyro_frequency,
         )
-        int_res = si.simps(res, y)
+        int_res = si.simpson(res, y)
         # The scaling of the factor describing the characteristic velocity
         self.char_vel = int_maxwell / int_res
         print(

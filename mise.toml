@@ -1,0 +1,2 @@
+[env]
+LD_LIBRARY_PATH = "{{ exec(command='nix eval --raw nixpkgs#libx11.outPath') }}/lib"
