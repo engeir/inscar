@@ -52,6 +52,12 @@ def to_radians(value) -> float:
 class Particle:
     """Object used to configure the physical parameters of a particle.
 
+    Gordeyev integration is controlled independently for each species by
+    ``gordeyev_size`` (sample count), ``gordeyev_upper_lim`` (time cutoff), and
+    ``gordeyev_exp`` (nonuniform-grid exponent). ``gordeyev_method`` selects
+    ``"trapezoid"`` (the default) or ``"simpson"``. Check convergence in both
+    sample count and cutoff, especially near narrow plasma resonances.
+
     See Also
     --------
     Parameters
@@ -114,6 +120,11 @@ class Particle:
     kappa: float = attr.ib(
         default=20,
         validator=is_positive,
+        on_setattr=attr.setters.validate,
+    )
+    gordeyev_method: str = attr.ib(
+        default="trapezoid",
+        validator=attr.validators.in_(("trapezoid", "simpson")),
         on_setattr=attr.setters.validate,
     )
 

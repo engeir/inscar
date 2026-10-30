@@ -115,6 +115,40 @@ arbitrary isotropic distribution (``IntLong`` class) which can take any ``Vdf`` 
 particle velocity distribution (default is ``VdfMaxwell``). An example showing how a new
 ``Vdf`` class can be made is given in assets_ (``VdfRealData``).
 
+Gordeyev integration accuracy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The numerical controls belong to each ``Particle``, so electrons and ions can
+use different settings:
+
+.. code:: python
+
+    electron = isr.Particle(
+        gordeyev_size=800001,
+        gordeyev_upper_lim=1.5e-4,
+        gordeyev_exp=3,
+        gordeyev_method="simpson",
+    )
+
+``gordeyev_size`` is the number of time samples, ``gordeyev_upper_lim`` is the
+time cutoff in seconds, and ``gordeyev_exp`` sets the power-law sampling grid.
+``gordeyev_method`` selects ``"trapezoid"`` (the existing default) or
+``"simpson"`` (quadratic integration on the nonuniform grid). Simpson requires
+an odd number of at least three samples. These are quadrature controls;
+``Parameters.frequency_size`` controls output-frequency sampling instead.
+
+The values above illustrate configuration, not a universal accuracy guarantee.
+Increase the sample count at fixed cutoff, then check a longer cutoff
+independently. Resolve the oscillations for the largest requested frequency,
+and do these checks for both species. A narrow plasma resonance can amplify
+small errors in the dielectric response. Chapter 4 of the thesis linked below
+discusses nonuniform sampling, Simpson integration, and resolution tests.
+
+The Debye length uses ``scipy.constants.epsilon_0`` consistently with the other
+SI constants. Earlier versions used ``1e-9/(36*pi)``, an approximation about
+0.138% below this value; increasing quadrature resolution cannot remove that
+difference, which can be amplified near a plasma resonance.
+
 Aside
 -----
 

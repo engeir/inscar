@@ -33,6 +33,35 @@ def trapz(y, x):
 
 
 @nb.njit(cache=True)
+def simpson(y, x):
+    """Integrate an odd number of samples on an increasing, nonuniform grid.
+
+    Integrate the quadratic interpolant over each pair of adjacent intervals.
+    This supports the power-law grids exposed by ``Particle.gordeyev_axis``.
+    """
+    minimum_samples = 3
+    if len(x) < minimum_samples or len(x) % 2 == 0 or len(y) != len(x):
+        raise ValueError("Simpson integration requires matching odd lengths >= 3")
+    result = 0 * y[0]
+    for i in range(0, len(x) - 2, 2):
+        h0 = x[i + 1] - x[i]
+        h1 = x[i + 2] - x[i + 1]
+        if h0 <= 0 or h1 <= 0:
+            raise ValueError("Simpson integration requires an increasing grid")
+        total = h0 + h1
+        result += (
+            total
+            / 6
+            * (
+                (2 - h1 / h0) * y[i]
+                + total * total / (h0 * h1) * y[i + 1]
+                + (2 - h0 / h1) * y[i + 2]
+            )
+        )
+    return result
+
+
+@nb.njit(cache=True)
 def inner_int(w, x, function):
     """Calculate the Gordeyev integral of the F function.
 
@@ -53,6 +82,15 @@ def inner_int(w, x, function):
     array = np.zeros_like(w, dtype=np.complex128)
     for idx in nb.prange(len(w)):
         array[idx] = trapz(np.exp(-1j * w[idx] * x) * function, x)
+    return array
+
+
+@nb.njit(cache=True)
+def inner_int_simpson(w, x, function):
+    """Calculate the Gordeyev integral using nonuniform Simpson quadrature."""
+    array = np.zeros_like(w, dtype=np.complex128)
+    for idx in range(len(w)):
+        array[idx] = simpson(np.exp(-1j * w[idx] * x) * function, x)
     return array
 
 
@@ -116,7 +154,10 @@ def integrate(
     mass = particle.mass
     w = params.angular_frequency
     nu = particle.collision_frequency
-    array = inner_int(w, y, integrand)
+    if particle.gordeyev_method == "simpson":
+        array = inner_int_simpson(w, y, integrand)
+    else:
+        array = inner_int(w, y, integrand)
     if the_type == "a_vdf":
         # Characteristic velocity scaling
         a = 4 * np.pi * temp * const.k * array / mass * char_vel
