@@ -23,7 +23,6 @@ jobs:
       - name: Install Uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          source "$HOME/.local/bin/env"
           uv --version
       - name: Check if there is a parent commit
         id: check-parent-commit
@@ -39,13 +38,11 @@ jobs:
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          source "$HOME/.local/bin/env"
           uv version --bump patch &&
           version=$(uv version) &&
           uv version $version.dev.$(date +%s)
       - name: Build package
         run: |
-          source "$HOME/.local/bin/env"
           uv build
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
