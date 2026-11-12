@@ -11,20 +11,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {python-version: "3.9", os: ubuntu-latest, session: "mypy"}
-          - {python-version: "3.9", os: ubuntu-latest, session: "tests"}
-          - {python-version: "3.10", os: ubuntu-latest, session: "mypy"}
-          - {python-version: "3.10", os: ubuntu-latest, session: "tests"}
           - {python-version: "3.11", os: ubuntu-latest, session: "mypy"}
           - {python-version: "3.11", os: ubuntu-latest, session: "tests"}
           - {python-version: "3.12", os: ubuntu-latest, session: "mypy"}
           - {python-version: "3.12", os: ubuntu-latest, session: "tests"}
-          - {python-version: "3.12", os: macos-latest, session: "tests"}
-          # - { python-version: "3.12", os: windows-latest, session: "tests" }
-          - {python-version: "3.9", os: ubuntu-latest, session: "docs-build"}
-          - {python-version: "3.12", os: ubuntu-latest, session: "pre-commit"}
-          - {python-version: "3.12", os: ubuntu-latest, session: "typeguard"}
-          - {python-version: "3.12", os: ubuntu-latest, session: "xdoctest"}
+          - {python-version: "3.13", os: ubuntu-latest, session: "mypy"}
+          - {python-version: "3.13", os: ubuntu-latest, session: "tests"}
+          - {python-version: "3.14", os: ubuntu-latest, session: "mypy"}
+          - {python-version: "3.14", os: ubuntu-latest, session: "tests"}
+          - {python-version: "3.15", os: ubuntu-latest, session: "mypy"}
+          - {python-version: "3.15", os: ubuntu-latest, session: "tests"}
+          - {python-version: "3.15", os: macos-latest, session: "tests"}
+          # - { python-version: "3.15", os: windows-latest, session: "tests" }
+          - {python-version: "3.12", os: ubuntu-latest, session: "docs-build"}
+          - {python-version: "3.15", os: ubuntu-latest, session: "pre-commit"}
+          - {python-version: "3.15", os: ubuntu-latest, session: "typeguard"}
+          - {python-version: "3.15", os: ubuntu-latest, session: "xdoctest"}
     env:
       NOXSESSION: ${{ matrix.session }}
     steps:
@@ -40,11 +42,6 @@ jobs:
         run: |
           pip install pip
           pip --version
-      - name: Install Rye
-        run: |
-          curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
-          source "$HOME/.rye/env"
-          rye --version
       - name: Install Uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -75,7 +72,6 @@ jobs:
             ${{ steps.pre-commit-cache.outputs.result }}-
       - name: Run Nox
         run: |
-          source "$HOME/.rye/env"
           nox --force-color --python=${{ matrix.python-version }}
       - name: Upload coverage data
         if: always() && matrix.session == 'tests'
@@ -95,19 +91,14 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Set up Python 3.12
+      - name: Set up Python 3.15
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
       - name: Upgrade pip
         run: |
           pip install pip
           pip --version
-      - name: Install Rye
-        run: |
-          curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
-          source "$HOME/.rye/env"
-          rye --version
       - name: Install Uv
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -117,6 +108,6 @@ jobs:
           pip install nox
           nox --version
       - name: Run codecov session
-        run: nox --sessions tests-3.12 coverage
+        run: nox --sessions tests-3.15 coverage
         env:
           CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}

@@ -9,19 +9,18 @@ repos:
       - id: check-added-large-files
   - repo: local
     hooks:
-      - id: rye_fmt
-        name: Rye format
+      - id: ruff_fmt
+        name: Ruff format
         stages: [commit]
         language: system
-        entry: rye fmt
+        entry: ruff format
         types: [python]
-      - id: rye_lint
-        name: Rye lint
+      - id: ruff_lint
+        name: Ruff lint
         stages: [commit]
         language: system
-        entry: rye lint
+        entry: ruff check --fix
         types: [python]
-        args: [--fix]
       - id: mypy
         name: mypy
         stages: [commit]

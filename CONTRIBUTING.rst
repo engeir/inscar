@@ -45,24 +45,24 @@ How to set up your development environment
 
 You need Python 3.8+ and the following tools:
 
-- Rye_
+- UV_
 - Nox_
 
 Install the package with development requirements:
 
 .. code:: console
 
-   $ rye install
+   $ uv sync
 
 You can now run an interactive Python session,
 or the command-line interface:
 
 .. code:: console
 
-   $ rye run python
-   $ rye run inscar
+   $ uv run python
+   $ uv run inscar
 
-.. _Rye: https://rye.astral.sh/
+.. _UV: https://docs.astral.sh/uv/
 .. _Nox: https://nox.thea.codes/
 
 

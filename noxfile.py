@@ -9,7 +9,7 @@ from nox import Session, session
 
 package = "inscar"
 owner, repository = "engeir", "inscar"
-python_versions = ["3.9", "3.10", "3.11", "3.12"]
+python_versions = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 nox.options.default_venv_backend = "uv"
 nox.options.sessions = (
     "pre-commit",
@@ -74,7 +74,7 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
         hook.write_text("\n".join(lines))
 
 
-@session(name="pre-commit", python="3.12")
+@session(name="pre-commit", python="3.15")
 def precommit(session: Session) -> None:
     """Lint using pre-commit.
 
@@ -134,7 +134,7 @@ def tests(session: Session) -> None:
             session.notify("coverage")
 
 
-@session(python="3.12")
+@session(python="3.15")
 def coverage(session: Session) -> None:
     """Produce the coverage report.
 
@@ -178,7 +178,7 @@ def xdoctest(session: Session) -> None:
     session.run("python", "-m", "xdoctest", package, *args)
 
 
-@session(name="docs-build", python="3.9")
+@session(name="docs-build", python="3.15")
 def docs_build(session: Session) -> None:
     """Build the documentation.
 
@@ -188,7 +188,12 @@ def docs_build(session: Session) -> None:
         The Session object.
     """
     args = session.posargs or ["docs", "docs/_build"]
-    session.install("-r", "requirements-dev.lock")
+    session.install(
+        "sphinx",
+        "sphinx-rtd-theme",
+        "sphinx-autodoc-typehints",
+        "sphinx-autobuild",
+    )
 
     build_dir = Path("docs", "_build")
     if build_dir.exists():
@@ -198,7 +203,7 @@ def docs_build(session: Session) -> None:
     session.run("sphinx-build", *args)
 
 
-@session(python="3.12")
+@session(python="3.15")
 def docs(session: Session) -> None:
     """Build and serve the documentation with live reloading on file changes.
 
@@ -208,7 +213,12 @@ def docs(session: Session) -> None:
         The Session object.
     """
     args = session.posargs or ["--open-browser", "docs", "docs/_build"]
-    session.install("-r", "requirements-dev.lock")
+    session.install(
+        "sphinx",
+        "sphinx-rtd-theme",
+        "sphinx-autodoc-typehints",
+        "sphinx-autobuild",
+    )
 
     build_dir = Path("docs", "_build")
     if build_dir.exists():
