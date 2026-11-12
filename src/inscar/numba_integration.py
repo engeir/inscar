@@ -128,7 +128,7 @@ def integrate(
 
 
 @nb.njit(cache=True)
-def integrate_velocity(y, v, f, k_r, theta, w_c):  # noqa: PLR0913
+def integrate_velocity(y, v, f, k_r, theta, w_c):  # noqa: PLR0913, PLR0917
     """Calculate the velocity integral.
 
     Parameters

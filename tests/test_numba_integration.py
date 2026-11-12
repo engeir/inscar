@@ -1,7 +1,8 @@
 """Test cases for the numba integration module."""
 
-import inscar as isr
 import numpy as np
+
+import inscar as isr
 from inscar import numba_integration as nb_int
 
 

@@ -3,6 +3,7 @@
 import timeit
 
 import numpy as np
+
 from inscar import numba_integration as nb_int
 
 

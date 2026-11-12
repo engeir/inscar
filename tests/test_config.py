@@ -1,8 +1,9 @@
 """Tests for the `config` module."""
 
-import inscar as isr
 import numpy as np
 import scipy.constants as const
+
+import inscar as isr
 
 
 def test_parameters() -> None:
