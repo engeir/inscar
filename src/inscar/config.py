@@ -1,6 +1,5 @@
 """Objects used to configure the physical parameters of the system."""
 
-
 import attr
 import numpy as np
 import scipy.constants as const

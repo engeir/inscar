@@ -1,6 +1,5 @@
 """Example usage of the library."""
 
-
 import attr
 import matplotlib.pyplot as plt
 import numpy as np
