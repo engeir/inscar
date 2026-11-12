@@ -1,7 +1,6 @@
 """Implementation of integrals using ``numba`` for parallelization."""
 
 import math
-from typing import Optional
 
 import numba as nb
 import numpy as np
@@ -61,7 +60,7 @@ def integrate(
     particle: config.Particle,
     integrand: np.ndarray,
     the_type: str,
-    char_vel: Optional[float] = None,
+    char_vel: float | None = None,
 ) -> np.ndarray:
     r"""Calculate the Gordeyev integral for each frequency.
 

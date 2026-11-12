@@ -1,6 +1,5 @@
 """Example usage of the library."""
 
-from typing import Union
 
 import attr
 import matplotlib.pyplot as plt
@@ -17,7 +16,7 @@ class RealDataParticle(isr.Particle):
     """Create a particle object for the data sets."""
 
     mat_file: str = attr.ib(default="fe_zmuE-07.mat")
-    pitch_angle: Union[int, str, list] = attr.ib(default="all")
+    pitch_angle: int | str | list = attr.ib(default="all")
     z: int = attr.ib(default=300)
 
 

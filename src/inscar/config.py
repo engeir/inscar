@@ -1,6 +1,5 @@
 """Objects used to configure the physical parameters of the system."""
 
-from typing import Union
 
 import attr
 import numpy as np
@@ -57,7 +56,7 @@ class Particle:
     Parameters
     """  # noqa: D410, D407, D411, D414
 
-    gordeyev_upper_lim: Union[float, int] = attr.ib(
+    gordeyev_upper_lim: float | int = attr.ib(
         default=1.5e-4,
         validator=is_positive,
         on_setattr=attr.setters.validate,
@@ -74,7 +73,7 @@ class Particle:
         on_setattr=[attr.setters.convert, attr.setters.validate],
         converter=int,
     )
-    velocity_upper_lim: Union[float, int] = attr.ib(
+    velocity_upper_lim: float | int = attr.ib(
         default=6e6,
         validator=is_positive,
         on_setattr=attr.setters.validate,
@@ -203,7 +202,7 @@ class Parameters:
         validator=is_positive,
         on_setattr=attr.setters.validate,
     )
-    aspect_angle: Union[int, float] = attr.ib(
+    aspect_angle: int | float = attr.ib(
         default=45,
         validator=attr.validators.instance_of((int, float)),
         on_setattr=[attr.setters.convert, attr.setters.validate],
