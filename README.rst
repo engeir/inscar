@@ -116,7 +116,7 @@ particle velocity distribution (default is ``VdfMaxwell``). An example showing h
 ``Vdf`` class can be made is given in assets_ (``VdfRealData``).
 
 Gordeyev integration accuracy
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The numerical controls belong to each ``Particle``, so electrons and ions can
 use different settings:
