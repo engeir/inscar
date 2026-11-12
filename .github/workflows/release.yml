@@ -34,13 +34,13 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@b1778166f13188a9d478e2d1198f993011ba9864 # v2.0.3
         with:
           version-command: |
-            bash -o pipefail -c "$HOME/.local/bin/uv version"
+            bash -o pipefail -c "$HOME/.local/bin/uv version --short"
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          uv version --bump patch &&
-          version=$(uv version) &&
-          uv version $version.dev.$(date +%s)
+          uv version --bump patch \
+              && version=$(uv version --short) \
+              && uv version "$version.dev.$(date +%s)"
       - name: Build package
         run: |
           uv build
