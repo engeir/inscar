@@ -21,11 +21,11 @@ repos:
         language: system
         entry: ruff check --fix
         types: [python]
-      - id: mypy
-        name: mypy
+      - id: zuban
+        name: zuban
         stages: [commit]
         language: system
-        entry: mypy
+        entry: zuban mypy
         types: [python]
         require_serial: true
       - id: pydocstringformatter

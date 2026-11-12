@@ -731,7 +731,6 @@ dev = [
     { name = "sphinx-rtd-theme" },
     { name = "tqdm" },
     { name = "ty" },
-    { name = "types-attrs" },
     { name = "xdoctest" },
     { name = "zuban" },
 ]
@@ -762,7 +761,6 @@ dev = [
     { name = "sphinx-rtd-theme", specifier = ">=2.0.0" },
     { name = "tqdm", specifier = ">=4.66.2" },
     { name = "ty", specifier = ">=0.0.84" },
-    { name = "types-attrs", specifier = ">=19.1.0" },
     { name = "xdoctest", specifier = ">=1.1.3" },
     { name = "zuban", specifier = ">=0.10.0" },
 ]
@@ -2168,14 +2166,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/dc/b0/00a2fad58703c850c01a2fedf59b62da5fcfca3a2ddc9823872f93ab0a56/ty-0.0.101-py3-none-win32.whl", hash = "sha256:e21d86b974798909221bdccf1edabf8a072688b6793198dbb19b8479825330b1", size = 13806399, upload-time = "2026-11-11T13:53:25.037Z" },
     { url = "https://files.pythonhosted.org/packages/32/af/220a2beee8c5217ffd6ad5bc0262e2f3410119c0e357448fc91c491693f5/ty-0.0.101-py3-none-win_amd64.whl", hash = "sha256:d216293c9d734f72c74fd55678cb5a8ea04fdd95e1af4acd5f4fcfc9b69dd01b", size = 14379915, upload-time = "2026-11-11T13:53:27.72Z" },
     { url = "https://files.pythonhosted.org/packages/ec/1f/9e608354c59e072b3170f734a3126eeb0f44baf5452b83ca2937217f20c2/ty-0.0.101-py3-none-win_arm64.whl", hash = "sha256:1928805fd233c7cc92ea59cc6b7a28a05a2fcab56e2926a71b0c83f5f0c4f8f8", size = 13922734, upload-time = "2026-11-11T13:53:30.584Z" },
-]
-
-[[package]]
-name = "types-attrs"
-version = "19.1.0"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fc/c9/1ac000a4eeee5f9dcca7f97f5792d4866e3f08489b88c2dbc5f19e855358/types_attrs-19.1.0-py2.py3-none-any.whl", hash = "sha256:d11acf7a2531a7c52a740c30fa3eb8d01d3066c10d34c01ff5e59502caac5352", size = 6079, upload-time = "2021-06-06T15:28:56.12Z" },
 ]
 
 [[package]]

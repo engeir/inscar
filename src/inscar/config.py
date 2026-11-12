@@ -20,6 +20,12 @@ def is_positive(_, attribute, value):
         raise ValueError(f"{attribute} must be positive")
 
 
+def is_number(_, attribute, value):
+    """Verify that a value is an int or float."""
+    if not isinstance(value, (int, float)):
+        raise ValueError(f"{attribute} must be an int or float")
+
+
 def is_nonnegative(_, attribute, value):
     """Verify that a value is non-negative."""
     if not isinstance(value, (int, float)):
@@ -204,7 +210,7 @@ class Parameters:
     )
     aspect_angle: int | float = attr.ib(
         default=45,
-        validator=attr.validators.instance_of((int, float)),
+        validator=is_number,
         on_setattr=[attr.setters.convert, attr.setters.validate],
         converter=to_radians,
     )

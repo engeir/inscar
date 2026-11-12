@@ -13,7 +13,7 @@ python_versions = ["3.11", "3.12", "3.13", "3.14", "3.15"]
 nox.options.default_venv_backend = "uv"
 nox.options.sessions = (
     "pre-commit",
-    "mypy",
+    "zuban",
     "tests",
     "typeguard",
     "xdoctest",
@@ -88,7 +88,7 @@ def precommit(session: Session) -> None:
     session.install(
         "ruff",
         "pydocstringformatter",
-        "mypy",
+        "zuban",
         "pep8-naming",
         "pre-commit",
         "pre-commit-hooks",
@@ -100,8 +100,8 @@ def precommit(session: Session) -> None:
 
 
 @session(python=python_versions)
-def mypy(session: Session) -> None:
-    """Type-check using mypy.
+def zuban(session: Session) -> None:
+    """Type-check using zuban.
 
     Parameters
     ----------
@@ -110,10 +110,9 @@ def mypy(session: Session) -> None:
     """
     args = session.posargs or ["src", "tests"]
     session.install("-e", ".")
-    session.install("mypy", "pytest")
-    session.install("types-attrs")
-    session.run("mypy", *args)
-    session.run("mypy", "noxfile.py")
+    session.install("zuban", "pytest")
+    session.run("zuban", "mypy", *args)
+    session.run("zuban", "mypy", "noxfile.py")
 
 
 @session(python=python_versions)
