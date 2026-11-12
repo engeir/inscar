@@ -217,7 +217,7 @@ def get_debye_length(
     float : float
         Debye length.
     """
-    vacuum_permittivity = 1e-09 / 36 / np.pi
+    vacuum_permittivity = const.epsilon_0
 
     if ion_temperature is None:
         if kappa is not None:
