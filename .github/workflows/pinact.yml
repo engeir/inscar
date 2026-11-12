@@ -1,7 +1,6 @@
 name: Pinact
 on:
   pull_request: {}
-  push: {}
 jobs:
   pinact:
     runs-on: ubuntu-26.04
