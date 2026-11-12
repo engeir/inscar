@@ -1,6 +1,7 @@
 """Test cases for the integrand functions module."""
 
 import inspect
+from typing import cast
 
 import inscar
 from inscar import integrand_functions as ins
@@ -12,7 +13,7 @@ def test_contents():
     ion = inscar.Particle(gordeyev_size=1e3 + 1, velocity_size=1e3 + 1)
     for n, c in inspect.getmembers(ins, inspect.isclass):
         if c.__module__ == "inscar.integrand_functions" and n != "Integrand":
-            o = c()
+            o = cast(ins.Integrand, c())
             assert issubclass(c, ins.Integrand)
             assert hasattr(o, "the_type")
             o.initialize(params, ion)

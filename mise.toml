@@ -1,2 +1,2 @@
 [env]
-LD_LIBRARY_PATH = "{{ exec(command='nix eval --raw nixpkgs#libx11.outPath') }}/lib"
+LD_LIBRARY_PATH = '{{ exec(command="if p=$(nix eval --raw nixpkgs#libx11.outPath 2>/dev/null); then echo $p/lib; else echo ${LD_LIBRARY_PATH:-}; fi") }}'

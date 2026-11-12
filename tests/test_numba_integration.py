@@ -1,7 +1,8 @@
 """Test cases for the numba integration module."""
 
-import inscar as isr
 import numpy as np
+
+import inscar as isr
 from inscar import numba_integration as nb_int
 
 
@@ -9,7 +10,7 @@ def test_trapz() -> None:
     """Test the `trapz` function."""
     axis = np.linspace(0, 20, 20)
     values = np.linspace(0, 1, 20)
-    integral_np = np.trapezoid(values, axis)  # type: ignore[attr-defined]
+    integral_np = np.trapezoid(values, axis)
     integral_nb = nb_int.trapz(values, axis)
     int_value = 10
     assert integral_np == int_value
@@ -19,7 +20,7 @@ def test_trapz() -> None:
 def _inner_int(w: np.ndarray, x: np.ndarray, function: np.ndarray) -> np.ndarray:
     array = np.zeros_like(w, dtype=np.complex128)
     for idx in range(len(w)):
-        array[idx] = np.trapezoid(np.exp(-1j * w[idx] * x) * function, x)  # type: ignore[attr-defined]
+        array[idx] = np.trapezoid(np.exp(-1j * w[idx] * x) * function, x)
     return array
 
 

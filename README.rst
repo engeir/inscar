@@ -160,14 +160,14 @@ Contributing
 ------------
 
 To contribute to the project, clone and install the full development version (uses
-rye_ for dependencies). Optionally, you may also install the pre-commit_ hooks to
+uv_ for dependencies). Optionally, you may also install the pre-commit_ hooks to
 automatically format the code and run the tests before committing.
 
 .. code:: console
 
     $ git clone https://github.com/engeir/inscar.git
     $ cd inscar
-    $ rye install
+    $ uv sync
     $ pre-commit install
 
 Before committing new changes to a branch you may run command
@@ -176,7 +176,7 @@ Before committing new changes to a branch you may run command
 
     $ nox
 
-to run the full test suite. You will need Rye_ and nox_ installed for this.
+to run the full test suite. You will need UV_ and nox_ installed for this.
 
 .. _Hagfors (1961): https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/JZ066i006p01699
 .. _Mace (2003): https://aip.scitation.org/doi/pdf/10.1063/1.1570828
@@ -185,7 +185,7 @@ to run the full test suite. You will need Rye_ and nox_ installed for this.
 .. _munin.uit.no: https://hdl.handle.net/10037/19542
 .. _nox: https://nox.thea.codes/en/stable/
 .. _pip: https://pip.pypa.io/
-.. _rye: https://rye.astral.sh/
+.. _uv: https://docs.astral.sh/uv/
 .. _pre-commit: https://pre-commit.com/
 .. github-only
 .. _Contributor Guide: CONTRIBUTING.rst

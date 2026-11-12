@@ -1,6 +1,6 @@
 """Calculate the power density spectrum and other plasma parameters."""
 
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import numpy as np
 import scipy.constants as const
@@ -193,9 +193,9 @@ class SpectrumCalculation:
 def get_debye_length(
     number_density: float,
     electron_temperature: float,
-    ion_temperature: Optional[float] = None,
-    kappa: Optional[float] = None,
-    char_vel: Optional[float] = None,
+    ion_temperature: float | None = None,
+    kappa: float | None = None,
+    char_vel: float | None = None,
 ) -> float:
     """Calculate the Debye length.
 

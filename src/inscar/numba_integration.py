@@ -1,7 +1,6 @@
 """Implementation of integrals using ``numba`` for parallelization."""
 
 import math
-from typing import Optional
 
 import numba as nb
 import numpy as np
@@ -99,7 +98,7 @@ def integrate(
     particle: config.Particle,
     integrand: np.ndarray,
     the_type: str,
-    char_vel: Optional[float] = None,
+    char_vel: float | None = None,
 ) -> np.ndarray:
     r"""Calculate the Gordeyev integral for each frequency.
 
@@ -169,7 +168,7 @@ def integrate(
 
 
 @nb.njit(cache=True)
-def integrate_velocity(y, v, f, k_r, theta, w_c):  # noqa: PLR0913
+def integrate_velocity(y, v, f, k_r, theta, w_c):  # noqa: PLR0913, PLR0917
     """Calculate the velocity integral.
 
     Parameters
