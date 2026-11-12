@@ -15,16 +15,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: "3.12"
+          python-version: "3.15"
       - name: Upgrade pip
         run: |
           pip install pip
           pip --version
-      - name: Install Rye
+      - name: Install Uv
         run: |
-          curl -sSf https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
-          source "$HOME/.rye/env"
-          rye --version
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          source "$HOME/.local/bin/env"
+          uv --version
       - name: Check if there is a parent commit
         id: check-parent-commit
         run: |
@@ -35,18 +35,18 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@b1778166f13188a9d478e2d1198f993011ba9864 # v2.0.3
         with:
           version-command: |
-            bash -o pipefail -c "source $HOME/.rye/env && rye version"
+            bash -o pipefail -c "$HOME/.local/bin/uv version"
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          source "$HOME/.rye/env"
-          rye version -b patch &&
-          version=$(rye version) &&
-          rye version $version.dev.$(date +%s)
+          source "$HOME/.local/bin/env"
+          uv version --bump patch &&
+          version=$(uv version) &&
+          uv version $version.dev.$(date +%s)
       - name: Build package
         run: |
-          source "$HOME/.rye/env"
-          rye build
+          source "$HOME/.local/bin/env"
+          uv build
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
         uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
